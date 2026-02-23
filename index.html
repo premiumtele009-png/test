@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងការលក់ V17.0 - Smart Axiata</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Kantumruy:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="success-popup-overlay" id="successOverlay"></div>
+    <div class="success-popup" id="successPopup">
+        <div class="success-popup-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <h3>ជោគជ័យ!</h3>
+        <p id="successMessage">ទិន្នន័យត្រូវបានរក្សាទុកដោយជោគជ័យ!</p>
+        <button class="success-popup-btn" onclick="closeSuccessPopup()">យល់ព្រម</button>
+    </div>
+
+    <!-- Sync Status Bar -->
+    <div id="syncStatus" class="sync-status" style="display: none;"></div>
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="login-logo-circle">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="login-title">
+                    <h2>ចូលប្រើប្រាស់ប្រព័ន្ធ</h2>
+                    <p>សូមបញ្ចូលពត៌មានរបស់អ្នកដើម្បីចូលប្រើប្រាស់</p>
+                </div>
+            </div>
+
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>ឈ្មោះអ្នកប្រើប្រាស់ ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវ!</p>
+            </div>
+
+            <form id="loginFormPopup">
+                <div class="login-form-group">
+                    <label for="loginUsername">ឈ្មោះអ្នកប្រើប្រាស់</label>
+                    <div class="login-input-wrapper">
+                        <i class="fas fa-user login-input-icon"></i>
+                        <input type="text" id="loginUsername" placeholder="បញ្ចូលឈ្មោះអ្នកប្រើប្រាស់" required>
+                    </div>
+                </div>
+
+                <div class="login-form-group">
+                    <label for="loginPassword">ពាក្យសម្ងាត់</label>
+                    <div class="login-input-wrapper">
+                        <i class="fas fa-lock login-input-icon"></i>
+                        <input type="password" id="loginPassword" placeholder="បញ្ចូលពាក្យសម្ងាត់" required>
+                        <i class="fas fa-eye login-password-toggle" id="loginTogglePassword"></i>
+                    </div>
+                </div>
+
+                <div class="login-remember">
+                    <input type="checkbox" id="loginRememberMe">
+                    <label for="loginRememberMe">ចងចាំខ្ញុំ</label>
+                </div>
+
+                <button type="submit" class="login-submit-btn" id="loginSubmitBtn">
+                    <span class="btn-text">ចូលប្រើប្រាស់</span>
+                    <i class="fas fa-arrow-right btn-text"></i>
+                    <div class="login-spinner"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="system-content" id="systemContent">
+        
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <i class="fas fa-signal sidebar-icon"></i>
+                <h1>Smart Axiata</h1>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="loggedInUser">Admin</span>
+                <span class="user-role" id="userRole">Admin</span>
+            </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li id="menu-dashboard" class="active">
+                <a href="#" onclick="showPage('dashboard'); return false;">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li id="menu-daily-sales">
+                <a href="#" onclick="showPage('daily-sales'); return false;">
+                    <i class="fas fa-cash-register"></i>
+                    <span>ការលក់ប្រចាំថ្ងៃ</span>
+                </a>
+            </li>
+            <li id="menu-deposit">
+                <a href="#" onclick="showPage('deposit'); return false;">
+                    <i class="fas fa-coins"></i>
+                    <span>ការដាក់ប្រាក់</span>
+                </a>
+            </li>
+            <li id="menu-reports">
+                <a href="#" onclick="showPage('reports'); return false;">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>របាយការណ៍</span>
+                </a>
+            </li>
+            <li id="menu-customers">
+                <a href="#" onclick="showPage('customers'); return false;">
+                    <i class="fas fa-users"></i>
+                    <span>អតិថិជន</span>
+                </a>
+            </li>
+            <li id="menu-settings">
+                <a href="#" onclick="showPage('settings'); return false;">
+                    <i class="fas fa-cog"></i>
+                    <span>ការកំណត់</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="#" class="logout-link" onclick="logout(); return false;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>ចាកចេញ</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboard-page">
+                <div class="filter-card">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-filter" style="color: #28a745; font-size: 20px;"></i>
+                        <h3 style="font-size: 16px; color: #333; font-weight: 600; margin: 0;">តម្រងទិន្នន័យ</h3>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="filter-btn active" onclick="filterDashboard('today')" id="filter-today">
+                            <i class="fas fa-calendar-day"></i> ថ្ងៃនេះ
+                        </button>
+                        <button class="filter-btn" onclick="filterDashboard('week')" id="filter-week">
+                            <i class="fas fa-calendar-week"></i> សប្តាហ៍នេះ
+                        </button>
+                        <button class="filter-btn" onclick="filterDashboard('month')" id="filter-month">
+                            <i class="fas fa-calendar-alt"></i> ខែនេះ
+                        </button>
+                        <button class="filter-btn" onclick="filterDashboard('year')" id="filter-year">
+                            <i class="fas fa-calendar"></i> ឆ្នាំនេះ
+                        </button>
+                        <button class="filter-btn" onclick="filterDashboard('all')" id="filter-all">
+                            <i class="fas fa-globe"></i> ទាំងអស់
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-cards">
+                    <div class="stat-card revenue">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Total Revenue</div>
+                                <div class="stat-card-value" id="totalRevenue">$0.00</div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>ចំណូលសរុបទាំងអស់</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card recharge">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Total Recharge</div>
+                                <div class="stat-card-value" id="totalRecharge">$0.00</div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Recharge សរុប</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card ads">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Total Gross Ads</div>
+                                <div class="stat-card-value" id="totalGrossAds">0</div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Gross Ads សរុប</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card transactions">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Transactions</div>
+                                <div class="stat-card-value" id="totalTransactions">0</div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>ប្រតិបត្តិការសរុប</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-charts">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <div class="chart-card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                <h3 id="chartTitle">Revenue by Staff</h3>
+                            </div>
+                        </div>
+                        <div class="chart-container-dashboard">
+                            <canvas id="dashboardChart1"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <div class="chart-card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                <h3>Revenue Breakdown by Branch</h3>
+                            </div>
+                        </div>
+                        <div class="chart-container-dashboard">
+                            <canvas id="dashboardChart2"></canvas>
+                        </div>
+                        <div id="branchLegend" style="margin-top: 15px; max-height: 150px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <div class="leaderboard-table">
+                    <div class="chart-card-header">
+                        <div class="chart-card-title">
+                            <i class="fas fa-trophy"></i>
+                            <h3 id="leaderboardTitle">Top Performance</h3>
+                        </div>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th id="leaderboardEntityHeader">Branch/Staff</th>
+                                    <th>Revenue ($)</th>
+                                    <th>Recharge ($)</th>
+                                    <th>Gross Ads</th>
+                                    <th>Home Internet (Units)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DAILY SALES PAGE -->
+            <div id="daily-sales-page" class="hidden">
+                <div class="form-card">
+                    <div class="form-header">
+                        <i class="fas fa-plus-circle"></i>
+                        <h2>បញ្ចូលទិន្ន័យការលក់</h2>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>សូមបញ្ចូលទិន្ន័យរបស់លោកអ្នកអោយបានត្រឹមត្រូវ</p>
+                    </div>
+
+                    <form id="salesForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
+                                <input type="date" id="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label>
+                                <input type="text" id="staff_name" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-building"></i> សាខា (Branch)</label>
+                                <input type="text" id="branch_name" readonly>
+                            </div>
+                        </div>
+
+                        <div class="section-title">
+                            <h3><i class="fas fa-sort-amount-up"></i> ចំនួន</h3>
+                        </div>
+                        <div class="form-row-4">
+                            <div class="form-group">
+                                <label><i class="fas fa-mobile-alt"></i> Gross-Ads</label>
+                                <input type="number" id="gross_ads" value="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-sim-card"></i> Change-SIM</label>
+                                <input type="number" id="change_sim" value="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-home"></i> S@Home</label>
+                                <input type="number" id="s_at_home" value="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-wifi"></i> Fiber+</label>
+                                <input type="number" id="fiber_plus" value="0" min="0">
+                            </div>
+                        </div>
+
+                        <div class="section-title">
+                            <h3><i class="fas fa-dollar-sign"></i> ទឹកប្រាក់ $</h3>
+                        </div>
+                        <div class="form-row-4">
+                            <div class="form-group">
+                                <label><i class="fas fa-money-bill-wave"></i> Recharge</label>
+                                <input type="number" id="recharge" value="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-shopping-cart"></i> SC-Shop</label>
+                                <input type="number" id="sc_shop" value="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-store"></i> SC-Dealer</label>
+                                <input type="number" id="sc_dealer" value="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="form-group highlight">
+                                <label><i class="fas fa-chart-line"></i> Total Revenue</label>
+                                <input type="number" id="total_revenue" value="0.00" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"></div>
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">
+                                    <i class="fas fa-save"></i> រក្សាទុក
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <i class="fas fa-history"></i>
+                            <h2>ប្រវត្តិការលក់</h2>
+                        </div>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ថ្ងៃខែ</th>
+                                        <th>ឈ្មោះបុគ្គលិក</th>
+                                        <th>សាខា</th>
+                                        <th>A/S/H/F</th>
+                                        <th>R/S/D ($)</th>
+                                        <th>សរុប ($)</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEPOSIT PAGE -->
+            <div id="deposit-page" class="hidden">
+                <div class="form-card">
+                    <div class="form-header">
+                        <i class="fas fa-coins"></i>
+                        <h2>បញ្ជូលការដាក់ប្រាក់</h2>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>សូមបញ្ចូលទិន្ន័យរបស់លោកអ្នកអោយបានត្រឹមត្រូវ</p>
+                    </div>
+
+                    <form id="depositForm">
+                        <div class="form-row-4">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
+                                <input type="date" id="deposit_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label>
+                                <input type="text" id="deposit_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-money-bill"></i> Cash ($)</label>
+                                <input type="number" id="cash" value="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-credit-card"></i> Credit ($)</label>
+                                <input type="number" id="credit" value="0.00" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group form-group-full">
+                                <label><i class="fas fa-sticky-note"></i> កំណត់ចំណាំ</label>
+                                <textarea id="note" placeholder="សំគាល់បន្ថែម..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"></div>
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">
+                                    <i class="fas fa-save"></i> រក្សាទុក
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <i class="fas fa-history"></i>
+                            <h2>ប្រវត្តិការដាក់ប្រាក់</h2>
+                        </div>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ថ្ងៃខែ</th>
+                                        <th>ឈ្មោះបុគ្គលិក</th>
+                                        <th>សាខា</th>
+                                        <th>Cash</th>
+                                        <th>Credit</th>
+                                        <th>ចំណាំ</th>
+                                        <th>សកម្មភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="depositTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORTS PAGE -->
+            <div id="reports-page" class="hidden">
+                <div class="form-card">
+                    <div class="form-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h2>របាយការណ៍ការលក់ពេញលេញ</h2>
+                    </div>
+
+                    <div class="filter-card" style="margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-filter" style="color: #28a745; font-size: 20px;"></i>
+                            <h3 style="font-size: 16px; color: #333; font-weight: 600; margin: 0;">តម្រងទិន្នន័យ</h3>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-size: 12px; color: #6c757d; font-weight: 600;">ពីថ្ងៃទី:</label>
+                                <input type="date" id="reportStartDate" class="report-filter-input">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-size: 12px; color: #6c757d; font-weight: 600;">ដល់ថ្ងៃទី:</label>
+                                <input type="date" id="reportEndDate" class="report-filter-input">
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 5px;" id="reportBranchFilterContainer">
+                                <label style="font-size: 12px; color: #6c757d; font-weight: 600;">សាខា/Shop:</label>
+                                <select id="reportBranchFilter" class="report-filter-input" style="min-width: 180px;">
+                                    <option value="">ទាំងអស់</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-size: 12px; color: #6c757d; font-weight: 600;">ឈ្មោះបុគ្គលិក:</label>
+                                <input type="text" id="reportStaffFilter" placeholder="ស្វែងរកបុគ្គលិក..." class="report-filter-input" style="min-width: 200px;">
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: flex-end;">
+                                <button class="filter-btn active" onclick="applyReportFilters()" style="padding: 10px 20px;">
+                                    <i class="fas fa-search"></i> ស្វែងរក
+                                </button>
+                                <button class="filter-btn" onclick="resetReportFilters()" style="padding: 10px 20px; background: #6c757d; border-color: #6c757d;">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                                <button class="filter-btn" onclick="exportToExcel()" style="padding: 10px 20px; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); border-color: #17a2b8;">
+                                    <i class="fas fa-file-excel"></i> Export Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-card" style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="filter-btn" onclick="setReportPeriod('weekly')" id="report-filter-weekly">
+                                <i class="fas fa-calendar-week"></i> Weekly
+                            </button>
+                            <button class="filter-btn active" onclick="setReportPeriod('monthly')" id="report-filter-monthly">
+                                <i class="fas fa-calendar-alt"></i> Monthly
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-charts" style="grid-template-columns: 1fr;">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div class="chart-card-title">
+                                    <i class="fas fa-chart-area"></i>
+                                    <h3 id="reportPeriodTitle">Items Growth - Monthly</h3>
+                                </div>
+                            </div>
+                            <div class="chart-container-dashboard" style="height: 400px;">
+                                <canvas id="reportsGrowthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-cards" style="margin-top: 20px;">
+                        <div class="stat-card revenue">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-card-title">Total Items Sold</div>
+                                    <div class="stat-card-value" id="reportTotalItems">0</div>
+                                </div>
+                                <div class="stat-card-icon">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card recharge">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-card-title">Total Revenue</div>
+                                    <div class="stat-card-value" id="reportTotalRevenue">$0.00</div>
+                                </div>
+                                <div class="stat-card-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card ads">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-card-title">Total Records</div>
+                                    <div class="stat-card-value" id="reportTotalRecords">0</div>
+                                </div>
+                                <div class="stat-card-icon">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card transactions">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-card-title">Avg Revenue/Day</div>
+                                    <div class="stat-card-value" id="reportAvgRevenue">$0.00</div>
+                                </div>
+                                <div class="stat-card-icon">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-card" style="margin-top: 20px;">
+                        <div class="table-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-table"></i>
+                                <h2>តារាងរបាយការណ៍ពេញលេញ</h2>
+                            </div>
+                            <div style="color: #6c757d; font-size: 14px;">
+                                <i class="fas fa-info-circle"></i> <span id="reportTableInfo">បង្ហាញទាំងអស់</span>
+                            </div>
+                        </div>
+                        <div class="data-table">
+                            <table id="reportTable">
+                                <thead>
+                                    <tr>
+                                        <th>ថ្ងៃខែ</th>
+                                        <th>បុគ្គលិក</th>
+                                        <th>សាខ��</th>
+                                        <th>Gross Ads</th>
+                                        <th>Change SIM</th>
+                                        <th>S@Home</th>
+                                        <th>Fiber+</th>
+                                        <th>Recharge ($)</th>
+                                        <th>SC-Shop ($)</th>
+                                        <th>SC-Dealer ($)</th>
+                                        <th>Total Revenue ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody"></tbody>
+                                <tfoot id="reportTableFooter">
+                                    <tr style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); font-weight: 700;">
+                                        <td colspan="3" style="text-align: right; padding-right: 20px;">សរុប:</td>
+                                        <td id="footerGrossAds">0</td>
+                                        <td id="footerChangeSim">0</td>
+                                        <td id="footerSHome">0</td>
+                                        <td id="footerFiber">0</td>
+                                        <td id="footerRecharge">$0.00</td>
+                                        <td id="footerShop">$0.00</td>
+                                        <td id="footerDealer">$0.00</td>
+                                        <td id="footerTotal" class="total-amount">$0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMERS PAGE -->
+            <div id="customers-page" class="hidden">
+                <div class="table-card">
+                    <div class="table-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-users"></i>
+                            <h2>អតិថិជន</h2>
+                        </div>
+                        <div class="table-actions">
+                            <button class="add-customer-btn" onclick="openCustomerModal()">
+                                <i class="fas fa-user-plus"></i> បន្ថែមអតិថិជន
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ថ្ងៃខែ</th>
+                                    <th>បុគ្គលិក</th>
+                                    <th>សាខា</th>
+                                    <th>ឈ្មោះអតិថិជន</th>
+                                    <th>លេខទូរសព្ទ</th>
+                                    <th>ផលិតផល</th>
+                                    <th>Status</th>
+                                    <th>Remark</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h2>Top Up</h2>
+                        </div>
+                        <div class="table-actions">
+                            <button class="topup-btn" onclick="openTopUpModal()">
+                                <i class="fas fa-plus-circle"></i> បន្ថែម Top Up
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ថ្ងៃខែ</th>
+                                    <th>បុគ្គលិក</th>
+                                    <th>សាខា</th>
+                                    <th>ឈ្មោះអតិថិជន</th>
+                                    <th>លេខទូរសព្ទ</th>
+                                    <th>លេខទាក់ទង</th>
+                                    <th>ផលិតផល</th>
+                                    <th>ថ្ងៃផុតកំណត់</th>
+                                    <th>Remark</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topupTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-card" style="border-left: 4px solid #dc3545;">
+                    <div class="table-header" style="border-bottom: 2px solid #dc3545;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                            <h2>អតិថិជនជិតផុតកំណត់ & ផុតកំណត់រួចហើយ</h2>
+                        </div>
+                    </div>
+
+                    <div id="expiryDangerWarning" class="hidden" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left: 4px solid #dc3545; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2); animation: pulseMsg 2s infinite;">
+                        <i class="fas fa-times-circle" style="color: #dc3545; font-size: 20px; margin-right: 10px;"></i>
+                        <p style="color: #721c24; font-size: 14px; font-weight: 600; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">មានអតិថិជន <span id="expiredCount" style="font-size: 18px; font-weight: 700;">0</span> នាក់ ផុតកំណត់រួចហើយ!</p>
+                    </div>
+
+                    <div id="expiryWarning" class="hidden" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 4px solid #ffc107; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
+                        <i class="fas fa-exclamation-triangle" style="color: #f57c00; font-size: 18px; margin-right: 10px;"></i>
+                        <p style="color: #856404; font-size: 14px; font-weight: 600; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">មានអតិថិជន <span id="expirySoonCount" style="font-size: 18px; font-weight: 700;">0</span> នាក់ ជិតផុតកំណត់ក្នុងរយៈពេល 7 ថ្ងៃខាងមុខ!</p>
+                    </div>
+
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ថ្ងៃខែ</th>
+                                    <th>បុគ្គលិក</th>
+                                    <th>សាខា</th>
+                                    <th>ឈ្មោះអតិថិជន</th>
+                                    <th>លេខទូរសព្ទ</th>
+                                    <th>លេខទាក់ទង</th>
+                                    <th>ផលិតផល</th>
+                                    <th>ថ្ងៃផុតកំណត់</th>
+                                    <th>ស្ថានភាព</th>
+                                    <th>Remark</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expiryTableBody">
+                                <tr>
+                                    <td colspan="11" style="text-align: center; padding: 30px; color: #6c757d;">
+                                        <i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                                        គ្មានអតិថិជនជិតផុតកំណត់ ឬ ផុតកំណត់ទេ
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="settings-page" class="hidden">
+                <div class="form-card" id="settingsAdminOnly">
+                    <div class="form-header">
+                        <i class="fas fa-users-cog"></i>
+                        <h2>គ្រប់គ្រងអ្នកប្រើប្រាស់</h2>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>បង្កើត និង គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់សម្រាប់ Admin, Supervisor និង Agent</p>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-users"></i>
+                                <h2>បញ្ជីអ្នកប្រើប្រាស់</h2>
+                            </div>
+                            <div class="table-actions">
+                                <button class="add-user-btn" onclick="openUserModal()">
+                                    <i class="fas fa-user-plus"></i> បន្ថែមអ្នកប្រើប្រាស់
+                                </button>
+                            </div>
+                        </div>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Full Name</th>
+                                        <th>Role</th>
+                                        <th>Branch</th>
+                                        <th>Status</th>
+                                        <th>Created Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-message hidden" id="settingsAgentMessage" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left: 4px solid #dc3545;">
+                    <i class="fas fa-lock" style="color: #dc3545;"></i>
+                    <p style="color: #721c24;">អ្នកមិនមានសិទ្ធិចូលប្រើផ្នែកនេះទេ។ ទំព័រនេះសម្រាប់តែ Admin ប៉ុណ្ណោះ។</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    </div>
+
+    <!-- USER MODAL -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> <span id="userModalTitle">បន្ថែមអ្នកប្រើប្រាស់ថ្មី</span></h3>
+                <span class="close" onclick="closeUserModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="edit_user_index">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Username</label>
+                            <input type="text" id="user_username" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-id-card"></i> Full Name</label>
+                            <input type="text" id="user_fullname" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" id="user_password" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tag"></i> Role</label>
+                            <select id="user_role" required>
+                                <option value="">Select Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="agent">Agent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-building"></i> Branch</label>
+                            <input type="text" id="user_branch" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-toggle-on"></i> Status</label>
+                            <select id="user_status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER MODAL -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> <span id="customerModalTitle">បន្ថែមអតិថិជនថ្មី</span></h3>
+                <span class="close" onclick="closeCustomerModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm">
+                    <input type="hidden" id="edit_customer_index">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែឆ្នាំ</label>
+                            <input type="date" id="cust_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tie"></i> បុគ្គលិក</label>
+                            <input type="text" id="cust_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label>
+                            <input type="text" id="cust_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label>
+                            <input type="tel" id="cust_phone" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> ផលិតផល</label>
+                            <select id="cust_product" required>
+                                <option value="">ជ្រើសរើសផលិតផល</option>
+                                <option value="Smart@Home">Smart@Home</option>
+                                <option value="Smart Fiber+">Smart Fiber+</option>
+                                <option value="M2M">M2M</option>
+                                <option value="Smart Laor 6">Smart Laor 6</option>
+                                <option value="Smart Laor 10">Smart Laor 10</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-flag"></i> Status</label>
+                            <select id="cust_status" required>
+                                <option value="">ជ្រើសរើស Status</option>
+                                <option value="New Lead">New Lead</option>
+                                <option value="Prospect">Prospect</option>
+                                <option value="Hot Prospect">Hot Prospect</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-group-full">
+                            <label><i class="fas fa-comment"></i> Remark</label>
+                            <textarea id="cust_remark"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOPUP MODAL -->
+    <div id="topupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header topup-header">
+                <h3><i class="fas fa-mobile-alt"></i> <span id="topupModalTitle">បន្ថែម Top Up</span></h3>
+                <span class="close" onclick="closeTopUpModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="topupForm">
+                    <input type="hidden" id="edit_topup_index">
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
+                            <input type="date" id="topup_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tie"></i> បុគ្គលិក</label>
+                            <input type="text" id="topup_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label>
+                            <input type="text" id="topup_customer" required>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label>
+                            <input type="tel" id="topup_phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-phone-alt"></i> លេខទាក់ទង</label>
+                            <input type="tel" id="topup_contact">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> ផលិតផល</label>
+                            <select id="topup_product" required>
+                                <option value="">ជ្រើសរើសផលិតផល</option>
+                                <option value="Smart@Home">Smart@Home</option>
+                                <option value="Smart Fiber+">Smart Fiber+</option>
+                                <option value="M2M">M2M</option>
+                                <option value="Smart Laor 6">Smart Laor 6</option>
+                                <option value="Smart Laor 10">Smart Laor 10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-times"></i> ថ្ងៃផុតកំណត់</label>
+                            <input type="date" id="topup_expiry" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-comment"></i> Remark</label>
+                            <textarea id="topup_remark"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Buttons (Fixed Bottom Right) -->
+    <div class="sync-buttons" id="syncButtons" style="display: none;">
+        <button class="sync-btn sync-btn-upload" onclick="syncToGoogleSheets()" title="Upload to Google Sheets">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Sync Up</span>
+        </button>
+        <button class="sync-btn sync-btn-download" onclick="loadFromGoogleSheets()" title="Download from Google Sheets">
+            <i class="fas fa-cloud-download-alt"></i>
+            <span>Sync Down</span>
+        </button>
+        <div class="sync-info">
+            <i class="fas fa-clock"></i>
+            <span id="lastSyncDisplay">មិនទាន់ Sync</span>
+        </div>
+    </div>
+
+    <!-- Main App Script -->
+    <script src="app.js"></script>
+    
+    <!-- Google Sheets Sync Script - COMPLETE WORKING VERSION -->
+    <script>
+// ===================== GOOGLE SHEETS SYNC - WORKING VERSION =====================
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxhuKU_dnoxItDhGrjQwDD-mIflObDnQ4pqtdtHhZaH4-ZTPSgJlTHaebCfkLjFXfL/exec';
+
+const SHEETS = {
+    USERS: 'Users',
+    SALES: 'Sales',
+    DEPOSITS: 'Deposits',
+    CUSTOMERS: 'Customers',
+    TOPUP: 'TopUp'
+};
+
+let isSyncing = false;
+let lastSyncTime = null;
+
+// ===================== SYNC TO GOOGLE SHEETS =====================
+async function syncToGoogleSheets() {
+    if (isSyncing) {
+        showSuccessPopup('កំពុងធ្វើ Sync... សូមរង់ចាំ');
+        return;
+    }
+    
+    isSyncing = true;
+    showSyncStatus('🔄 កំពុងធ្វើ Sync ទិន្នន័យ...', 'info');
+    
+    try {
+        console.log('=== Starting Sync to Google Sheets ===');
+        console.log('URL:', GOOGLE_APPS_SCRIPT_URL);
+        
+        const results = await Promise.all([
+            syncSheetData(SHEETS.USERS, usersData),
+            syncSheetData(SHEETS.SALES, salesData),
+            syncSheetData(SHEETS.DEPOSITS, depositData),
+            syncSheetData(SHEETS.CUSTOMERS, customersData),
+            syncSheetData(SHEETS.TOPUP, topupData)
+        ]);
+        
+        console.log('Sync results:', results);
+        
+        lastSyncTime = new Date();
+        localStorage.setItem('lastSyncTime', lastSyncTime.toISOString());
+        
+        showSyncStatus('✅ Sync បានជោគជ័យ!', 'success');
+        showSuccessPopup('ទិន្នន័យត្រូវបាន Sync ទៅ Google Sheets ដោយជោគជ័យ!');
+        document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+        
+        console.log('=== Sync Completed Successfully ===');
+    } catch (error) {
+        console.error('=== Sync Failed ===');
+        console.error('Error:', error);
+        showSyncStatus('❌ Sync បរាជ័យ: ' + error.message, 'error');
+        showSuccessPopup('មានបញ្ហាក្នុងការ Sync: ' + error.message);
+    } finally {
+        isSyncing = false;
+    }
+}
+
+// ===================== SYNC SINGLE SHEET =====================
+async function syncSheetData(sheetName, data) {
+    console.log(`\n--- Syncing ${sheetName} (${data.length} records) ---`);
+    
+    try {
+        const formData = new FormData();
+        formData.append('action', 'SAVE_ALL');
+        formData.append('sheet', sheetName);
+        formData.append('data', JSON.stringify(data));
+        
+        console.log(`Sending to: ${GOOGLE_APPS_SCRIPT_URL}`);
+        console.log(`Action: SAVE_ALL, Sheet: ${sheetName}`);
+        
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+            method: 'POST',
+            body: formData
+        });
+        
+        console.log(`${sheetName} - Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        console.log(`${sheetName} - Raw response:`, text.substring(0, 200));
+        
+        const result = JSON.parse(text);
+        console.log(`${sheetName} - Parsed result:`, result);
+        
+        if (!result.success) {
+            throw new Error(result.message || 'Unknown error');
+        }
+        
+        console.log(`✅ ${sheetName} synced successfully!`);
+        return result;
+        
+    } catch (error) {
+        console.error(`❌ ${sheetName} sync failed:`, error);
+        throw new Error(`${sheetName}: ${error.message}`);
+    }
+}
+
+// ===================== LOAD FROM GOOGLE SHEETS =====================
+async function loadFromGoogleSheets() {
+    if (isSyncing) {
+        showSuccessPopup('កំពុងធ្វើ Load... សូមរង់ចាំ');
+        return;
+    }
+    
+    if (!confirm('តើអ្នកចង់ Load ទិន្នន័យពី Google Sheets មែនទេ?\n\nការធ្វើនេះនឹង Replace ទិន្នន័យ Local ទាំងអស់!')) {
+        return;
+    }
+    
+    isSyncing = true;
+    showSyncStatus('📥 កំពុង Load ទិន្នន័យ...', 'info');
+    
+    try {
+        console.log('=== Loading from Google Sheets ===');
+        
+        const results = await Promise.all([
+            loadSheetData(SHEETS.USERS),
+            loadSheetData(SHEETS.SALES),
+            loadSheetData(SHEETS.DEPOSITS),
+            loadSheetData(SHEETS.CUSTOMERS),
+            loadSheetData(SHEETS.TOPUP)
+        ]);
+        
+        usersData = results[0];
+        salesData = results[1];
+        depositData = results[2];
+        customersData = results[3];
+        topupData = results[4];
+        
+        console.log('Loaded data:', {
+            users: usersData.length,
+            sales: salesData.length,
+            deposits: depositData.length,
+            customers: customersData.length,
+            topup: topupData.length
+        });
+        
+        localStorage.setItem('usersData', JSON.stringify(usersData));
+        localStorage.setItem('salesData', JSON.stringify(salesData));
+        localStorage.setItem('depositData', JSON.stringify(depositData));
+        localStorage.setItem('customersData', JSON.stringify(customersData));
+        localStorage.setItem('topupData', JSON.stringify(topupData));
+        
+        refreshUsersTable();
+        refreshSalesTable();
+        refreshDepositTable();
+        refreshCustomersTable();
+        refreshTopUpTable();
+        populateBranchFilter();
+        
+        lastSyncTime = new Date();
+        localStorage.setItem('lastSyncTime', lastSyncTime.toISOString());
+        
+        showSyncStatus('✅ Load បានជោគជ័យ!', 'success');
+        showSuccessPopup('ទិន្នន័យត្រូវបាន Load ពី Google Sheets ដោយជោគជ័យ!');
+        document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+        
+        console.log('=== Load Completed Successfully ===');
+    } catch (error) {
+        console.error('=== Load Failed ===');
+        console.error('Error:', error);
+        showSyncStatus('❌ Load បរាជ័យ: ' + error.message, 'error');
+        showSuccessPopup('មានបញ្ហាក្នុងការ Load: ' + error.message);
+    } finally {
+        isSyncing = false;
+    }
+}
+
+// ===================== LOAD SINGLE SHEET =====================
+async function loadSheetData(sheetName) {
+    console.log(`\n--- Loading ${sheetName} ---`);
+    
+    try {
+        const params = new URLSearchParams({
+            action: 'GET_ALL',
+            sheet: sheetName,
+            t: new Date().getTime()
+        });
+        
+        const url = `${GOOGLE_APPS_SCRIPT_URL}?${params.toString()}`;
+        console.log(`Request URL: ${url}`);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            cache: 'no-cache'
+        });
+        
+        console.log(`${sheetName} - Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        console.log(`${sheetName} - Raw response:`, text.substring(0, 200));
+        
+        const result = JSON.parse(text);
+        console.log(`${sheetName} - Parsed result:`, result);
+        
+        if (!result.success) {
+            throw new Error(result.message || 'Unknown error');
+        }
+        
+        const data = result.data || [];
+        console.log(`✅ ${sheetName} loaded: ${data.length} records`);
+        return data;
+        
+    } catch (error) {
+        console.error(`❌ ${sheetName} load failed:`, error);
+        throw new Error(`${sheetName}: ${error.message}`);
+    }
+}
+
+// ===================== AUTO SYNC =====================
+function autoSyncAfterSave() {
+    if (!navigator.onLine) {
+        console.log('⚠️ Offline - skipping auto sync');
+        return;
+    }
+    
+    console.log('⏰ Auto sync scheduled...');
+    setTimeout(() => {
+        syncToGoogleSheets();
+    }, 1000);
+}
+
+// ===================== SHOW SYNC STATUS =====================
+function showSyncStatus(message, type) {
+    const statusDiv = document.getElementById('syncStatus');
+    if (!statusDiv) return;
+    
+    statusDiv.textContent = message;
+    statusDiv.className = 'sync-status sync-status-' + type;
+    statusDiv.style.display = 'block';
+    
+    if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// ===================== GET LAST SYNC TIME =====================
+function getLastSyncTime() {
+    const lastSync = localStorage.getItem('lastSyncTime');
+    if (!lastSync) return 'មិនទាន់ Sync';
+    
+    const date = new Date(lastSync);
+    const now = new Date();
+    const diffMinutes = Math.floor((now - date) / 1000 / 60);
+    
+    if (diffMinutes < 1) return 'ទើបតែ Sync';
+    if (diffMinutes < 60) return `${diffMinutes} នាទីមុន`;
+    
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} ម៉ោងមុន`;
+    
+    return date.toLocaleDateString('km-KH', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// ===================== NETWORK STATUS =====================
+window.addEventListener('online', () => {
+    console.log('🟢 Online');
+    showSyncStatus('✅ បានភ្ជាប់អ៊ីនធឺណិត', 'success');
+});
+
+window.addEventListener('offline', () => {
+    console.log('🔴 Offline');
+    showSyncStatus('⚠️ អ៊ីនធឺណិតផ្តាច់', 'error');
+});
+
+// ===================== TEST CONNECTION =====================
+async function testSyncConnection() {
+    console.log('\n========== TESTING SYNC CONNECTION ==========');
+    console.log('URL:', GOOGLE_APPS_SCRIPT_URL);
+    
+    try {
+        const url = `${GOOGLE_APPS_SCRIPT_URL}?action=GET_ALL&sheet=Users&t=${new Date().getTime()}`;
+        console.log('Test URL:', url);
+        
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+        
+        const text = await response.text();
+        console.log('Response text:', text);
+        
+        const result = JSON.parse(text);
+        console.log('Parsed result:', result);
+        
+        if (result.success) {
+            console.log('✅ CONNECTION TEST SUCCESSFUL!');
+            console.log('Data records:', result.data ? result.data.length : 0);
+            alert('✅ Connection successful!\nCheck console for details.');
+        } else {
+            console.error('❌ Test failed:', result.message);
+            alert('❌ Test failed: ' + result.message);
+        }
+    } catch (error) {
+        console.error('❌ CONNECTION TEST FAILED:', error);
+        alert('❌ Connection failed: ' + error.message);
+    }
+    
+    console.log('==========================================\n');
+}
+
+console.log('✅ Google Sheets Sync loaded');
+console.log('📍 URL:', GOOGLE_APPS_SCRIPT_URL);
+console.log('📊 Available sheets:', Object.values(SHEETS).join(', '));
+console.log('💡 Run testSyncConnection() to test');
+    </script>
+</body>
+</html>
