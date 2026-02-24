@@ -36,6 +36,17 @@ function canEditData(data) {
     return false;
 }
 
+// ===================== PROMOTIONS PERMISSION SYSTEM =====================
+function canEditPromotion(promotion) {
+    // Only Admin can add/edit promotions
+    return currentUser.role === 'admin';
+}
+
+function canViewPromotions() {
+    // All roles can view promotions
+    return true;
+}
+
 function saveDataToStorage() {
     localStorage.setItem('usersData', JSON.stringify(usersData));
     localStorage.setItem('salesData', JSON.stringify(salesData));
@@ -184,7 +195,7 @@ function showPage(page) {
         'deposit': ['deposit-page', 'menu-deposit', null],
         'reports': ['reports-page', 'menu-reports', () => { setTimeout(initReportsPage, 100); }],
         'customers': ['customers-page', 'menu-customers', checkExpiringCustomers],
-        'promotions': ['promotions-page', 'menu-promotions', () => { refreshPromotionsGrid(); }],
+        'promotions': ['promotions-page', 'menu-promotions', () => { refreshPromotionsGrid(); checkPromotionsPermissions(); }],
         'settings': ['settings-page', 'menu-settings', null]
     };
     if (pages[page]) {
@@ -209,6 +220,40 @@ function checkUserPermissions() {
         document.getElementById('settingsAdminOnly').style.display = 'none';
         document.getElementById('settingsAgentMessage').classList.remove('hidden');
         if (addUserBtn) addUserBtn.style.display = 'none';
+    }
+}
+
+// ===================== PROMOTIONS PERMISSIONS CHECK =====================
+function checkPromotionsPermissions() {
+    const addPromotionBtn = document.querySelector('.add-customer-btn[onclick="openPromotionModal()"]');
+    const searchInput = document.getElementById('searchPromotion');
+    
+    if (currentUser.role === 'admin') {
+        // Admin can add and edit
+        if (addPromotionBtn) {
+            addPromotionBtn.style.display = 'flex';
+        }
+        if (searchInput) {
+            searchInput.parentElement.style.justifyContent = 'space-between';
+        }
+    } else {
+        // Supervisor and Agent - View only
+        if (addPromotionBtn) {
+            addPromotionBtn.style.display = 'none';
+        }
+        if (searchInput) {
+            // Add view-only badge
+            const parentDiv = searchInput.parentElement;
+            parentDiv.style.justifyContent = 'space-between';
+            
+            // Check if badge already exists
+            if (!parentDiv.querySelector('.view-only-badge')) {
+                const badge = document.createElement('div');
+                badge.className = 'view-only-badge';
+                badge.innerHTML = '<i class="fas fa-eye"></i> មើលប៉ុណ្ណោះ (View Only)';
+                parentDiv.appendChild(badge);
+            }
+        }
     }
 }
 
@@ -1327,11 +1372,11 @@ function deleteUserRow(i) {
         saveDataToStorage();
         refreshUsersTable();
         populateBranchFilter();
-        showSuccessPopup('បានលុបអ្នកប្រើប្រាស់ដោ���ជោគជ័យ!');
+        showSuccessPopup('បានលុបអ្នកប្រើប្រាស់ដោយជោគជ័យ!');
     }
 }
 
-// ===================== PROMOTIONS MANAGEMENT =====================
+// ===================== PROMOTIONS MANAGEMENT WITH PERMISSIONS =====================
 function generatePromotionId() {
     return 'PROMO-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
@@ -1345,6 +1390,12 @@ function getPromotionStatus(endDate) {
 }
 
 function openPromotionModal() {
+    // Check if user has permission to add promotions
+    if (!canEditPromotion(null)) {
+        showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចបន្ថែមប្រូម៉ូសិនបាន!');
+        return;
+    }
+    
     document.getElementById('promotionModal').style.display = 'block';
     document.getElementById('edit_promotion_index').value = '';
     document.getElementById('promotionModalTitle').textContent = 'បន្ថែមប្រូម៉ូសិន';
@@ -1363,6 +1414,12 @@ function closePromotionModal() {
 
 document.getElementById('promotionForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    // Check permission before saving
+    if (!canEditPromotion(null)) {
+        showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចបន្ថែម/កែប្រែប្រូម៉ូសិនបាន!');
+        return;
+    }
     
     const formData = {
         id: editingPromotionIndex !== null ? promotionsData[editingPromotionIndex].id : generatePromotionId(),
@@ -1397,9 +1454,8 @@ function refreshPromotionsGrid(filteredData = null) {
     
     let dataToShow = filteredData !== null ? filteredData : promotionsData;
     
-    if (currentUser.role !== 'admin') {
-        dataToShow = dataToShow.filter(p => p.branch === currentUser.branch);
-    }
+    // Admin can see all promotions, others see all too (view only)
+    // No filtering by branch for promotions - everyone can view all promotions
     
     if (dataToShow.length === 0) {
         grid.classList.add('hidden');
@@ -1412,7 +1468,7 @@ function refreshPromotionsGrid(filteredData = null) {
     
     dataToShow.forEach((promo, index) => {
         const originalIndex = promotionsData.indexOf(promo);
-        const canEdit = canEditData(promo);
+        const canEdit = canEditPromotion(promo); // Only admin can edit
         const status = getPromotionStatus(promo.end_date);
         const statusClass = status === 'active' ? 'status-active' : 'status-expired';
         const statusText = status === 'active' ? 'សកម្ម' : 'ផុតកំណត់';
@@ -1447,14 +1503,22 @@ function refreshPromotionsGrid(filteredData = null) {
                 <span><i class="fas fa-user"></i> ${promo.created_by}</span>
                 <span><i class="fas fa-building"></i> ${promo.branch}</span>
             </div>
+            ${canEdit ? `
             <div class="promotion-actions">
-                <button class="btn-edit-promo" onclick="editPromotion(${originalIndex})" ${!canEdit ? 'disabled' : ''} title="${canEdit ? 'កែប្រែ' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ'}">
+                <button class="btn-edit-promo" onclick="editPromotion(${originalIndex})" title="កែប្រែ">
                     <i class="fas fa-edit"></i> កែប្រែ
                 </button>
-                <button class="btn-delete-promo" onclick="deletePromotion(${originalIndex})" ${!canEdit ? 'disabled' : ''} title="${canEdit ? 'លុប' : 'អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ'}">
+                <button class="btn-delete-promo" onclick="deletePromotion(${originalIndex})" title="លុប">
                     <i class="fas fa-trash"></i> លុប
                 </button>
             </div>
+            ` : `
+            <div class="promotion-actions">
+                <div class="view-only-badge" style="width: 100%; text-align: center; padding: 12px;">
+                    <i class="fas fa-eye"></i> មើលប៉ុណ្ណោះ - មានតែ Admin ទេដែលអាចកែប្រែបាន
+                </div>
+            </div>
+            `}
         `;
         
         grid.appendChild(card);
@@ -1482,8 +1546,9 @@ function togglePromotionTerms(index) {
 function editPromotion(index) {
     const promo = promotionsData[index];
     
-    if (!canEditData(promo)) {
-        showSuccessPopup('អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ!');
+    // Check permission
+    if (!canEditPromotion(promo)) {
+        showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចកែប្រែប្រូម៉ូសិនបាន!');
         return;
     }
     
@@ -1503,8 +1568,9 @@ function editPromotion(index) {
 function deletePromotion(index) {
     const promo = promotionsData[index];
     
-    if (!canEditData(promo)) {
-        showSuccessPopup('អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ!');
+    // Check permission
+    if (!canEditPromotion(promo)) {
+        showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចលុបប្រូម៉ូសិនបាន!');
         return;
     }
     
@@ -1586,5 +1652,6 @@ window.onclick = function(e) {
 // ===================== END OF APP.JS =====================
 console.log('✅ App.js loaded successfully');
 console.log('📱 Sales Management System V17.0 with Promotions');
+console.log('🔐 Promotions: Admin (Add/Edit), Supervisor/Agent (View Only)');
 console.log('🔗 Google Sheets: https://script.google.com/macros/s/AKfycbyife3a_9tnA4VLy6dYSN1NmtAp4mVcfhAt0NBKHB6l75MG3UO1ZzQtSd4mVU0foR9I/exec');
 console.log('🚀 Ready to use!');
