@@ -213,6 +213,12 @@
                     <span>អតិថិជន</span>
                 </a>
             </li>
+            <li id="menu-promotions">
+                <a href="#" onclick="showPage('promotions'); return false;">
+                    <i class="fas fa-gift"></i>
+                    <span>ប្រូម៉ូសិន</span>
+                </a>
+            </li>
             <li id="menu-settings">
                 <a href="#" onclick="showPage('settings'); return false;">
                     <i class="fas fa-cog"></i>
@@ -237,7 +243,7 @@
                 <div class="filter-card">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-filter" style="color: #28a745; font-size: 20px;"></i>
-                        <h3 style="font-size: 16px; color: #333; font-weight: 600; margin: 0;">តម្រងទិន្នន័យ</h3>
+                        <h3 style="font-size: 16px; color: #333; font-weight: 600; margin: 0;">តម្រងទិន្��ន័យ</h3>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="filter-btn active" onclick="filterDashboard('today')" id="filter-today">
@@ -847,6 +853,43 @@
                 </div>
             </div>
 
+            <!-- PROMOTIONS PAGE -->
+            <div id="promotions-page" class="hidden">
+                <div class="form-card">
+                    <div class="form-header">
+                        <i class="fas fa-gift"></i>
+                        <h2>ប្រូម៉ូសិនថ្មី - Promotions Management</h2>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>គ��រប់គ្រង និង តាមដានប្រូម៉ូសិនទាំងអស់របស់អ្នក</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <input type="text" 
+                               id="searchPromotion" 
+                               placeholder="ស្វែងរក Channel, Campaign..." 
+                               style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; width: 300px; font-family: 'Kantumruy Pro', sans-serif;"
+                               oninput="filterPromotions(this.value)">
+                        
+                        <button class="add-customer-btn" onclick="openPromotionModal()">
+                            <i class="fas fa-plus"></i> បន្ថែមប្រូម៉ូសិន
+                        </button>
+                    </div>
+
+                    <!-- Promotions Grid -->
+                    <div id="promotionsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;"></div>
+
+                    <!-- Empty State -->
+                    <div id="promotionsEmptyState" class="hidden" style="text-align: center; padding: 60px 20px;">
+                        <i class="fas fa-gift" style="font-size: 64px; color: #bdc3c7; margin-bottom: 20px;"></i>
+                        <h3 style="color: #7f8c8d; margin-bottom: 10px;">មិនទាន់មានប្រូម៉ូសិននៅឡើយទេ</h3>
+                        <p style="color: #95a5a6;">សូមចុចប៊ូតុង "បន្ថែមប្រូម៉ូសិន" ដើម្បីបង្កើតប្រូម៉ូសិនថ្មី</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- SETTINGS PAGE -->
             <div id="settings-page" class="hidden">
                 <div class="form-card" id="settingsAdminOnly">
@@ -1103,6 +1146,59 @@
         </div>
     </div>
 
+    <!-- PROMOTION MODAL -->
+    <div id="promotionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-gift"></i> <span id="promotionModalTitle">បន្ថែមប្រូម៉ូសិន</span></h3>
+                <span class="close" onclick="closePromotionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="promotionForm">
+                    <input type="hidden" id="edit_promotion_index">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-tv"></i> Channel</label>
+                            <input type="text" id="promo_channel" placeholder="បញ្ចូល Channel..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-bullhorn"></i> Campaign</label>
+                            <input type="text" id="promo_campaign" placeholder="បញ្ចូលឈ្មោះ Campaign..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃចាប់ផ្ដើម</label>
+                            <input type="date" id="promo_start_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-times"></i> ថ្ងៃបញ្ចប់</label>
+                            <input type="date" id="promo_end_date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group form-group-full">
+                            <label><i class="fas fa-file-alt"></i> លក្ខខណ្ឌ</label>
+                            <textarea id="promo_terms" placeholder="បញ្ចូលលក្ខខណ្ឌ..." required style="min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Sync Buttons (Fixed Bottom Right) -->
     <div class="sync-buttons" id="syncButtons" style="display: none;">
         <button class="sync-btn sync-btn-upload" onclick="syncToGoogleSheets()" title="Upload to Google Sheets">
@@ -1122,17 +1218,18 @@
     <!-- Main App Script -->
     <script src="app.js"></script>
     
-    <!-- Google Sheets Sync Script - COMPLETE WORKING VERSION -->
+    <!-- Google Sheets Sync Script - COMPLETE WORKING VERSION WITH NEW URL -->
     <script>
 // ===================== GOOGLE SHEETS SYNC - WORKING VERSION =====================
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxhuKU_dnoxItDhGrjQwDD-mIflObDnQ4pqtdtHhZaH4-ZTPSgJlTHaebCfkLjFXfL/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyife3a_9tnA4VLy6dYSN1NmtAp4mVcfhAt0NBKHB6l75MG3UO1ZzQtSd4mVU0foR9I/exec';
 
 const SHEETS = {
     USERS: 'Users',
     SALES: 'Sales',
     DEPOSITS: 'Deposits',
     CUSTOMERS: 'Customers',
-    TOPUP: 'TopUp'
+    TOPUP: 'TopUp',
+    PROMOTIONS: 'Promotions'
 };
 
 let isSyncing = false;
@@ -1157,7 +1254,8 @@ async function syncToGoogleSheets() {
             syncSheetData(SHEETS.SALES, salesData),
             syncSheetData(SHEETS.DEPOSITS, depositData),
             syncSheetData(SHEETS.CUSTOMERS, customersData),
-            syncSheetData(SHEETS.TOPUP, topupData)
+            syncSheetData(SHEETS.TOPUP, topupData),
+            syncSheetData(SHEETS.PROMOTIONS, promotionsData)
         ]);
         
         console.log('Sync results:', results);
@@ -1245,7 +1343,8 @@ async function loadFromGoogleSheets() {
             loadSheetData(SHEETS.SALES),
             loadSheetData(SHEETS.DEPOSITS),
             loadSheetData(SHEETS.CUSTOMERS),
-            loadSheetData(SHEETS.TOPUP)
+            loadSheetData(SHEETS.TOPUP),
+            loadSheetData(SHEETS.PROMOTIONS)
         ]);
         
         usersData = results[0];
@@ -1253,13 +1352,15 @@ async function loadFromGoogleSheets() {
         depositData = results[2];
         customersData = results[3];
         topupData = results[4];
+        promotionsData = results[5];
         
         console.log('Loaded data:', {
             users: usersData.length,
             sales: salesData.length,
             deposits: depositData.length,
             customers: customersData.length,
-            topup: topupData.length
+            topup: topupData.length,
+            promotions: promotionsData.length
         });
         
         localStorage.setItem('usersData', JSON.stringify(usersData));
@@ -1267,12 +1368,14 @@ async function loadFromGoogleSheets() {
         localStorage.setItem('depositData', JSON.stringify(depositData));
         localStorage.setItem('customersData', JSON.stringify(customersData));
         localStorage.setItem('topupData', JSON.stringify(topupData));
+        localStorage.setItem('promotionsData', JSON.stringify(promotionsData));
         
         refreshUsersTable();
         refreshSalesTable();
         refreshDepositTable();
         refreshCustomersTable();
         refreshTopUpTable();
+        refreshPromotionsGrid();
         populateBranchFilter();
         
         lastSyncTime = new Date();
@@ -1407,7 +1510,7 @@ async function testSyncConnection() {
     console.log('URL:', GOOGLE_APPS_SCRIPT_URL);
     
     try {
-        const url = `${GOOGLE_APPS_SCRIPT_URL}?action=GET_ALL&sheet=Users&t=${new Date().getTime()}`;
+        const url = `${GOOGLE_APPS_SCRIPT_URL}?action=TEST&t=${new Date().getTime()}`;
         console.log('Test URL:', url);
         
         const response = await fetch(url);
@@ -1421,7 +1524,7 @@ async function testSyncConnection() {
         
         if (result.success) {
             console.log('✅ CONNECTION TEST SUCCESSFUL!');
-            console.log('Data records:', result.data ? result.data.length : 0);
+            console.log('Timestamp:', result.timestamp);
             alert('✅ Connection successful!\nCheck console for details.');
         } else {
             console.error('❌ Test failed:', result.message);
