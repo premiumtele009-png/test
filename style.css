@@ -452,6 +452,8 @@ body {
 .input-wrapper {
     position: relative;
     width: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .input-icon {
@@ -460,14 +462,20 @@ body {
     top: 50%;
     transform: translateY(-50%);
     color: #28a745;
-    font-size: 18px;
-    z-index: 2;
+    font-size: 19px;
+    z-index: 5;
     pointer-events: none;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .form-group input {
     width: 100%;
-    padding: 16px 55px 16px 54px;
+    padding: 16px 20px;
+    padding-left: 52px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 15px;
@@ -476,6 +484,7 @@ body {
     background-color: #f8fafc;
     color: #1a202c;
     font-weight: 500;
+    box-sizing: border-box;
 }
 
 .form-group input::placeholder {
@@ -489,6 +498,33 @@ body {
     border-color: #28a745;
     background-color: white;
     box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.08);
+}
+
+/* Password field specific - add right padding for toggle icon */
+#loginPassword {
+    padding-right: 52px;
+}
+
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #a0aec0;
+    transition: color 0.3s ease;
+    font-size: 19px;
+    z-index: 5;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: #28a745;
 }
 
 .form-options {
@@ -749,23 +785,6 @@ body {
     font-weight: 600;
     line-height: 1.5;
     font-family: 'Kantumruy Pro', sans-serif;
-}
-
-/* Password Toggle */
-.password-toggle {
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #a0aec0;
-    transition: color 0.3s ease;
-    font-size: 18px;
-    z-index: 2;
-}
-
-.password-toggle:hover {
-    color: #28a745;
 }
 
 /* Loading Spinner */
@@ -1860,6 +1879,11 @@ tfoot td {
     }
 
     .form-group input {
-        padding: 14px 50px 14px 50px;
+        padding: 14px 20px;
+        padding-left: 50px;
+    }
+    
+    #loginPassword {
+        padding-right: 50px;
     }
 }
