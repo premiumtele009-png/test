@@ -1,7 +1,7 @@
 // ===================== GLOBAL VARIABLES =====================
 let currentUser = null;
 let usersData = [
-    {username: 'admin', password: 'admin@2026', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
+    {username: 'admin', password: 'admin123', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
 ];
 let salesData = [], depositData = [], customersData = [], topupData = [];
 let salesChart = null, reportsChart = null, reportsGrowthChart = null, editingSalesIndex = null, editingDepositIndex = null;
@@ -66,11 +66,19 @@ function loadDataFromStorage() {
     refreshUsersTable();
 }
 
-// ===================== PAGE LOAD & LOGIN =====================
+// ===================== PAGE LOAD & NEW LOGIN SYSTEM =====================
 window.addEventListener('load', function() {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (!isLoggedIn) {
         document.getElementById('loginOverlay').classList.add('show');
+        
+        // Check if user should be remembered
+        const rememberMe = localStorage.getItem('rememberMe');
+        const savedUsername = localStorage.getItem('username');
+        if (rememberMe === 'true' && savedUsername) {
+            document.getElementById('username').value = savedUsername;
+            document.getElementById('rememberMe').checked = true;
+        }
     } else {
         const userData = JSON.parse(sessionStorage.getItem('userData'));
         currentUser = userData;
@@ -97,57 +105,118 @@ window.addEventListener('load', function() {
     }
 });
 
+// ===================== NEW LOGIN FORM HANDLER =====================
 document.getElementById('loginFormPopup').addEventListener('submit', function(e) {
     e.preventDefault();
-    document.getElementById('loginError').classList.remove('show');
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-    const loginBtn = document.getElementById('loginSubmitBtn');
+    
+    // Hide error and success messages
+    document.getElementById('errorMessage').classList.remove('show');
+    document.getElementById('successMessageLogin').classList.remove('show');
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    
+    const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
+    
+    // Simulate login delay (replace with actual API call)
     setTimeout(function() {
         const user = usersData.find(u => u.username === username && u.password === password && u.status === 'active');
+        
         if (user) {
+            // Success
             currentUser = user;
+            
+            // Show success message
+            document.getElementById('successMessageLogin').classList.add('show');
+            
+            // Store login state
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userData', JSON.stringify(user));
-            document.getElementById('loginOverlay').classList.remove('show');
-            document.getElementById('systemContent').classList.add('show');
-            document.getElementById('loggedInUser').textContent = user.fullname;
-            let roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'supervisor' ? 'Supervisor' : 'Agent';
-            document.getElementById('userRole').textContent = roleDisplay;
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('date').value = today;
-            document.getElementById('deposit_date').value = today;
-            if (user.username !== 'admin') {
-                document.getElementById('staff_name').value = user.fullname;
-                document.getElementById('deposit_staff').value = user.fullname;
+            
+            // Remember me functionality
+            if (rememberMe) {
+                localStorage.setItem('rememberMe', 'true');
+                localStorage.setItem('username', username);
+            } else {
+                localStorage.removeItem('rememberMe');
+                localStorage.removeItem('username');
             }
-            document.getElementById('branch_name').value = user.branch;
-            loadDataFromStorage();
-            checkUserPermissions();
             
-            // Show sync buttons
-            document.getElementById('syncButtons').style.display = 'flex';
-            document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
-            
-            showPage('dashboard');
+            // Redirect to system after 1.5 seconds
+            setTimeout(function() {
+                document.getElementById('loginOverlay').classList.remove('show');
+                document.getElementById('systemContent').classList.add('show');
+                document.getElementById('loggedInUser').textContent = user.fullname;
+                let roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'supervisor' ? 'Supervisor' : 'Agent';
+                document.getElementById('userRole').textContent = roleDisplay;
+                
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+                document.getElementById('deposit_date').value = today;
+                
+                if (user.username !== 'admin') {
+                    document.getElementById('staff_name').value = user.fullname;
+                    document.getElementById('deposit_staff').value = user.fullname;
+                }
+                
+                document.getElementById('branch_name').value = user.branch;
+                loadDataFromStorage();
+                checkUserPermissions();
+                
+                // Show sync buttons
+                document.getElementById('syncButtons').style.display = 'flex';
+                document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+                
+                showPage('dashboard');
+                
+                // Reset form
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }, 1500);
         } else {
-            document.getElementById('loginError').classList.add('show');
+            // Error
+            loginBtn.classList.remove('loading');
+            loginBtn.disabled = false;
+            document.getElementById('errorMessage').classList.add('show');
+            
+            // Shake the inputs
+            document.getElementById('username').style.animation = 'shake 0.5s';
+            document.getElementById('password').style.animation = 'shake 0.5s';
+            
+            setTimeout(function() {
+                document.getElementById('username').style.animation = '';
+                document.getElementById('password').style.animation = '';
+            }, 500);
         }
-        loginBtn.classList.remove('loading');
-        loginBtn.disabled = false;
-    }, 1000);
+    }, 1500);
 });
 
-document.getElementById('loginTogglePassword').addEventListener('click', function() {
-    const passwordInput = document.getElementById('loginPassword');
+// ===================== PASSWORD TOGGLE =====================
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordInput.setAttribute('type', type);
+    
     this.classList.toggle('fa-eye');
     this.classList.toggle('fa-eye-slash');
 });
 
+// ===================== FORGOT PASSWORD LINK =====================
+document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('មុខងារស្តារពាក្យសម្ងាត់នឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
+});
+
+// ===================== SIGN UP LINK =====================
+document.getElementById('signupLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('មុខងារចុះឈ្មោះនឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
+});
+
+// ===================== LOGOUT =====================
 function logout() {
     if (confirm('តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?')) {
         sessionStorage.clear();
@@ -155,7 +224,8 @@ function logout() {
         document.getElementById('systemContent').classList.remove('show');
         document.getElementById('loginOverlay').classList.add('show');
         document.getElementById('loginFormPopup').reset();
-        document.getElementById('loginError').classList.remove('show');
+        document.getElementById('errorMessage').classList.remove('show');
+        document.getElementById('successMessageLogin').classList.remove('show');
         document.getElementById('syncButtons').style.display = 'none';
     }
 }
@@ -408,7 +478,7 @@ function generateLeaderboard() {
         `;
     });
     if (!leaderboardData.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្ចូលទិន្នន័យការលក់ជាមុនសិន</small></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្ចូលទិន្នន័យការល��់ជាមុនសិន</small></td></tr>';
     }
 }
 
@@ -1004,7 +1074,7 @@ function refreshCustomersTable() {
             <td><span class="status-badge ${sc[d.status]}">${d.status}</span></td><td>${d.remark}</td>
             <td class="actions">
                 <button class="edit-btn" onclick="editCustomerRow(${idx})" ${!ce ? 'disabled' : ''} title="${ce ? 'Edit' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ'}"><i class="fas fa-edit"></i></button>
-                <button class="delete-btn" onclick="deleteCustomerRow(${idx})" ${!ce ? 'disabled' : ''} title="${ce ? 'Delete' : 'អ្នកមិនអាចលុបទិន្ន���័យនេះបានទេ'}"><i class="fas fa-trash"></i></button>
+                <button class="delete-btn" onclick="deleteCustomerRow(${idx})" ${!ce ? 'disabled' : ''} title="${ce ? 'Delete' : 'អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ'}"><i class="fas fa-trash"></i></button>
             </td>
         `;
     });
@@ -1324,7 +1394,7 @@ function deleteUserRow(i) {
         return;
     }
     
-    if (confirm(`តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ "${u.fullname}" មែនទេ?`)) {
+    if (confirm(`តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ "${u.fullname}" មែនទេ?`)){
         usersData.splice(i, 1);
         saveDataToStorage();
         refreshUsersTable();
