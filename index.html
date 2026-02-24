@@ -37,7 +37,7 @@
                     </svg>
                 </div>
                 <h1>ប្រព័ន្ធគ្រប់គ្រងការលក់</h1>
-                <p>ប្រព័ន្ធគ្រប់គ្រងគ្រប់គ្រងការលក់ ទំនើប និង សុវត្ថិភាព</p>
+                <p>ប្រព័ន្ធគ្រប់គ្រងការលក់ ទំនើប និង សុវត្ថិភាព</p>
                 <div class="features">
                     <div class="feature-item">
                         <svg viewBox="0 0 24 24">
@@ -140,7 +140,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert-message">
-                        ⚠️ សូមកំណត់ឈ្មោះនិងលេខកូដសម្ងាត់របស់​អ្នក រួចរក្សាទុកអោយបានត្រឹមត្រូវ!
+                        ⚠️ សូមកំណត់ឈ្មោះនិងលេខកូដសម្ងាត់របស់​អ្នក រួចរក្សាទុកអោយបានត្���ឹមត្រូវ!
                     </div>
                     
                     <div class="example-box">
@@ -243,7 +243,7 @@
                 <div class="filter-card">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-filter" style="color: #28a745; font-size: 20px;"></i>
-                        <h3 style="font-size: 16px; color: #333; font-weight: 600; margin: 0;">តម្រងទិន្��ន័យ</h3>
+                        <h3 style="font-size: 16px; color: #333; font-weight: 600; margin: 0;">តម្រងទិន្នន័យ</h3>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="filter-btn active" onclick="filterDashboard('today')" id="filter-today">
@@ -863,14 +863,14 @@
 
                     <div class="info-message">
                         <i class="fas fa-info-circle"></i>
-                        <p>គ��រប់គ្រង និង តាមដានប្រូម៉ូសិនទាំងអស់របស់អ្នក</p>
+                        <p>គ្រប់គ្រង និង តាមដានប្រូម៉ូសិនទាំងអស់របស់អ្នក</p>
                     </div>
 
                     <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <input type="text" 
                                id="searchPromotion" 
                                placeholder="ស្វែងរក Channel, Campaign..." 
-                               style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; width: 300px; font-family: 'Kantumruy Pro', sans-serif;"
+                               style="padding: 12px 18px; border: 2px solid #e1e8ed; border-radius: 10px; width: 300px; font-family: 'Kantumruy Pro', sans-serif; font-size: 14px; transition: all 0.3s ease;"
                                oninput="filterPromotions(this.value)">
                         
                         <button class="add-customer-btn" onclick="openPromotionModal()">
@@ -958,17 +958,17 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> Username</label>
-                            <input type="text" id="user_username" required>
+                            <input type="text" id="user_username" placeholder="បញ្ចូល username..." required>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-id-card"></i> Full Name</label>
-                            <input type="text" id="user_fullname" required>
+                            <input type="text" id="user_fullname" placeholder="បញ្ចូលឈ្មោះពេញ..." required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-lock"></i> Password</label>
-                            <input type="password" id="user_password" required>
+                            <input type="password" id="user_password" placeholder="បញ្ចូលពាក្យសម្ងាត់..." required>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-user-tag"></i> Role</label>
@@ -983,7 +983,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-building"></i> Branch</label>
-                            <input type="text" id="user_branch" required>
+                            <input type="text" id="user_branch" placeholder="បញ្ចូលសាខា..." required>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-toggle-on"></i> Status</label>
@@ -1029,11 +1029,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label>
-                            <input type="text" id="cust_name" required>
+                            <input type="text" id="cust_name" placeholder="បញ្ចូលឈ្មោះអតិថិជន..." required>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label>
-                            <input type="tel" id="cust_phone" required>
+                            <input type="tel" id="cust_phone" placeholder="បញ្ចូលលេខទូរសព្ទ..." required>
                         </div>
                     </div>
                     <div class="form-row">
@@ -1062,7 +1062,7 @@
                     <div class="form-row">
                         <div class="form-group form-group-full">
                             <label><i class="fas fa-comment"></i> Remark</label>
-                            <textarea id="cust_remark"></textarea>
+                            <textarea id="cust_remark" placeholder="បញ្ចូលកំណត់ចំណាំ..."></textarea>
                         </div>
                     </div>
                     <div class="form-row">
@@ -1099,17 +1099,17 @@
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label>
-                            <input type="text" id="topup_customer" required>
+                            <input type="text" id="topup_customer" placeholder="បញ្ចូលឈ្មោះអតិថិជន..." required>
                         </div>
                     </div>
                     <div class="form-row-3">
                         <div class="form-group">
                             <label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label>
-                            <input type="tel" id="topup_phone" required>
+                            <input type="tel" id="topup_phone" placeholder="បញ្ចូលលេខទូរសព្ទ..." required>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-phone-alt"></i> លេខទាក់ទង</label>
-                            <input type="tel" id="topup_contact">
+                            <input type="tel" id="topup_contact" placeholder="លេខទាក់ទង (ជាជម្រើស)...">
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-box"></i> ផលិតផល</label>
@@ -1130,7 +1130,7 @@
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-comment"></i> Remark</label>
-                            <textarea id="topup_remark"></textarea>
+                            <textarea id="topup_remark" placeholder="បញ្ចូលកំណត់ចំណាំ..."></textarea>
                         </div>
                     </div>
                     <div class="form-row">
