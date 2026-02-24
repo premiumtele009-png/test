@@ -43,7 +43,9 @@ function saveDataToStorage() {
     localStorage.setItem('topupData', JSON.stringify(topupData));
     
     // Auto sync to Google Sheets
-    autoSyncAfterSave();
+    if (typeof autoSyncAfterSave === 'function') {
+        autoSyncAfterSave();
+    }
 }
 
 function loadDataFromStorage() {
@@ -91,100 +93,58 @@ window.addEventListener('load', function() {
         
         // Show sync buttons
         document.getElementById('syncButtons').style.display = 'flex';
-        document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+        if (typeof getLastSyncTime === 'function') {
+            document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+        }
         
         showPage('dashboard');
     }
 });
 
-// ===================== NEW LOGIN FORM HANDLER =====================
+// ===================== LOGIN FORM HANDLER =====================
 document.getElementById('loginFormPopup').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    // Hide error and success messages
     document.getElementById('errorMessage').classList.remove('show');
-    document.getElementById('successMessageLogin').classList.remove('show');
-    
-    // Get form values with CORRECT IDs
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
-    const rememberMe = document.getElementById('loginRememberMe').checked;
-    
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
-    
-    // Simulate login delay
     setTimeout(function() {
         const user = usersData.find(u => u.username === username && u.password === password && u.status === 'active');
-        
         if (user) {
-            // Success
             currentUser = user;
-            
-            // Show success message
-            document.getElementById('successMessageLogin').classList.add('show');
-            
-            // Store login state
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userData', JSON.stringify(user));
+            document.getElementById('loginOverlay').classList.remove('show');
+            document.getElementById('systemContent').classList.add('show');
+            document.getElementById('loggedInUser').textContent = user.fullname;
+            let roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'supervisor' ? 'Supervisor' : 'Agent';
+            document.getElementById('userRole').textContent = roleDisplay;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('deposit_date').value = today;
+            if (user.username !== 'admin') {
+                document.getElementById('staff_name').value = user.fullname;
+                document.getElementById('deposit_staff').value = user.fullname;
+            }
+            document.getElementById('branch_name').value = user.branch;
+            loadDataFromStorage();
+            checkUserPermissions();
             
-            // Remember me functionality
-            if (rememberMe) {
-                localStorage.setItem('rememberMe', 'true');
-                localStorage.setItem('username', username);
-            } else {
-                localStorage.removeItem('rememberMe');
-                localStorage.removeItem('username');
+            // Show sync buttons
+            document.getElementById('syncButtons').style.display = 'flex';
+            if (typeof getLastSyncTime === 'function') {
+                document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
             }
             
-            // Redirect to system after 1.5 seconds
-            setTimeout(function() {
-                document.getElementById('loginOverlay').classList.remove('show');
-                document.getElementById('systemContent').classList.add('show');
-                document.getElementById('loggedInUser').textContent = user.fullname;
-                let roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'supervisor' ? 'Supervisor' : 'Agent';
-                document.getElementById('userRole').textContent = roleDisplay;
-                
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('date').value = today;
-                document.getElementById('deposit_date').value = today;
-                
-                if (user.username !== 'admin') {
-                    document.getElementById('staff_name').value = user.fullname;
-                    document.getElementById('deposit_staff').value = user.fullname;
-                }
-                
-                document.getElementById('branch_name').value = user.branch;
-                loadDataFromStorage();
-                checkUserPermissions();
-                
-                // Show sync buttons
-                document.getElementById('syncButtons').style.display = 'flex';
-                document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
-                
-                showPage('dashboard');
-                
-                // Reset form
-                loginBtn.classList.remove('loading');
-                loginBtn.disabled = false;
-            }, 1500);
+            showPage('dashboard');
         } else {
-            // Error
-            loginBtn.classList.remove('loading');
-            loginBtn.disabled = false;
             document.getElementById('errorMessage').classList.add('show');
-            
-            // Shake the inputs
-            document.getElementById('loginUsername').style.animation = 'shake 0.5s';
-            document.getElementById('loginPassword').style.animation = 'shake 0.5s';
-            
-            setTimeout(function() {
-                document.getElementById('loginUsername').style.animation = '';
-                document.getElementById('loginPassword').style.animation = '';
-            }, 500);
         }
-    }, 1500);
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
+    }, 1000);
 });
 
 // ===================== PASSWORD TOGGLE =====================
@@ -192,33 +152,11 @@ document.getElementById('loginTogglePassword').addEventListener('click', functio
     const passwordInput = document.getElementById('loginPassword');
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordInput.setAttribute('type', type);
-    
     this.classList.toggle('fa-eye');
     this.classList.toggle('fa-eye-slash');
 });
 
-// ===================== FORGOT PASSWORD & SIGNUP =====================
-document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    alert('មុខងារស្តារពាក្យសម្ងាត់នឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
-});
-
-document.getElementById('signupLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    alert('មុខងារចុះឈ្មោះនឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
-});
-
-// ===================== CHECK REMEMBER ME ON LOAD =====================
-window.addEventListener('load', function() {
-    const rememberMe = localStorage.getItem('rememberMe');
-    const savedUsername = localStorage.getItem('username');
-    
-    if (rememberMe === 'true' && savedUsername) {
-        document.getElementById('loginUsername').value = savedUsername;
-        document.getElementById('loginRememberMe').checked = true;
-    }
-});
-
+// ===================== LOGOUT =====================
 function logout() {
     if (confirm('តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?')) {
         sessionStorage.clear();
@@ -227,11 +165,11 @@ function logout() {
         document.getElementById('loginOverlay').classList.add('show');
         document.getElementById('loginFormPopup').reset();
         document.getElementById('errorMessage').classList.remove('show');
-        document.getElementById('successMessageLogin').classList.remove('show');
         document.getElementById('syncButtons').style.display = 'none';
     }
 }
 
+// ===================== PAGE NAVIGATION =====================
 function showPage(page) {
     document.querySelectorAll('.main-content > .container > div').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
@@ -250,26 +188,20 @@ function showPage(page) {
     }
 }
 
+// ===================== USER PERMISSIONS =====================
 function checkUserPermissions() {
-    // Only Admin can see Settings menu
     const settingsMenu = document.getElementById('menu-settings');
     const addUserBtn = document.querySelector('.add-user-btn');
     
     if (currentUser.role === 'admin') {
-        // Show settings menu for admin
         settingsMenu.style.display = 'block';
         document.getElementById('settingsAdminOnly').style.display = 'block';
         document.getElementById('settingsAgentMessage').classList.add('hidden');
-        
-        // Show "Add User" button for admin
         if (addUserBtn) addUserBtn.style.display = 'flex';
     } else {
-        // Hide settings menu completely for non-admin
         settingsMenu.style.display = 'none';
         document.getElementById('settingsAdminOnly').style.display = 'none';
         document.getElementById('settingsAgentMessage').classList.remove('hidden');
-        
-        // Hide "Add User" button for non-admin
         if (addUserBtn) addUserBtn.style.display = 'none';
     }
 }
@@ -480,7 +412,7 @@ function generateLeaderboard() {
         `;
     });
     if (!leaderboardData.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្ចូលទិន្នន័យការលក់ជាមុនសិន</small></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្���ូលទិន្នន័យការលក់ជាមុនសិន</small></td></tr>';
     }
 }
 
@@ -1050,7 +982,7 @@ document.getElementById('customerForm').addEventListener('submit', function(e) {
         showSuccessPopup('បានកែប្រែអតិថិជនដោយជោគជ័យ!');
     } else {
         customersData.push(fd);
-        showSuccessPopup('អតិថិជនត្រូវបានបន្ថែមដោយជោគជ័យ!');
+        showSuccessPopup('អតិថិជនត្រូ���បានបន្ថែមដោយជោគជ័យ!');
     }
     saveDataToStorage();
     refreshCustomersTable();
@@ -1230,7 +1162,7 @@ function checkExpiringCustomers() {
                 <td>${d.date}</td><td>${d.staff}</td><td>${d.branch}</td><td>${d.customer}</td><td>${d.phone}</td><td>${d.contact}</td>
                 <td>${d.product}</td><td>${d.expiry}</td><td>${d.status}</td><td>${d.remark}</td>
                 <td class="actions">
-                    <button class="edit-btn" onclick="editTopUpRow(${d.originalIndex})" ${!ce ? 'disabled' : ''} title="${ce ? 'Edit' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ'}"><i class="fas fa-edit"></i></button>
+                    <button class="edit-btn" onclick="editTopUpRow(${d.originalIndex})" ${!ce ? 'disabled' : ''} title="${ce ? 'Edit' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេ���បានទេ'}"><i class="fas fa-edit"></i></button>
                     <button class="delete-btn" onclick="deleteTopUpRow(${d.originalIndex})" ${!ce ? 'disabled' : ''} title="${ce ? 'Delete' : 'អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ'}"><i class="fas fa-trash"></i></button>
                 </td>
             `;
@@ -1246,7 +1178,6 @@ function checkExpiringCustomers() {
 
 // ===================== USERS MANAGEMENT - ADMIN ONLY =====================
 function openUserModal() {
-    // Only admin can add users
     if (currentUser.role !== 'admin') {
         showSuccessPopup('អ្នកមិនមានសិទ្ធិបន្ថែមអ្នកប្រើប្រាស់ទេ!');
         return;
@@ -1258,7 +1189,6 @@ function openUserModal() {
     document.getElementById('user_password').placeholder = '';
     document.getElementById('userModalTitle').textContent = 'បន្ថែមអ្នកប្រើប្រាស់ថ្មី';
     
-    // Enable all fields for new user
     document.getElementById('user_username').disabled = false;
     document.getElementById('user_role').disabled = false;
     document.getElementById('user_branch').disabled = false;
@@ -1273,7 +1203,6 @@ function closeUserModal() {
 document.getElementById('userForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Only admin can create/edit users
     if (currentUser.role !== 'admin') {
         showSuccessPopup('អ្នកមិនមានសិទ្ធិធ្វើប្រតិបត្តិការនេះទេ!');
         return;
@@ -1291,12 +1220,10 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
     };
     
     if (ei !== '') {
-        // Editing existing user
         if (!fd.password) fd.password = usersData[ei].password;
         usersData[ei] = fd;
         showSuccessPopup('បានកែប្រែអ្នកប្រើប្រាស់ដោយជោគជ័យ!');
     } else {
-        // Creating new user
         if (usersData.some(u => u.username === fd.username)) {
             showSuccessPopup('Username នេះមានរួចហើយ! សូមប្រើ Username ផ្សេង។');
             return;
@@ -1320,11 +1247,10 @@ function refreshUsersTable() {
         return;
     }
     
-    // Admin can see ALL users
     usersData.forEach((d, i) => {
         const row = tbody.insertRow();
         const isMainAdmin = (d.username === 'admin' && d.role === 'admin');
-        const canEdit = !isMainAdmin; // Cannot edit main admin
+        const canEdit = !isMainAdmin;
         
         row.innerHTML = `
             <td>${d.username}</td>
@@ -1353,13 +1279,11 @@ function editUserRow(i) {
     
     const d = usersData[i];
     
-    // Cannot edit main admin
     if (d.username === 'admin' && d.role === 'admin') {
         showSuccessPopup('មិនអាចកែប្រែ Admin account មេបានទេ!');
         return;
     }
     
-    // Fill form
     document.getElementById('user_username').value = d.username;
     document.getElementById('user_fullname').value = d.fullname;
     document.getElementById('user_role').value = d.role;
@@ -1371,10 +1295,7 @@ function editUserRow(i) {
     document.getElementById('edit_user_index').value = i;
     document.getElementById('userModalTitle').textContent = 'កែប្រែអ្នកប្រើប្រាស់';
     
-    // Disable username (cannot change username)
     document.getElementById('user_username').disabled = true;
-    
-    // Admin can edit role, branch, and status for Agent/Supervisor
     document.getElementById('user_role').disabled = false;
     document.getElementById('user_branch').disabled = false;
     document.getElementById('user_status').disabled = false;
@@ -1390,7 +1311,6 @@ function deleteUserRow(i) {
     
     const u = usersData[i];
     
-    // Cannot delete main admin
     if (u.username === 'admin' && u.role === 'admin') {
         showSuccessPopup('មិនអាចលុប Admin account មេបានទេ!');
         return;
@@ -1405,7 +1325,54 @@ function deleteUserRow(i) {
     }
 }
 
-// ===================== MODAL CLICK OUTSIDE =====================
-window.onclick = function(e) {
-    if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+// ===================== SIGNUP MODAL FUNCTIONS =====================
+function openSignupModal() {
+    document.getElementById('signupModal').style.display = 'block';
 }
+
+function closeSignupModal() {
+    document.getElementById('signupModal').style.display = 'none';
+}
+
+function sendToTelegram() {
+    window.open('https://t.me/saray2026123', '_blank');
+}
+
+// ===================== SOCIAL LOGIN FUNCTIONS =====================
+function loginWithGoogle() {
+    alert('Google Login នឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
+}
+
+function loginWithFacebook() {
+    alert('Facebook Login នឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
+}
+
+// ===================== EVENT LISTENERS =====================
+document.getElementById('signupLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    openSignupModal();
+});
+
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('signupModal');
+    if (event.target == modal) {
+        closeSignupModal();
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeSignupModal();
+    }
+});
+
+window.onclick = function(e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+    }
+}
+
+// ===================== END OF APP.JS =====================
+console.log('✅ App.js loaded successfully');
+console.log('📱 Sales Management System V17.0');
+console.log('🚀 Ready to use!');
