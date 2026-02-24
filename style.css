@@ -1856,6 +1856,182 @@ tfoot td {
     background-color: #ffebee;
 }
 
+/* ===================== PROMOTIONS STYLES ===================== */
+.promotion-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 4px solid #28a745;
+}
+
+.promotion-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.promotion-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.promotion-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: 700;
+    padding-right: 100px;
+}
+
+.promotion-info {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 14px;
+}
+
+.promotion-info strong {
+    color: #2c3e50;
+    display: inline-block;
+    width: 120px;
+    font-weight: 600;
+}
+
+.promotion-terms {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.promotion-terms strong {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.promotion-terms-content {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 8px;
+    max-height: 60px;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.3s ease;
+}
+
+.promotion-terms-content.expanded {
+    max-height: none;
+}
+
+.promotion-terms-content.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, white);
+}
+
+.btn-view-more {
+    background: none;
+    border: none;
+    color: #28a745;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 5px 0;
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Kantumruy Pro', sans-serif;
+    transition: color 0.2s ease;
+}
+
+.btn-view-more:hover {
+    color: #218838;
+    text-decoration: underline;
+}
+
+.btn-view-more i {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.btn-view-more.expanded i {
+    transform: rotate(180deg);
+}
+
+.promotion-actions {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-edit-promo,
+.btn-delete-promo {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-family: 'Kantumruy Pro', sans-serif;
+}
+
+.btn-edit-promo {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    color: #000;
+}
+
+.btn-edit-promo:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e0a800 0%, #e09f00 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+}
+
+.btn-delete-promo {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.btn-delete-promo:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.btn-edit-promo:disabled,
+.btn-delete-promo:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.promotion-created-info {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+}
+
 /* ===================== MODAL (User/Customer/TopUp) ===================== */
 .modal-header.topup-header {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
@@ -1899,10 +2075,6 @@ tfoot td {
 @media (max-width: 768px) {
     .social-login {
         flex-direction: column;
-    }
-
-    .login-form-container {
-        padding: 40px 30px;
     }
 
     .form-row, .form-row-3, .form-row-4 {
@@ -1959,7 +2131,6 @@ tfoot td {
         justify-content: center;
     }
     
-    /* Sync Buttons Mobile */
     .sync-buttons {
         bottom: 20px;
         right: 20px;
@@ -2009,28 +2180,6 @@ tfoot td {
     .example-label {
         min-width: auto;
     }
-    
-    .login-form-container {
-        padding: 30px 24px;
-    }
-
-    .login-header h2 {
-        font-size: 26px;
-    }
-
-    .brand-title {
-        font-size: 28px;
-    }
-
-    .form-group input {
-        padding: 14px 20px;
-        padding-left: 50px;
-    }
-}
-
-/* ===================== ADDITIONAL FIXES ===================== */
-.modal {
-    overflow-y: auto;
 }
 
 @media (max-width: 360px) {
@@ -2106,28 +2255,6 @@ tfoot td {
     background: linear-gradient(135deg, #218838 0%, #1ba87d 100%);
 }
 
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #28a745;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
 tbody tr {
     animation: fadeInRow 0.3s ease;
 }
@@ -2140,18 +2267,6 @@ tbody tr {
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
     }
 }
 
