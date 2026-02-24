@@ -3,11 +3,12 @@ let currentUser = null;
 let usersData = [
     {username: 'admin', password: 'admin@2026', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
 ];
-let salesData = [], depositData = [], customersData = [], topupData = [];
+let salesData = [], depositData = [], customersData = [], topupData = [], promotionsData = [];
 let salesChart = null, reportsChart = null, reportsGrowthChart = null, editingSalesIndex = null, editingDepositIndex = null;
 let dashboardChart1 = null, dashboardChart2 = null, currentDashboardFilter = 'today';
 let currentReportPeriod = 'monthly';
 let reportFilteredData = [];
+let editingPromotionIndex = null;
 
 // ===================== UTILITY FUNCTIONS =====================
 function showSuccessPopup(message) {
@@ -24,7 +25,7 @@ function closeSuccessPopup() {
 // ===================== PERMISSION SYSTEM =====================
 function canEditData(data) {
     if (currentUser.role === 'admin') return true;
-    const dataStaff = data.staff_name || data.staff;
+    const dataStaff = data.staff_name || data.staff || data.created_by;
     const dataBranch = data.branch;
     if (currentUser.role === 'supervisor') {
         return dataBranch === currentUser.branch;
@@ -41,6 +42,7 @@ function saveDataToStorage() {
     localStorage.setItem('depositData', JSON.stringify(depositData));
     localStorage.setItem('customersData', JSON.stringify(customersData));
     localStorage.setItem('topupData', JSON.stringify(topupData));
+    localStorage.setItem('promotionsData', JSON.stringify(promotionsData));
     
     // Auto sync to Google Sheets
     if (typeof autoSyncAfterSave === 'function') {
@@ -54,18 +56,21 @@ function loadDataFromStorage() {
         sales: localStorage.getItem('salesData'),
         deposit: localStorage.getItem('depositData'),
         customers: localStorage.getItem('customersData'),
-        topup: localStorage.getItem('topupData')
+        topup: localStorage.getItem('topupData'),
+        promotions: localStorage.getItem('promotionsData')
     };
     if (saved.users) usersData = JSON.parse(saved.users);
     if (saved.sales) salesData = JSON.parse(saved.sales);
     if (saved.deposit) depositData = JSON.parse(saved.deposit);
     if (saved.customers) customersData = JSON.parse(saved.customers);
     if (saved.topup) topupData = JSON.parse(saved.topup);
+    if (saved.promotions) promotionsData = JSON.parse(saved.promotions);
     refreshSalesTable();
     refreshDepositTable();
     refreshCustomersTable();
     refreshTopUpTable();
     refreshUsersTable();
+    refreshPromotionsGrid();
 }
 
 // ===================== PAGE LOAD & LOGIN =====================
@@ -179,6 +184,7 @@ function showPage(page) {
         'deposit': ['deposit-page', 'menu-deposit', null],
         'reports': ['reports-page', 'menu-reports', () => { setTimeout(initReportsPage, 100); }],
         'customers': ['customers-page', 'menu-customers', checkExpiringCustomers],
+        'promotions': ['promotions-page', 'menu-promotions', () => { refreshPromotionsGrid(); }],
         'settings': ['settings-page', 'menu-settings', null]
     };
     if (pages[page]) {
@@ -412,7 +418,7 @@ function generateLeaderboard() {
         `;
     });
     if (!leaderboardData.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្���ូលទិន្នន័យការលក់ជាមុនសិន</small></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្ចូលទិន្ន័យការលក់ជាមុនសិន</small></td></tr>';
     }
 }
 
@@ -982,7 +988,7 @@ document.getElementById('customerForm').addEventListener('submit', function(e) {
         showSuccessPopup('បានកែប្រែអតិថិជនដោយជោគជ័យ!');
     } else {
         customersData.push(fd);
-        showSuccessPopup('អតិថិជនត្រូ���បានបន្ថែមដោយជោគជ័យ!');
+        showSuccessPopup('អតិថិជនត្រូវបានបន្ថែមដោយជោគជ័យ!');
     }
     saveDataToStorage();
     refreshCustomersTable();
@@ -1162,7 +1168,7 @@ function checkExpiringCustomers() {
                 <td>${d.date}</td><td>${d.staff}</td><td>${d.branch}</td><td>${d.customer}</td><td>${d.phone}</td><td>${d.contact}</td>
                 <td>${d.product}</td><td>${d.expiry}</td><td>${d.status}</td><td>${d.remark}</td>
                 <td class="actions">
-                    <button class="edit-btn" onclick="editTopUpRow(${d.originalIndex})" ${!ce ? 'disabled' : ''} title="${ce ? 'Edit' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេ���បានទេ'}"><i class="fas fa-edit"></i></button>
+                    <button class="edit-btn" onclick="editTopUpRow(${d.originalIndex})" ${!ce ? 'disabled' : ''} title="${ce ? 'Edit' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ'}"><i class="fas fa-edit"></i></button>
                     <button class="delete-btn" onclick="deleteTopUpRow(${d.originalIndex})" ${!ce ? 'disabled' : ''} title="${ce ? 'Delete' : 'អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ'}"><i class="fas fa-trash"></i></button>
                 </td>
             `;
@@ -1321,9 +1327,214 @@ function deleteUserRow(i) {
         saveDataToStorage();
         refreshUsersTable();
         populateBranchFilter();
-        showSuccessPopup('បានលុបអ្នកប្រើប្រាស់ដោយជោគជ័យ!');
+        showSuccessPopup('បានលុបអ្នកប្រើប្រាស់ដោ���ជោគជ័យ!');
     }
 }
+
+// ===================== PROMOTIONS MANAGEMENT =====================
+function generatePromotionId() {
+    return 'PROMO-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
+function getPromotionStatus(endDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+    return end >= today ? 'active' : 'expired';
+}
+
+function openPromotionModal() {
+    document.getElementById('promotionModal').style.display = 'block';
+    document.getElementById('edit_promotion_index').value = '';
+    document.getElementById('promotionModalTitle').textContent = 'បន្ថែមប្រូម៉ូសិន';
+    
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('promo_start_date').value = today;
+    document.getElementById('promo_start_date').setAttribute('min', today);
+    document.getElementById('promo_end_date').setAttribute('min', today);
+}
+
+function closePromotionModal() {
+    document.getElementById('promotionModal').style.display = 'none';
+    document.getElementById('promotionForm').reset();
+    editingPromotionIndex = null;
+}
+
+document.getElementById('promotionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        id: editingPromotionIndex !== null ? promotionsData[editingPromotionIndex].id : generatePromotionId(),
+        channel: document.getElementById('promo_channel').value,
+        campaign: document.getElementById('promo_campaign').value,
+        start_date: document.getElementById('promo_start_date').value,
+        end_date: document.getElementById('promo_end_date').value,
+        terms: document.getElementById('promo_terms').value,
+        status: getPromotionStatus(document.getElementById('promo_end_date').value),
+        created_by: currentUser.fullname,
+        created_date: editingPromotionIndex !== null ? promotionsData[editingPromotionIndex].created_date : new Date().toISOString().split('T')[0],
+        branch: currentUser.branch
+    };
+    
+    if (editingPromotionIndex !== null) {
+        promotionsData[editingPromotionIndex] = formData;
+        showSuccessPopup('ប្រូម៉ូសិនត្រូវបានកែប្រែដោយជោគជ័យ!');
+    } else {
+        promotionsData.push(formData);
+        showSuccessPopup('ប្រូម៉ូសិនត្រូវបានបន្ថែមដោយជោគជ័យ!');
+    }
+    
+    saveDataToStorage();
+    refreshPromotionsGrid();
+    closePromotionModal();
+});
+
+function refreshPromotionsGrid(filteredData = null) {
+    const grid = document.getElementById('promotionsGrid');
+    const emptyState = document.getElementById('promotionsEmptyState');
+    grid.innerHTML = '';
+    
+    let dataToShow = filteredData !== null ? filteredData : promotionsData;
+    
+    if (currentUser.role !== 'admin') {
+        dataToShow = dataToShow.filter(p => p.branch === currentUser.branch);
+    }
+    
+    if (dataToShow.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    grid.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+    
+    dataToShow.forEach((promo, index) => {
+        const originalIndex = promotionsData.indexOf(promo);
+        const canEdit = canEditData(promo);
+        const status = getPromotionStatus(promo.end_date);
+        const statusClass = status === 'active' ? 'status-active' : 'status-expired';
+        const statusText = status === 'active' ? 'សកម្ម' : 'ផុតកំណត់';
+        
+        const card = document.createElement('div');
+        card.className = 'promotion-card';
+        card.innerHTML = `
+            <span class="promotion-status ${statusClass}">${statusText}</span>
+            <h3>${promo.campaign}</h3>
+            <div class="promotion-info">
+                <strong>Channel:</strong> ${promo.channel}
+            </div>
+            <div class="promotion-info">
+                <strong>Campaign:</strong> ${promo.campaign}
+            </div>
+            <div class="promotion-info">
+                <strong>ថ្ងៃចាប់ផ្ដើម:</strong> ${promo.start_date}
+            </div>
+            <div class="promotion-info">
+                <strong>ថ្ងៃបញ្ចប់:</strong> ${promo.end_date}
+            </div>
+            <div class="promotion-terms">
+                <strong>លក្ខខណ្ឌ:</strong>
+                <div class="promotion-terms-content collapsed" id="terms-${originalIndex}">
+                    ${promo.terms}
+                </div>
+                <button class="btn-view-more" onclick="togglePromotionTerms(${originalIndex})">
+                    មើលបន្ថែម <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="promotion-created-info">
+                <span><i class="fas fa-user"></i> ${promo.created_by}</span>
+                <span><i class="fas fa-building"></i> ${promo.branch}</span>
+            </div>
+            <div class="promotion-actions">
+                <button class="btn-edit-promo" onclick="editPromotion(${originalIndex})" ${!canEdit ? 'disabled' : ''} title="${canEdit ? 'កែប្រែ' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ'}">
+                    <i class="fas fa-edit"></i> កែប្រែ
+                </button>
+                <button class="btn-delete-promo" onclick="deletePromotion(${originalIndex})" ${!canEdit ? 'disabled' : ''} title="${canEdit ? 'លុប' : 'អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ'}">
+                    <i class="fas fa-trash"></i> លុប
+                </button>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+
+function togglePromotionTerms(index) {
+    const termsContent = document.getElementById(`terms-${index}`);
+    const button = termsContent.nextElementSibling;
+    const isExpanded = termsContent.classList.contains('expanded');
+    
+    if (isExpanded) {
+        termsContent.classList.remove('expanded');
+        termsContent.classList.add('collapsed');
+        button.innerHTML = 'មើលបន្ថែម <i class="fas fa-chevron-down"></i>';
+        button.classList.remove('expanded');
+    } else {
+        termsContent.classList.remove('collapsed');
+        termsContent.classList.add('expanded');
+        button.innerHTML = 'បង្រួម <i class="fas fa-chevron-down"></i>';
+        button.classList.add('expanded');
+    }
+}
+
+function editPromotion(index) {
+    const promo = promotionsData[index];
+    
+    if (!canEditData(promo)) {
+        showSuccessPopup('អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ!');
+        return;
+    }
+    
+    editingPromotionIndex = index;
+    
+    document.getElementById('promo_channel').value = promo.channel;
+    document.getElementById('promo_campaign').value = promo.campaign;
+    document.getElementById('promo_start_date').value = promo.start_date;
+    document.getElementById('promo_end_date').value = promo.end_date;
+    document.getElementById('promo_terms').value = promo.terms;
+    
+    document.getElementById('edit_promotion_index').value = index;
+    document.getElementById('promotionModalTitle').textContent = 'កែប្រែប្រូម៉ូសិន';
+    document.getElementById('promotionModal').style.display = 'block';
+}
+
+function deletePromotion(index) {
+    const promo = promotionsData[index];
+    
+    if (!canEditData(promo)) {
+        showSuccessPopup('អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ!');
+        return;
+    }
+    
+    if (confirm(`តើអ្នកប្រាកដថាចង់លុបប្រូម៉ូសិន "${promo.campaign}" មែនទេ?`)) {
+        promotionsData.splice(index, 1);
+        saveDataToStorage();
+        refreshPromotionsGrid();
+        showSuccessPopup('បានលុបប្រូម៉ូសិនដោយជោគជ័យ!');
+    }
+}
+
+function filterPromotions(searchTerm) {
+    if (!searchTerm.trim()) {
+        refreshPromotionsGrid();
+        return;
+    }
+    
+    const filtered = promotionsData.filter(promo => {
+        const search = searchTerm.toLowerCase();
+        return promo.channel.toLowerCase().includes(search) ||
+               promo.campaign.toLowerCase().includes(search) ||
+               promo.terms.toLowerCase().includes(search);
+    });
+    
+    refreshPromotionsGrid(filtered);
+}
+
+document.getElementById('promo_start_date').addEventListener('change', function() {
+    document.getElementById('promo_end_date').setAttribute('min', this.value);
+});
 
 // ===================== SIGNUP MODAL FUNCTIONS =====================
 function openSignupModal() {
@@ -1374,5 +1585,6 @@ window.onclick = function(e) {
 
 // ===================== END OF APP.JS =====================
 console.log('✅ App.js loaded successfully');
-console.log('📱 Sales Management System V17.0');
+console.log('📱 Sales Management System V17.0 with Promotions');
+console.log('🔗 Google Sheets: https://script.google.com/macros/s/AKfycbyife3a_9tnA4VLy6dYSN1NmtAp4mVcfhAt0NBKHB6l75MG3UO1ZzQtSd4mVU0foR9I/exec');
 console.log('🚀 Ready to use!');
