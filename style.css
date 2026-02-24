@@ -227,7 +227,6 @@ body {
 
 .login-overlay.show { display: flex; }
 
-/* Animated background shapes */
 .login-overlay::before {
     content: '';
     position: absolute;
@@ -428,10 +427,11 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 10px;
-    color: #333;
+    color: #2c3e50;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 14px;
     font-family: 'Kantumruy Pro', sans-serif;
+    letter-spacing: 0.3px;
 }
 
 .input-wrapper {
@@ -454,34 +454,79 @@ body {
 }
 
 .form-group input[type="text"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
     width: 100%;
-    padding: 16px 50px 16px 55px;
-    border: 2px solid #e8e8e8;
-    border-radius: 12px;
+    padding: 14px 18px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
     font-size: 15px;
-    font-family: 'Kantumruy Pro', Arial, sans-serif;
+    font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif;
     font-weight: 400;
-    transition: all 0.3s ease;
-    background: #fafafa;
-    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f8fafb;
+    color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.form-group input:focus {
+/* Enhanced Professional Input Styling */
+.right-panel .form-group input[type="text"],
+.right-panel .form-group input[type="password"] {
+    padding: 16px 50px 16px 55px;
+    background: #fafafa;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: #b8c5d0;
+    background: #ffffff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
     outline: none;
-    border-color: #34a853;
+    border-color: #28a745;
     background: white;
-    box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.1);
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.08), 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 
 .form-group input:focus ~ .input-icon {
     fill: #2d8659;
 }
 
-.form-group input::placeholder {
-    font-family: 'Kantumruy Pro', Arial, sans-serif;
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #a0aec0;
     font-weight: 400;
-    color: #999;
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 45px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+    font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif;
+}
+
+/* Input with icons (for login page) */
+.input-wrapper input {
+    padding-left: 55px;
 }
 
 .toggle-password {
@@ -1182,27 +1227,28 @@ body {
 /* ===================== REPORT FILTER INPUT ===================== */
 .report-filter-input {
     padding: 10px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
     font-size: 14px;
     font-family: 'Kantumruy Pro', sans-serif;
     transition: all 0.3s ease;
-    background: white;
+    background: #f8fafb;
 }
 
 .report-filter-input:focus {
     outline: none;
     border-color: #28a745;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.08);
 }
 
 select.report-filter-input {
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 35px;
+    background-position: right 14px center;
+    padding-right: 45px;
 }
 
 /* ===================== BRANCH LEGEND ===================== */
@@ -1494,43 +1540,10 @@ select.report-filter-input {
     grid-column: 1 / -1;
 }
 
-.form-group label {
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: #495057;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-}
-
 .form-group label i {
     margin-right: 6px;
     color: #28a745;
     font-size: 13px;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 8px 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    font-family: 'Kantumruy', sans-serif;
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 70px;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #28a745;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.12);
 }
 
 .form-group.highlight input {
@@ -1571,10 +1584,10 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .submit-btn {
-    padding: 9px 16px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 7px;
-    font-size: 14px;
+    border-radius: 10px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1582,16 +1595,16 @@ input[type="number"]::-webkit-inner-spin-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 8px;
     width: 100%;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
-    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.25);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.25);
 }
 
 .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 16px rgba(40, 167, 69, 0.35);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35);
 }
 
 /* ===================== TABLE CARD ===================== */
@@ -1628,16 +1641,16 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .add-customer-btn, .add-user-btn, .topup-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.25);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.25);
     font-family: 'Kantumruy Pro', sans-serif;
     display: flex;
     align-items: center;
@@ -1646,17 +1659,17 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .add-customer-btn:hover, .add-user-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 16px rgba(40, 167, 69, 0.35);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35);
 }
 
 .topup-btn {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    box-shadow: 0 3px 12px rgba(0, 123, 255, 0.25);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.25);
 }
 
 .topup-btn:hover {
     background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-    box-shadow: 0 5px 16px rgba(0, 123, 255, 0.35);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.35);
 }
 
 /* ===================== DATA TABLE ===================== */
@@ -2030,6 +2043,24 @@ tfoot td {
     color: #999;
     display: flex;
     justify-content: space-between;
+}
+
+.view-only-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Kantumruy Pro', sans-serif;
+}
+
+.view-only-badge i {
+    font-size: 14px;
 }
 
 /* ===================== MODAL (User/Customer/TopUp) ===================== */
