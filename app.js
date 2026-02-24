@@ -1,7 +1,7 @@
 // ===================== GLOBAL VARIABLES =====================
 let currentUser = null;
 let usersData = [
-    {username: 'admin', password: 'admin123', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
+    {username: 'admin', password: 'admin@2026', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
 ];
 let salesData = [], depositData = [], customersData = [], topupData = [];
 let salesChart = null, reportsChart = null, reportsGrowthChart = null, editingSalesIndex = null, editingDepositIndex = null;
@@ -66,19 +66,11 @@ function loadDataFromStorage() {
     refreshUsersTable();
 }
 
-// ===================== PAGE LOAD & NEW LOGIN SYSTEM =====================
+// ===================== PAGE LOAD & LOGIN =====================
 window.addEventListener('load', function() {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (!isLoggedIn) {
         document.getElementById('loginOverlay').classList.add('show');
-        
-        // Check if user should be remembered
-        const rememberMe = localStorage.getItem('rememberMe');
-        const savedUsername = localStorage.getItem('username');
-        if (rememberMe === 'true' && savedUsername) {
-            document.getElementById('username').value = savedUsername;
-            document.getElementById('rememberMe').checked = true;
-        }
     } else {
         const userData = JSON.parse(sessionStorage.getItem('userData'));
         currentUser = userData;
@@ -113,15 +105,16 @@ document.getElementById('loginFormPopup').addEventListener('submit', function(e)
     document.getElementById('errorMessage').classList.remove('show');
     document.getElementById('successMessageLogin').classList.remove('show');
     
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+    // Get form values with CORRECT IDs
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const rememberMe = document.getElementById('loginRememberMe').checked;
     
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
     
-    // Simulate login delay (replace with actual API call)
+    // Simulate login delay
     setTimeout(function() {
         const user = usersData.find(u => u.username === username && u.password === password && u.status === 'active');
         
@@ -183,20 +176,20 @@ document.getElementById('loginFormPopup').addEventListener('submit', function(e)
             document.getElementById('errorMessage').classList.add('show');
             
             // Shake the inputs
-            document.getElementById('username').style.animation = 'shake 0.5s';
-            document.getElementById('password').style.animation = 'shake 0.5s';
+            document.getElementById('loginUsername').style.animation = 'shake 0.5s';
+            document.getElementById('loginPassword').style.animation = 'shake 0.5s';
             
             setTimeout(function() {
-                document.getElementById('username').style.animation = '';
-                document.getElementById('password').style.animation = '';
+                document.getElementById('loginUsername').style.animation = '';
+                document.getElementById('loginPassword').style.animation = '';
             }, 500);
         }
     }, 1500);
 });
 
 // ===================== PASSWORD TOGGLE =====================
-document.getElementById('togglePassword').addEventListener('click', function() {
-    const passwordInput = document.getElementById('password');
+document.getElementById('loginTogglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('loginPassword');
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordInput.setAttribute('type', type);
     
@@ -204,19 +197,28 @@ document.getElementById('togglePassword').addEventListener('click', function() {
     this.classList.toggle('fa-eye-slash');
 });
 
-// ===================== FORGOT PASSWORD LINK =====================
+// ===================== FORGOT PASSWORD & SIGNUP =====================
 document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
     e.preventDefault();
     alert('មុខងារស្តារពាក្យសម្ងាត់នឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
 });
 
-// ===================== SIGN UP LINK =====================
 document.getElementById('signupLink').addEventListener('click', function(e) {
     e.preventDefault();
     alert('មុខងារចុះឈ្មោះនឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
 });
 
-// ===================== LOGOUT =====================
+// ===================== CHECK REMEMBER ME ON LOAD =====================
+window.addEventListener('load', function() {
+    const rememberMe = localStorage.getItem('rememberMe');
+    const savedUsername = localStorage.getItem('username');
+    
+    if (rememberMe === 'true' && savedUsername) {
+        document.getElementById('loginUsername').value = savedUsername;
+        document.getElementById('loginRememberMe').checked = true;
+    }
+});
+
 function logout() {
     if (confirm('តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?')) {
         sessionStorage.clear();
@@ -478,7 +480,7 @@ function generateLeaderboard() {
         `;
     });
     if (!leaderboardData.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្ចូលទិន្នន័យការល��់ជាមុនសិន</small></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-chart-bar" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>គ្មានទិន្នន័យនៅឡើយទេ<br><small>សូមបញ្ចូលទិន្នន័យការលក់ជាមុនសិន</small></td></tr>';
     }
 }
 
@@ -1394,7 +1396,7 @@ function deleteUserRow(i) {
         return;
     }
     
-    if (confirm(`តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ "${u.fullname}" មែនទេ?`)){
+    if (confirm(`តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ "${u.fullname}" មែនទេ?`)) {
         usersData.splice(i, 1);
         saveDataToStorage();
         refreshUsersTable();
