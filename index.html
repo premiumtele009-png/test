@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងការលក់ V17.0 - Smart Axiata</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងការលក់ V19.0 - Smart Axiata</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,7 +81,7 @@
 
                 <div class="success-message" id="successMessageLogin">
                     <i class="fas fa-check-circle"></i>
-                    <p>ចូលប្រើប្រាស់ដោយជោគជ័យ! កំ���ុងបញ្ជូនទៅកាន់ប្រព័ន្ធ...</p>
+                    <p>ចូលប្រើប្រាស់ដោយជោគជ័យ! កំពុងបញ្ជូនទៅកាន់ប្រព័ន្ធ...</p>
                 </div>
 
                 <form id="loginFormPopup">
@@ -361,90 +361,23 @@
                     </div>
                 </div>
 
-                <!-- DAILY SALES PAGE -->
+                <!-- DAILY SALES PAGE - ENHANCED WITH MODAL -->
                 <div id="daily-sales-page" class="hidden">
                     <div class="form-card">
                         <div class="form-header">
-                            <i class="fas fa-plus-circle"></i><h2>បញ្ចូលទិន្ន័យការលក់</h2>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-cash-register"></i>
+                                <h2>ការលក់ប្រចាំថ្ងៃ</h2>
+                            </div>
+                            <button class="add-customer-btn" onclick="openSalesModal()">
+                                <i class="fas fa-plus-circle"></i> បញ្ចូលទិន្ន័យការលក់
+                            </button>
                         </div>
 
                         <div class="info-message">
                             <i class="fas fa-info-circle"></i>
-                            <p>សូមបញ្ចូលទិន្ន័យរបស់លោកអ្នកអោយបានត្រឹមត្រូវ</p>
+                            <p>ចុចប៊ូតុង "បញ្ចូលទិន្ន័យការលក់" ដើម្បីបន្ថែមទិន្នន័យថ្មី</p>
                         </div>
-
-                        <form id="salesForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
-                                    <input type="date" id="date" required>
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label>
-                                    <input type="text" id="staff_name" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label><i class="fas fa-building"></i> សាខា (Branch)</label>
-                                    <input type="text" id="branch_name" readonly>
-                                </div>
-                            </div>
-
-                            <div class="section-title">
-                                <h3><i class="fas fa-sort-amount-up"></i> ចំនួន</h3>
-                            </div>
-                            <div class="form-row-4">
-                                <div class="form-group">
-                                    <label><i class="fas fa-mobile-alt"></i> Gross-Ads</label>
-                                    <input type="number" id="gross_ads" value="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-sim-card"></i> Change-SIM</label>
-                                    <input type="number" id="change_sim" value="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-home"></i> S@Home</label>
-                                    <input type="number" id="s_at_home" value="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-wifi"></i> Fiber+</label>
-                                    <input type="number" id="fiber_plus" value="0" min="0">
-                                </div>
-                            </div>
-
-                            <div class="section-title">
-                                <h3><i class="fas fa-dollar-sign"></i> ទឹកប្រាក់ $</h3>
-                            </div>
-                            <div class="form-row-4">
-                                <div class="form-group">
-                                    <label><i class="fas fa-money-bill-wave"></i> Recharge</label>
-                                    <input type="number" id="recharge" value="0.00" step="0.01" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-shopping-cart"></i> SC-Shop</label>
-                                    <input type="number" id="sc_shop" value="0.00" step="0.01" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-store"></i> SC-Dealer</label>
-                                    <input type="number" id="sc_dealer" value="0.00" step="0.01" min="0">
-                                </div>
-                                <div class="form-group highlight">
-                                    <label><i class="fas fa-chart-line"></i> Total Revenue</label>
-                                    <input type="number" id="total_revenue" value="0.00" step="0.01" min="0">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group"></div>
-                                <div class="form-group">
-                                    <button type="submit" class="submit-btn">
-                                        <i class="fas fa-save"></i> រក្សាទុក
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
 
                         <div class="table-card">
                             <div class="table-header">
@@ -897,6 +830,95 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- SALES MODAL (NEW) -->
+    <div id="salesModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> <span id="salesModalTitle">បញ្ចូលទិន្ន័យការលក់</span></h3>
+                <span class="close" onclick="closeSalesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="salesFormModal">
+                    <input type="hidden" id="edit_sales_index">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
+                            <input type="date" id="modal_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label>
+                            <input type="text" id="modal_staff_name" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-building"></i> សាខា (Branch)</label>
+                            <input type="text" id="modal_branch_name" readonly>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <h3><i class="fas fa-sort-amount-up"></i> ចំនួន</h3>
+                    </div>
+                    <div class="form-row-4">
+                        <div class="form-group">
+                            <label><i class="fas fa-mobile-alt"></i> Gross-Ads</label>
+                            <input type="number" id="modal_gross_ads" value="0" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-sim-card"></i> Change-SIM</label>
+                            <input type="number" id="modal_change_sim" value="0" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-home"></i> S@Home</label>
+                            <input type="number" id="modal_s_at_home" value="0" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-wifi"></i> Fiber+</label>
+                            <input type="number" id="modal_fiber_plus" value="0" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <h3><i class="fas fa-dollar-sign"></i> ទឹកប្រាក់ $</h3>
+                    </div>
+                    <div class="form-row-4">
+                        <div class="form-group">
+                            <label><i class="fas fa-money-bill-wave"></i> Recharge</label>
+                            <input type="number" id="modal_recharge" value="0.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-shopping-cart"></i> SC-Shop</label>
+                            <input type="number" id="modal_sc_shop" value="0.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-store"></i> SC-Dealer</label>
+                            <input type="number" id="modal_sc_dealer" value="0.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group highlight">
+                            <label><i class="fas fa-chart-line"></i> Total Revenue</label>
+                            <input type="number" id="modal_total_revenue" value="0.00" step="0.01" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 20px;">
+                        <div class="form-group"></div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="cancel-btn" onclick="closeSalesModal()" style="background: #6c757d; flex: 1;">
+                                <i class="fas fa-times"></i> បិទ
+                            </button>
+                            <button type="submit" class="submit-btn" style="flex: 1;">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
