@@ -26,7 +26,7 @@
     <!-- Sync Status Bar -->
     <div id="syncStatus" class="sync-status" style="display:none;"></div>
 
-    <!-- ✅ NEW GOOGLE APPS SCRIPT URL - MUST LOAD BEFORE app.js -->
+    <!-- ✅ GOOGLE APPS SCRIPT CONFIGURATION -->
     <script>
         window.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1SQKtYrqMbwhu9MkRdmrF7GwJddRt_syL40xqUsXpSab6ENWL1PtP_yMIZDwRcyD-/exec';
         
@@ -109,7 +109,7 @@
                         <label class="remember-label">
                             <input type="checkbox" id="loginRememberMe"> ចងចាំខ្ញុំ
                         </label>
-                        <a href="https://t.me/saray2026123" target="_blank">ភ្លេចពាក្យសម្ងាត់?</a>
+                        <a href="https://t.me/saray2026123" target="_blank">���្លេចពាក្យសម្ងាត់?</a>
                     </div>
 
                     <button type="submit" class="btn-login" id="loginBtn">
@@ -375,7 +375,7 @@
                         <form id="salesForm">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label><i class="fas fa-calendar-alt"></i> ថ្ង��ខែ</label>
+                                    <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
                                     <input type="date" id="date" required>
                                 </div>
                                 <div class="form-group">
@@ -1170,7 +1170,7 @@
     <!-- Load app.js -->
     <script src="app.js"></script>
     
-    <!-- ✅ Google Sheets Sync Script WITH NEW URL -->
+    <!-- ✅ IMPROVED Google Sheets Sync Script WITH ERROR HANDLING -->
     <script>
 const GOOGLE_APPS_SCRIPT_URL = window.GOOGLE_APPS_SCRIPT_URL;
 const SHEETS = window.SHEETS;
@@ -1178,9 +1178,65 @@ let isSyncing = false;
 
 console.log('🔗 Sync script loaded with URL:', GOOGLE_APPS_SCRIPT_URL);
 
+// ===================== CHECK CONNECTION BEFORE SYNC =====================
+async function checkGoogleSheetsConnection() {
+    if (!GOOGLE_APPS_SCRIPT_URL) {
+        console.warn('⚠️ Google Sheets URL not configured');
+        return false;
+    }
+    
+    if (!navigator.onLine) {
+        console.warn('⚠️ No internet connection');
+        return false;
+    }
+    
+    try {
+        const testUrl = `${GOOGLE_APPS_SCRIPT_URL}?action=TEST&t=${Date.now()}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const response = await fetch(testUrl, {
+            method: 'GET',
+            cache: 'no-cache',
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            console.error('❌ Google Sheets connection failed:', response.status);
+            return false;
+        }
+        
+        const text = await response.text();
+        const result = JSON.parse(text);
+        
+        if (result.success) {
+            console.log('✅ Google Sheets connection successful');
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.error('❌ Connection timeout - Google Sheets may be slow or unavailable');
+        } else {
+            console.error('❌ Connection error:', error.message);
+        }
+        return false;
+    }
+}
+
+// ===================== SYNC TO GOOGLE SHEETS =====================
 async function syncToGoogleSheets() {
     if (isSyncing) {
         showSuccessPopup('កំពុងធ្វើ Sync... សូមរង់ចាំ');
+        return;
+    }
+    
+    const isConnected = await checkGoogleSheetsConnection();
+    if (!isConnected) {
+        showSuccessPopup('មិនអាចភ្ជាប់ទៅ Google Sheets បានទេ។ សូមពិនិត្យអ៊ីនធឺណិត ឬ URL របស់អ្នក។');
         return;
     }
     
@@ -1190,7 +1246,7 @@ async function syncToGoogleSheets() {
     try {
         console.log('=== Starting Sync to Google Sheets ===');
         
-        const results = await Promise.all([
+        const results = await Promise.allSettled([
             syncSheetData(SHEETS.USERS, usersData),
             syncSheetData(SHEETS.SALES, salesData),
             syncSheetData(SHEETS.DEPOSITS, depositData),
@@ -1199,13 +1255,19 @@ async function syncToGoogleSheets() {
             syncSheetData(SHEETS.PROMOTIONS, promotionsData)
         ]);
         
-        console.log('✅ All sheets synced successfully');
+        const failures = results.filter(r => r.status === 'rejected');
         
-        localStorage.setItem('lastSyncTime', new Date().toISOString());
-        document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
-        
-        showSyncStatus('✅ Sync បានជោគជ័យ!', 'success');
-        showSuccessPopup('ទិន្នន័យត្រូវបាន Sync ទៅ Google Sheets ដោយជោគជ័យ!');
+        if (failures.length > 0) {
+            console.error('❌ Some sheets failed to sync:', failures);
+            showSyncStatus('⚠️ Sync មានបញ្ហាមួយចំនួន', 'error');
+            showSuccessPopup(`Sync មានបញ្ហា: ${failures.length}/${results.length} sheets failed`);
+        } else {
+            console.log('✅ All sheets synced successfully');
+            localStorage.setItem('lastSyncTime', new Date().toISOString());
+            document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+            showSyncStatus('✅ Sync បានជោគជ័យ!', 'success');
+            showSuccessPopup('ទិន្នន័យត្រូវបាន Sync ទៅ Google Sheets ដោយជោគជ័យ!');
+        }
         
     } catch (error) {
         console.error('❌ Sync failed:', error);
@@ -1219,31 +1281,46 @@ async function syncToGoogleSheets() {
 async function syncSheetData(sheetName, data) {
     console.log(`📤 Syncing ${sheetName} (${data.length} records)...`);
     
-    const formData = new FormData();
-    formData.append('action', 'SAVE_ALL');
-    formData.append('sheet', sheetName);
-    formData.append('data', JSON.stringify(data || []));
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
     
-    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    try {
+        const formData = new FormData();
+        formData.append('action', 'SAVE_ALL');
+        formData.append('sheet', sheetName);
+        formData.append('data', JSON.stringify(data || []));
+        
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        const result = JSON.parse(text);
+        
+        if (!result.success) {
+            throw new Error(result.message || 'SAVE_ALL failed for ' + sheetName);
+        }
+        
+        console.log(`✅ ${sheetName} synced successfully`);
+        return result;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error(`Timeout syncing ${sheetName}`);
+        }
+        throw error;
     }
-    
-    const text = await response.text();
-    const result = JSON.parse(text);
-    
-    if (!result.success) {
-        throw new Error(result.message || 'SAVE_ALL failed for ' + sheetName);
-    }
-    
-    console.log(`✅ ${sheetName} synced successfully`);
-    return result;
 }
 
+// ===================== LOAD FROM GOOGLE SHEETS =====================
 async function loadFromGoogleSheets() {
     if (isSyncing) {
         showSuccessPopup('កំពុងធ្វើ Load... សូមរង់ចាំ');
@@ -1254,13 +1331,19 @@ async function loadFromGoogleSheets() {
         return;
     }
     
+    const isConnected = await checkGoogleSheetsConnection();
+    if (!isConnected) {
+        showSuccessPopup('មិនអាចភ្ជាប់ទៅ Google Sheets បានទេ។ សូមពិនិត្យអ៊ីនធឺណិត ឬ URL របស់អ្នក។');
+        return;
+    }
+    
     isSyncing = true;
     showSyncStatus('📥 កំពុង Load ទិន្នន័យ...', 'info');
     
     try {
         console.log('=== Loading from Google Sheets ===');
         
-        const results = await Promise.all([
+        const results = await Promise.allSettled([
             loadSheetData(SHEETS.USERS),
             loadSheetData(SHEETS.SALES),
             loadSheetData(SHEETS.DEPOSITS),
@@ -1269,12 +1352,18 @@ async function loadFromGoogleSheets() {
             loadSheetData(SHEETS.PROMOTIONS)
         ]);
         
-        usersData = results[0];
-        salesData = results[1];
-        depositData = results[2];
-        customersData = results[3];
-        topupData = results[4];
-        promotionsData = results[5];
+        const failures = results.filter(r => r.status === 'rejected');
+        
+        if (failures.length === results.length) {
+            throw new Error('All sheets failed to load');
+        }
+        
+        usersData = results[0].status === 'fulfilled' ? results[0].value : usersData;
+        salesData = results[1].status === 'fulfilled' ? results[1].value : salesData;
+        depositData = results[2].status === 'fulfilled' ? results[2].value : depositData;
+        customersData = results[3].status === 'fulfilled' ? results[3].value : customersData;
+        topupData = results[4].status === 'fulfilled' ? results[4].value : topupData;
+        promotionsData = results[5].status === 'fulfilled' ? results[5].value : promotionsData;
         
         console.log('📊 Loaded data:', {
             users: usersData.length,
@@ -1292,19 +1381,24 @@ async function loadFromGoogleSheets() {
         localStorage.setItem('topupData', JSON.stringify(topupData));
         localStorage.setItem('promotionsData', JSON.stringify(promotionsData));
         
-        refreshUsersTable();
-        refreshSalesTable();
-        refreshDepositTable();
-        refreshCustomersTable();
-        refreshTopUpTable();
-        refreshPromotionsGrid();
+        if (typeof refreshUsersTable === 'function') refreshUsersTable();
+        if (typeof refreshSalesTable === 'function') refreshSalesTable();
+        if (typeof refreshDepositTable === 'function') refreshDepositTable();
+        if (typeof refreshCustomersTable === 'function') refreshCustomersTable();
+        if (typeof refreshTopUpTable === 'function') refreshTopUpTable();
+        if (typeof refreshPromotionsGrid === 'function') refreshPromotionsGrid();
         if (typeof populateBranchFilter === 'function') populateBranchFilter();
         
         localStorage.setItem('lastSyncTime', new Date().toISOString());
         document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
         
-        showSyncStatus('✅ Load បានជោគជ័យ!', 'success');
-        showSuccessPopup('ទិន្នន័យត្រូវបាន Load ពី Google Sheets ដោយជោគជ័យ!');
+        if (failures.length > 0) {
+            showSyncStatus('⚠️ Load មានបញ្ហាមួយចំនួន', 'error');
+            showSuccessPopup(`Load ជោគជ័យ ប៉ុន្តែមានបញ្ហា ${failures.length} sheets`);
+        } else {
+            showSyncStatus('✅ Load បានជោគជ័យ!', 'success');
+            showSuccessPopup('ទិន្នន័យត្រូវបាន Load ពី Google Sheets ដោយជោគជ័យ!');
+        }
         
     } catch (error) {
         console.error('❌ Load failed:', error);
@@ -1318,26 +1412,40 @@ async function loadFromGoogleSheets() {
 async function loadSheetData(sheetName) {
     console.log(`📥 Loading ${sheetName}...`);
     
-    const url = `${GOOGLE_APPS_SCRIPT_URL}?action=GET_ALL&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
     
-    const response = await fetch(url, {
-        method: 'GET',
-        cache: 'no-cache'
-    });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    try {
+        const url = `${GOOGLE_APPS_SCRIPT_URL}?action=GET_ALL&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            cache: 'no-cache',
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        const result = JSON.parse(text);
+        
+        if (!result.success) {
+            throw new Error(result.message || 'GET_ALL failed for ' + sheetName);
+        }
+        
+        console.log(`✅ ${sheetName} loaded: ${result.data.length} records`);
+        return result.data || [];
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error(`Timeout loading ${sheetName}`);
+        }
+        throw error;
     }
-    
-    const text = await response.text();
-    const result = JSON.parse(text);
-    
-    if (!result.success) {
-        throw new Error(result.message || 'GET_ALL failed for ' + sheetName);
-    }
-    
-    console.log(`✅ ${sheetName} loaded: ${result.data.length} records`);
-    return result.data || [];
 }
 
 function autoSyncAfterSave() {
@@ -1346,10 +1454,10 @@ function autoSyncAfterSave() {
         return;
     }
     
-    console.log('⏰ Auto sync scheduled in 1 second...');
+    console.log('⏰ Auto sync scheduled in 2 seconds...');
     setTimeout(() => {
         syncToGoogleSheets();
-    }, 1000);
+    }, 2000);
 }
 
 function showSyncStatus(message, type) {
