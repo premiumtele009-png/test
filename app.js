@@ -4,14 +4,14 @@ let usersData = [
     {username: 'admin', password: 'admin@2026', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
 ];
 let salesData = [], depositData = [], customersData = [], topupData = [], promotionsData = [];
-let salesChart = null, reportsChart = null, reportsGrowthChart = null, editingDepositIndex = null;
+let salesChart = null, reportsChart = null, reportsGrowthChart = null;
 let dashboardChart1 = null, dashboardChart2 = null, currentDashboardFilter = 'today';
 let currentReportPeriod = 'monthly';
 let reportFilteredData = [];
 let editingPromotionIndex = null;
 let salesPerformanceChart = null;
 
-console.log('🚀 app.js loading with Performance Charts v20.0...');
+console.log('🚀 app.js loading with Performance Charts v21.0...');
 console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
 
 // ===================== UTILITY FUNCTIONS =====================
@@ -29,47 +29,29 @@ function closeSuccessPopup() {
 // ===================== ENHANCED PERMISSION SYSTEM =====================
 function canViewData(data) {
     if (!currentUser) return false;
-    
-    // Admin can view everything
     if (currentUser.role === 'admin') return true;
-    
-    // Get data properties
     const dataStaff = data.staff_name || data.staff || data.created_by;
     const dataBranch = data.branch;
-    
-    // Supervisor can view all data from their branch
     if (currentUser.role === 'supervisor') {
         return dataBranch === currentUser.branch;
     }
-    
-    // Agent can view only their own data from their branch
     if (currentUser.role === 'agent') {
         return dataStaff === currentUser.fullname && dataBranch === currentUser.branch;
     }
-    
     return false;
 }
 
 function canEditData(data) {
     if (!currentUser) return false;
-    
-    // Admin can edit everything
     if (currentUser.role === 'admin') return true;
-    
-    // Get data properties
     const dataStaff = data.staff_name || data.staff || data.created_by;
     const dataBranch = data.branch;
-    
-    // Supervisor can edit all data from their branch
     if (currentUser.role === 'supervisor') {
         return dataBranch === currentUser.branch;
     }
-    
-    // Agent can edit only their own data from their branch
     if (currentUser.role === 'agent') {
         return dataStaff === currentUser.fullname && dataBranch === currentUser.branch;
     }
-    
     return false;
 }
 
@@ -83,25 +65,18 @@ function canViewPromotions() {
 
 function getFilteredDataByRole(dataArray) {
     if (!currentUser) return [];
-    
-    // Admin sees everything
     if (currentUser.role === 'admin') {
         return dataArray;
     }
-    
-    // Supervisor sees all data from their branch
     if (currentUser.role === 'supervisor') {
         return dataArray.filter(d => d.branch === currentUser.branch);
     }
-    
-    // Agent sees only their own data
     if (currentUser.role === 'agent') {
         return dataArray.filter(d => {
             const dataStaff = d.staff_name || d.staff || d.created_by;
             return dataStaff === currentUser.fullname && d.branch === currentUser.branch;
         });
     }
-    
     return [];
 }
 
@@ -250,9 +225,6 @@ window.addEventListener('load', async function() {
     let roleDisplay = userData.role === 'admin' ? 'Admin' : userData.role === 'supervisor' ? 'Supervisor' : 'Agent';
     document.getElementById('userRole').textContent = roleDisplay;
     
-    const today = new Date().toISOString().split('T')[0];
-    if (document.getElementById('deposit_date')) document.getElementById('deposit_date').value = today;
-    
     loadDataFromStorage();
     checkUserPermissions();
     
@@ -307,9 +279,6 @@ document.getElementById('loginFormPopup').addEventListener('submit', async funct
             document.getElementById('loggedInUser').textContent = user.fullname;
             let roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'supervisor' ? 'Supervisor' : 'Agent';
             document.getElementById('userRole').textContent = roleDisplay;
-            
-            const today = new Date().toISOString().split('T')[0];
-            if (document.getElementById('deposit_date')) document.getElementById('deposit_date').value = today;
             
             loadDataFromStorage();
             checkUserPermissions();
@@ -459,7 +428,6 @@ function initDashboard() {
 }
 
 function calculateDashboardStats() {
-    // Apply role-based filtering
     let filteredData = getFilteredDataByRole(salesData);
     filteredData = getFilteredDataByPeriod(filteredData);
     
@@ -481,7 +449,6 @@ function initDashboardCharts() {
     const ctx2 = document.getElementById('dashboardChart2');
     if (!ctx1 || !ctx2) return;
     
-    // Apply role-based filtering
     let filteredData = getFilteredDataByRole(salesData);
     filteredData = getFilteredDataByPeriod(filteredData);
     
@@ -589,7 +556,6 @@ function generateLeaderboard() {
     const tbody = document.getElementById('leaderboardBody');
     tbody.innerHTML = '';
     
-    // Apply role-based filtering
     let filteredData = getFilteredDataByRole(salesData);
     filteredData = getFilteredDataByPeriod(filteredData);
     
@@ -640,7 +606,6 @@ function generateLeaderboard() {
 
 // ===================== SALES PERFORMANCE CHART =====================
 function initializeSalesPerformance() {
-    // Setup branch filter for admin
     if (currentUser.role === 'admin') {
         const branchSelect = document.getElementById('performanceBranch');
         branchSelect.style.display = 'block';
@@ -668,19 +633,15 @@ function updatePerformanceChart() {
     const period = parseInt(document.getElementById('performancePeriod').value);
     const selectedBranch = document.getElementById('performanceBranch').value;
     
-    // Get filtered data by role
     let data = getFilteredDataByRole(salesData);
     
-    // Additional filter for admin by selected branch
     if (currentUser.role === 'admin' && selectedBranch) {
         data = data.filter(d => d.branch === selectedBranch);
     }
     
-    // Group data by month
     const monthlyData = {};
     const today = new Date();
     
-    // Generate last N months
     for (let i = period - 1; i >= 0; i--) {
         const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -693,7 +654,6 @@ function updatePerformanceChart() {
         };
     }
     
-    // Aggregate data
     data.forEach(d => {
         const date = new Date(d.date);
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -706,14 +666,12 @@ function updatePerformanceChart() {
         }
     });
     
-    // Prepare chart data
     const sortedKeys = Object.keys(monthlyData).sort();
     const labels = sortedKeys.map(k => monthlyData[k].label);
     const revenueData = sortedKeys.map(k => monthlyData[k].revenue);
     const rechargeData = sortedKeys.map(k => monthlyData[k].recharge);
     const grossAdsData = sortedKeys.map(k => monthlyData[k].grossAds);
     
-    // Calculate growth metrics
     const currentMonth = revenueData[revenueData.length - 1] || 0;
     const previousMonth = revenueData[revenueData.length - 2] || 0;
     const growthRate = previousMonth > 0 ? ((currentMonth - previousMonth) / previousMonth * 100).toFixed(1) : 0;
@@ -728,7 +686,6 @@ function updatePerformanceChart() {
     }
     const avgGrowth = growthCount > 0 ? (totalGrowth / growthCount).toFixed(1) : 0;
     
-    // Update summary cards
     document.getElementById('growthRate').textContent = `${growthRate}%`;
     document.getElementById('growthRate').style.color = growthRate >= 0 ? '#28a745' : '#dc3545';
     document.getElementById('currentMonthRevenue').textContent = `$${currentMonth.toFixed(2)}`;
@@ -736,7 +693,6 @@ function updatePerformanceChart() {
     document.getElementById('avgGrowth').textContent = `${avgGrowth}%`;
     document.getElementById('avgGrowth').style.color = avgGrowth >= 0 ? '#28a745' : '#dc3545';
     
-    // Update growth rate icon
     const growthCard = document.querySelector('.performance-card.growth');
     const growthIcon = growthCard.querySelector('.performance-icon i');
     if (growthRate >= 0) {
@@ -747,10 +703,8 @@ function updatePerformanceChart() {
         growthCard.classList.add('negative');
     }
     
-    // Render chart
     renderPerformanceChart(labels, revenueData, rechargeData, grossAdsData);
 }
-
 function renderPerformanceChart(labels, revenueData, rechargeData, grossAdsData) {
     if (salesPerformanceChart) {
         salesPerformanceChart.destroy();
@@ -946,7 +900,6 @@ function openSalesModal() {
     document.getElementById('edit_sales_index').value = '';
     document.getElementById('salesModalTitle').textContent = 'បញ្ចូលទិន្ន័យការលក់';
     
-    // Set default values
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('modal_date').value = today;
     
@@ -960,7 +913,6 @@ function openSalesModal() {
     
     document.getElementById('modal_branch_name').value = currentUser.branch;
     
-    // Reset all number fields
     ['modal_gross_ads', 'modal_change_sim', 'modal_s_at_home', 'modal_fiber_plus'].forEach(id => {
         document.getElementById(id).value = '0';
     });
@@ -975,7 +927,6 @@ function closeSalesModal() {
     document.getElementById('salesFormModal').reset();
 }
 
-// Sales Form Submit Handler
 document.getElementById('salesFormModal').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -996,11 +947,9 @@ document.getElementById('salesFormModal').addEventListener('submit', function(e)
     };
     
     if (editIndex !== '') {
-        // Editing existing record
         salesData[editIndex] = formData;
         showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
-        // Adding new record
         salesData.push(formData);
         showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
     }
@@ -1014,10 +963,7 @@ function refreshSalesTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
     
-    // Apply role-based filtering
     let filteredData = getFilteredDataByRole(salesData);
-    
-    // Sort by date (newest first)
     filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     if (!filteredData.length) {
@@ -1030,7 +976,6 @@ function refreshSalesTable() {
         const canEdit = canEditData(data);
         const row = tbody.insertRow();
         
-        // Format date to display nicely
         const dateObj = new Date(data.date);
         const formattedDate = dateObj.toLocaleDateString('en-GB', {
             day: '2-digit',
@@ -1052,7 +997,6 @@ function refreshSalesTable() {
         `;
     });
     
-    // Update performance chart after table refresh
     if (typeof updatePerformanceChart === 'function') {
         updatePerformanceChart();
     }
@@ -1065,12 +1009,10 @@ function editSalesRow(index) {
         return; 
     }
     
-    // Open modal
     document.getElementById('salesModal').style.display = 'block';
     document.getElementById('edit_sales_index').value = index;
     document.getElementById('salesModalTitle').textContent = 'កែប្រែទិន្ន័យការលក់';
     
-    // Fill form with existing data
     document.getElementById('modal_date').value = data.date;
     document.getElementById('modal_staff_name').value = data.staff_name;
     document.getElementById('modal_branch_name').value = data.branch;
@@ -1098,47 +1040,66 @@ function deleteSalesRow(index) {
     }
 }
 
-// ===================== DEPOSIT FORM =====================
-document.getElementById('depositForm').addEventListener('submit', function(e) {
+// ===================== DEPOSIT MODAL FUNCTIONS (NEW) =====================
+function openDepositModal() {
+    document.getElementById('depositModal').style.display = 'block';
+    document.getElementById('edit_deposit_index').value = '';
+    document.getElementById('depositModalTitle').textContent = 'បញ្ជូលការដាក់ប្រាក់';
+    
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('modal_deposit_date').value = today;
+    
+    if (currentUser.username !== 'admin') {
+        document.getElementById('modal_deposit_staff').value = currentUser.fullname;
+        document.getElementById('modal_deposit_staff').readOnly = true;
+    } else {
+        document.getElementById('modal_deposit_staff').value = '';
+        document.getElementById('modal_deposit_staff').readOnly = false;
+    }
+    
+    document.getElementById('modal_cash').value = '0.00';
+    document.getElementById('modal_credit').value = '0.00';
+    document.getElementById('modal_note').value = '';
+}
+
+function closeDepositModal() {
+    document.getElementById('depositModal').style.display = 'none';
+    document.getElementById('depositFormModal').reset();
+}
+
+document.getElementById('depositFormModal').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    const editIndex = document.getElementById('edit_deposit_index').value;
+    
     const formData = {
-        date: document.getElementById('deposit_date').value,
-        staff: document.getElementById('deposit_staff').value.trim() || currentUser.fullname,
+        date: document.getElementById('modal_deposit_date').value,
+        staff: document.getElementById('modal_deposit_staff').value.trim() || currentUser.fullname,
         branch: currentUser.branch,
-        cash: document.getElementById('cash').value,
-        credit: document.getElementById('credit').value,
-        note: document.getElementById('note').value || '-'
+        cash: document.getElementById('modal_cash').value,
+        credit: document.getElementById('modal_credit').value,
+        note: document.getElementById('modal_note').value || '-'
     };
-    if (editingDepositIndex !== null) {
-        depositData[editingDepositIndex] = formData;
-        editingDepositIndex = null;
+    
+    if (editIndex !== '') {
+        depositData[editIndex] = formData;
         showSuccessPopup('ទិន្នន័យការដាក់ប្រាក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
         depositData.push(formData);
         showSuccessPopup('ទិន្នន័យការដាក់ប្រាក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
     }
+    
     saveDataToStorage();
     refreshDepositTable();
-    resetDepositForm();
+    closeDepositModal();
 });
-
-function resetDepositForm() {
-    document.getElementById('depositForm').reset();
-    editingDepositIndex = null;
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('deposit_date').value = today;
-    if (currentUser.username !== 'admin') document.getElementById('deposit_staff').value = currentUser.fullname;
-    document.getElementById('cash').value = '0.00';
-    document.getElementById('credit').value = '0.00';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 function refreshDepositTable() {
     const tbody = document.getElementById('depositTableBody');
     tbody.innerHTML = '';
     
-    // Apply role-based filtering
     let filteredData = getFilteredDataByRole(depositData);
+    filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     if (!filteredData.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មានទិន្នន័យនៅឡើយទេ</td></tr>';
@@ -1149,10 +1110,21 @@ function refreshDepositTable() {
         const idx = depositData.indexOf(data);
         const canEdit = canEditData(data);
         const row = tbody.insertRow();
+        
+        const dateObj = new Date(data.date);
+        const formattedDate = dateObj.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        
         row.innerHTML = `
-            <td>${data.date}</td><td>${data.staff}</td><td>${data.branch}</td>
+            <td>${formattedDate}</td>
+            <td>${data.staff}</td>
+            <td>${data.branch}</td>
             <td class="cash-amount">$${parseFloat(data.cash).toFixed(2)}</td>
-            <td class="credit-amount">$${parseFloat(data.credit).toFixed(2)}</td><td>${data.note}</td>
+            <td class="credit-amount">$${parseFloat(data.credit).toFixed(2)}</td>
+            <td>${data.note}</td>
             <td class="actions">
                 <button class="edit-btn" onclick="editDepositRow(${idx})" ${!canEdit ? 'disabled' : ''} title="${canEdit ? 'Edit' : 'អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ'}"><i class="fas fa-edit"></i></button>
                 <button class="delete-btn" onclick="deleteDepositRow(${idx})" ${!canEdit ? 'disabled' : ''} title="${canEdit ? 'Delete' : 'អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ'}"><i class="fas fa-trash"></i></button>
@@ -1163,22 +1135,28 @@ function refreshDepositTable() {
 
 function editDepositRow(index) {
     const data = depositData[index];
-    if (!canEditData(data)) { showSuccessPopup('អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ!'); return; }
-    editingDepositIndex = index;
-    document.getElementById('deposit_date').value = data.date;
-    document.getElementById('deposit_staff').value = data.staff;
-    document.getElementById('cash').value = parseFloat(data.cash).toFixed(2);
-    document.getElementById('credit').value = parseFloat(data.credit).toFixed(2);
-    document.getElementById('note').value = data.note === '-' ? '' : data.note;
-    showPage('deposit');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const fc = document.querySelector('#deposit-page .form-card');
-    fc.style.borderLeft = '4px solid #ffc107';
-    setTimeout(() => fc.style.borderLeft = '4px solid #28a745', 2000);
+    if (!canEditData(data)) { 
+        showSuccessPopup('អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ!'); 
+        return; 
+    }
+    
+    document.getElementById('depositModal').style.display = 'block';
+    document.getElementById('edit_deposit_index').value = index;
+    document.getElementById('depositModalTitle').textContent = 'កែប្រែទិន្ន័យការដាក់ប្រាក់';
+    
+    document.getElementById('modal_deposit_date').value = data.date;
+    document.getElementById('modal_deposit_staff').value = data.staff;
+    document.getElementById('modal_cash').value = parseFloat(data.cash).toFixed(2);
+    document.getElementById('modal_credit').value = parseFloat(data.credit).toFixed(2);
+    document.getElementById('modal_note').value = data.note === '-' ? '' : data.note;
 }
 
 function deleteDepositRow(index) {
-    if (!canEditData(depositData[index])) { showSuccessPopup('អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ!'); return; }
+    if (!canEditData(depositData[index])) { 
+        showSuccessPopup('អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ!'); 
+        return; 
+    }
+    
     if (confirm('តើអ្នកប្រាកដថាចង់លុបទិន្នន័យនេះមែនទេ?')) {
         depositData.splice(index, 1);
         saveDataToStorage();
@@ -1187,9 +1165,295 @@ function deleteDepositRow(index) {
     }
 }
 
-// ===================== REPORTS PAGE - Keeping existing functions =====================
-// (Due to length, Reports, Customers, Promotions, Users functions remain the same as v19.0)
-// These sections are unchanged and work the same way
+// ===================== REPORTS PAGE =====================
+function initReportsPage() {
+    populateBranchFilter();
+    applyReportFilters();
+}
+
+function populateBranchFilter() {
+    if (currentUser.role !== 'admin') {
+        const container = document.getElementById('reportBranchFilterContainer');
+        if (container) container.style.display = 'none';
+        return;
+    }
+    
+    const branchSelect = document.getElementById('reportBranchFilter');
+    if (!branchSelect) return;
+    
+    const branches = [...new Set(salesData.map(d => d.branch))].sort();
+    branchSelect.innerHTML = '<option value="">ទាំងអស់</option>';
+    branches.forEach(branch => {
+        const option = document.createElement('option');
+        option.value = branch;
+        option.textContent = branch;
+        branchSelect.appendChild(option);
+    });
+}
+
+function applyReportFilters() {
+    let filteredData = getFilteredDataByRole(salesData);
+    
+    const startDate = document.getElementById('reportStartDate')?.value;
+    const endDate = document.getElementById('reportEndDate')?.value;
+    const branch = document.getElementById('reportBranchFilter')?.value;
+    const staff = document.getElementById('reportStaffFilter')?.value.trim().toLowerCase();
+    
+    if (startDate) {
+        filteredData = filteredData.filter(d => new Date(d.date) >= new Date(startDate));
+    }
+    if (endDate) {
+        filteredData = filteredData.filter(d => new Date(d.date) <= new Date(endDate));
+    }
+    if (branch) {
+        filteredData = filteredData.filter(d => d.branch === branch);
+    }
+    if (staff) {
+        filteredData = filteredData.filter(d => d.staff_name.toLowerCase().includes(staff));
+    }
+    
+    reportFilteredData = filteredData;
+    updateReportTable();
+    updateReportStats();
+    updateReportGrowthChart();
+}
+
+function resetReportFilters() {
+    if (document.getElementById('reportStartDate')) document.getElementById('reportStartDate').value = '';
+    if (document.getElementById('reportEndDate')) document.getElementById('reportEndDate').value = '';
+    if (document.getElementById('reportBranchFilter')) document.getElementById('reportBranchFilter').value = '';
+    if (document.getElementById('reportStaffFilter')) document.getElementById('reportStaffFilter').value = '';
+    applyReportFilters();
+}
+
+function updateReportTable() {
+    const tbody = document.getElementById('reportTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (reportFilteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 30px; color: #6c757d;">គ្មានទិន្នន័យ</td></tr>';
+        return;
+    }
+    
+    let totals = {
+        grossAds: 0,
+        changeSim: 0,
+        sHome: 0,
+        fiber: 0,
+        recharge: 0,
+        shop: 0,
+        dealer: 0,
+        total: 0
+    };
+    
+    reportFilteredData.forEach(d => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${new Date(d.date).toLocaleDateString('en-GB')}</td>
+            <td>${d.staff_name}</td>
+            <td>${d.branch}</td>
+            <td>${d.gross_ads}</td>
+            <td>${d.change_sim}</td>
+            <td>${d.s_at_home}</td>
+            <td>${d.fiber_plus}</td>
+            <td class="amount">$${parseFloat(d.recharge).toFixed(2)}</td>
+            <td class="amount">$${parseFloat(d.sc_shop).toFixed(2)}</td>
+            <td class="amount">$${parseFloat(d.sc_dealer).toFixed(2)}</td>
+            <td class="total-amount">$${parseFloat(d.total_revenue).toFixed(2)}</td>
+        `;
+        
+        totals.grossAds += parseInt(d.gross_ads || 0);
+        totals.changeSim += parseInt(d.change_sim || 0);
+        totals.sHome += parseInt(d.s_at_home || 0);
+        totals.fiber += parseInt(d.fiber_plus || 0);
+        totals.recharge += parseFloat(d.recharge || 0);
+        totals.shop += parseFloat(d.sc_shop || 0);
+        totals.dealer += parseFloat(d.sc_dealer || 0);
+        totals.total += parseFloat(d.total_revenue || 0);
+    });
+    
+    document.getElementById('footerGrossAds').textContent = totals.grossAds;
+    document.getElementById('footerChangeSim').textContent = totals.changeSim;
+    document.getElementById('footerSHome').textContent = totals.sHome;
+    document.getElementById('footerFiber').textContent = totals.fiber;
+    document.getElementById('footerRecharge').textContent = '$' + totals.recharge.toFixed(2);
+    document.getElementById('footerShop').textContent = '$' + totals.shop.toFixed(2);
+    document.getElementById('footerDealer').textContent = '$' + totals.dealer.toFixed(2);
+    document.getElementById('footerTotal').textContent = '$' + totals.total.toFixed(2);
+    
+    const infoSpan = document.getElementById('reportTableInfo');
+    if (infoSpan) {
+        infoSpan.textContent = `បង្ហាញ ${reportFilteredData.length} កំណត់ត្រា`;
+    }
+}
+
+function updateReportStats() {
+    const totalItems = reportFilteredData.reduce((sum, d) => 
+        sum + parseInt(d.gross_ads || 0) + parseInt(d.change_sim || 0) + 
+        parseInt(d.s_at_home || 0) + parseInt(d.fiber_plus || 0), 0);
+    
+    const totalRevenue = reportFilteredData.reduce((sum, d) => sum + parseFloat(d.total_revenue || 0), 0);
+    const totalRecords = reportFilteredData.length;
+    
+    const uniqueDates = [...new Set(reportFilteredData.map(d => d.date))].length;
+    const avgRevenue = uniqueDates > 0 ? totalRevenue / uniqueDates : 0;
+    
+    document.getElementById('reportTotalItems').textContent = totalItems;
+    document.getElementById('reportTotalRevenue').textContent = '$' + totalRevenue.toFixed(2);
+    document.getElementById('reportTotalRecords').textContent = totalRecords;
+    document.getElementById('reportAvgRevenue').textContent = '$' + avgRevenue.toFixed(2);
+}
+
+function setReportPeriod(period) {
+    currentReportPeriod = period;
+    document.getElementById('report-filter-weekly').classList.remove('active');
+    document.getElementById('report-filter-monthly').classList.remove('active');
+    document.getElementById('report-filter-' + period).classList.add('active');
+    
+    const title = document.getElementById('reportPeriodTitle');
+    if (title) {
+        title.textContent = period === 'weekly' ? 'Items Growth - Weekly' : 'Items Growth - Monthly';
+    }
+    
+    updateReportGrowthChart();
+}
+
+function updateReportGrowthChart() {
+    if (reportsGrowthChart) {
+        reportsGrowthChart.destroy();
+    }
+    
+    const ctx = document.getElementById('reportsGrowthChart');
+    if (!ctx) return;
+    
+    const periodData = {};
+    
+    reportFilteredData.forEach(d => {
+        const date = new Date(d.date);
+        let key;
+        
+        if (currentReportPeriod === 'weekly') {
+            const weekStart = new Date(date);
+            weekStart.setDate(date.getDate() - date.getDay());
+            key = weekStart.toISOString().split('T')[0];
+        } else {
+            key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+        
+        if (!periodData[key]) {
+            periodData[key] = { grossAds: 0, changeSim: 0, sHome: 0, fiber: 0 };
+        }
+        
+        periodData[key].grossAds += parseInt(d.gross_ads || 0);
+        periodData[key].changeSim += parseInt(d.change_sim || 0);
+        periodData[key].sHome += parseInt(d.s_at_home || 0);
+        periodData[key].fiber += parseInt(d.fiber_plus || 0);
+    });
+    
+    const sortedKeys = Object.keys(periodData).sort();
+    const labels = sortedKeys.map(k => {
+        if (currentReportPeriod === 'weekly') {
+            return new Date(k).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } else {
+            const [year, month] = k.split('-');
+            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+    });
+    
+    reportsGrowthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Gross Ads',
+                    data: sortedKeys.map(k => periodData[k].grossAds),
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Change SIM',
+                    data: sortedKeys.map(k => periodData[k].changeSim),
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'S@Home',
+                    data: sortedKeys.map(k => periodData[k].sHome),
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Fiber+',
+                    data: sortedKeys.map(k => periodData[k].fiber),
+                    borderColor: '#17a2b8',
+                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + ' units';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+function exportToExcel() {
+    if (reportFilteredData.length === 0) {
+        showSuccessPopup('គ្មានទិន្នន័យដើម្បី Export!');
+        return;
+    }
+    
+    const ws_data = [
+        ['ថ្ងៃខែ', 'បុគ្គលិក', 'សាខា', 'Gross Ads', 'Change SIM', 'S@Home', 'Fiber+', 'Recharge ($)', 'SC-Shop ($)', 'SC-Dealer ($)', 'Total Revenue ($)']
+    ];
+    
+    reportFilteredData.forEach(d => {
+        ws_data.push([
+            new Date(d.date).toLocaleDateString('en-GB'),
+            d.staff_name,
+            d.branch,
+            d.gross_ads,
+            d.change_sim,
+            d.s_at_home,
+            d.fiber_plus,
+            parseFloat(d.recharge).toFixed(2),
+            parseFloat(d.sc_shop).toFixed(2),
+            parseFloat(d.sc_dealer).toFixed(2),
+            parseFloat(d.total_revenue).toFixed(2)
+        ]);
+    });
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Sales Report');
+    XLSX.writeFile(wb, `Sales_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    showSuccessPopup('បាន Export ទៅ Excel ដោយជោគជ័យ!');
+}
 
 // ===================== SIGNUP MODAL FUNCTIONS =====================
 function openSignupModal() {
@@ -1204,7 +1468,6 @@ function sendToTelegram() {
     window.open('https://t.me/saray2026123', '_blank');
 }
 
-// ===================== SOCIAL LOGIN FUNCTIONS =====================
 function loginWithGoogle() {
     alert('Google Login នឹងត្រូវបានអភិវឌ្ឍនាពេលខាងមុខ!');
 }
@@ -1242,8 +1505,9 @@ window.onclick = function(e) {
 }
 
 // ===================== END OF APP.JS =====================
-console.log('✅ app.js loaded successfully - Performance Charts v20.0');
+console.log('✅ app.js loaded successfully - v21.0 COMPLETE WITH DEPOSIT MODAL');
 console.log('📊 Sales Management System with Performance Tracking');
+console.log('💰 Deposit Modal Added with Enhanced Forms');
 console.log('👤 Admin: Full access | Supervisor: Branch access | Agent: Own data only');
 console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
 console.log('🚀 Ready to use!');
