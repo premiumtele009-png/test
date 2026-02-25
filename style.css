@@ -2077,23 +2077,32 @@ tfoot td {
     display: none;
 }
 
-/* ===================== RESPONSIVE DESIGN ===================== */
-@media (max-width: 968px) {
-    .login-container-new {
-        flex-direction: column;
-    }
+/* ===================== ENHANCED RESPONSIVE DESIGN ===================== */
 
-    .left-panel {
-        padding: 60px 40px;
+/* Large Tablets & Laptops - 1025px to 1440px */
+@media (max-width: 1440px) and (min-width: 1025px) {
+    .container {
+        max-width: 1200px;
     }
+}
 
-    .right-panel {
-        padding: 60px 40px;
+/* Tablets (Portrait) - 769px to 1024px */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .sidebar {
+        width: 220px;
     }
-
-    .modal-content {
-        margin: 10% auto;
-        width: 95%;
+    
+    .main-content {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+    }
+    
+    .dashboard-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-row-4 {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .dashboard-charts {
@@ -2101,23 +2110,73 @@ tfoot td {
     }
 }
 
+/* Tablets & Small Devices - 768px and below */
 @media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    /* ===== LOGIN PAGE RESPONSIVE ===== */
+    .login-container-new {
+        flex-direction: column;
+        margin: 0;
+        border-radius: 0;
+        max-width: 100%;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .left-panel {
+        padding: 30px 20px;
+        min-height: auto;
+    }
+    
+    .left-panel h1 {
+        font-size: 22px;
+    }
+    
+    .left-panel > p {
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+    
+    .icon-circle {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 20px;
+    }
+    
+    .icon-circle svg {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .features {
+        display: none;
+    }
+    
+    .right-panel {
+        padding: 30px 20px;
+        flex: 1;
+    }
+    
+    .right-panel h2 {
+        font-size: 22px;
+    }
+    
+    .right-panel .subtitle {
+        font-size: 13px;
+    }
+    
     .social-login {
         flex-direction: column;
     }
-
-    .form-row, .form-row-3, .form-row-4 {
-        grid-template-columns: 1fr;
-    }
     
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-        padding: 15px;
-    }
-    
+    /* ===== SIDEBAR MOBILE ===== */
     .sidebar {
-        width: 70px;
+        width: 60px;
+        overflow-x: hidden;
+        transition: width 0.3s ease;
     }
     
     .sidebar-title h1 {
@@ -2125,113 +2184,533 @@ tfoot td {
     }
     
     .sidebar-icon {
-        font-size: 24px;
+        font-size: 20px;
+        margin: 0 auto;
     }
     
-    .sidebar-menu li a span {
-        display: none;
+    .sidebar-header {
+        padding: 15px 5px;
     }
     
     .sidebar-header .user-info {
         display: none;
     }
     
-    .dashboard-cards {
-        grid-template-columns: 1fr;
+    .sidebar-menu li a span {
+        display: none;
     }
     
-    .table-actions {
-        flex-direction: column;
-        width: 100%;
+    .sidebar-menu li a {
+        justify-content: center;
+        padding: 15px 5px;
+        border-left: none;
     }
     
-    .add-customer-btn, .topup-btn, .add-user-btn {
-        width: 100%;
+    .sidebar-menu li a i {
+        margin-right: 0;
+        font-size: 20px;
+        width: auto;
+    }
+    
+    .sidebar-menu li.active a,
+    .sidebar-menu li a:hover {
+        background-color: rgba(255,255,255,0.15);
+        border-left: none;
+        border-bottom: 3px solid white;
+    }
+    
+    .sidebar-footer .logout-link span {
+        display: none;
+    }
+    
+    .sidebar-footer .logout-link {
         justify-content: center;
     }
     
+    /* ===== MAIN CONTENT MOBILE ===== */
+    .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+        padding: 15px 10px;
+    }
+    
+    .container {
+        max-width: 100%;
+    }
+    
+    /* ===== DASHBOARD CARDS ===== */
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 18px;
+    }
+    
+    .stat-card-value {
+        font-size: 26px;
+    }
+    
+    .stat-card-title {
+        font-size: 11px;
+    }
+    
+    /* ===== CHARTS ===== */
+    .dashboard-charts {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .chart-container-dashboard {
+        height: 250px;
+    }
+    
+    .chart-card {
+        padding: 20px 15px;
+    }
+    
+    .chart-card-title h3 {
+        font-size: 14px;
+    }
+    
+    /* ===== FORMS ===== */
+    .form-row,
+    .form-row-3,
+    .form-row-4 {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .form-card {
+        padding: 20px 15px;
+        border-radius: 10px;
+    }
+    
+    .form-header h2 {
+        font-size: 16px;
+    }
+    
+    .section-title h3 {
+        font-size: 13px;
+    }
+    
+    .submit-btn {
+        padding: 14px 20px;
+        font-size: 14px;
+    }
+    
+    /* ===== TABLES ===== */
+    .table-card {
+        padding: 15px 10px;
+        overflow-x: auto;
+        border-radius: 10px;
+    }
+    
+    .data-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 800px;
+        font-size: 12px;
+    }
+    
+    th,
+    td {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+    
+    .actions {
+        gap: 5px;
+        flex-wrap: nowrap;
+    }
+    
+    .edit-btn,
+    .delete-btn {
+        padding: 8px 10px;
+        min-width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    /* ===== FILTER CARDS ===== */
     .filter-card {
         flex-direction: column;
-        align-items: flex-start !important;
+        align-items: stretch;
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .filter-card > div {
+        width: 100%;
     }
     
     .filter-btn {
         width: 100%;
         justify-content: center;
+        padding: 12px 16px;
     }
     
+    /* ===== TABLE HEADER ===== */
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .table-header h2 {
+        font-size: 16px;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+    
+    .add-customer-btn,
+    .topup-btn,
+    .add-user-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+    
+    /* ===== PROMOTIONS ===== */
+    #promotionsGrid {
+        grid-template-columns: 1fr;
+    }
+    
+    .promotion-card {
+        padding: 18px;
+    }
+    
+    .promotion-card h3 {
+        font-size: 17px;
+        padding-right: 90px;
+    }
+    
+    .promotion-info {
+        font-size: 13px;
+    }
+    
+    /* ===== LEADERBOARD ===== */
+    .leaderboard-table table {
+        min-width: 700px;
+    }
+    
+    /* ===== SYNC BUTTONS ===== */
     .sync-buttons {
-        bottom: 20px;
-        right: 20px;
+        bottom: 15px;
+        right: 15px;
+        gap: 8px;
+    }
+    
+    .sync-btn {
+        padding: 0;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        justify-content: center;
     }
     
     .sync-btn span {
         display: none;
     }
     
-    .sync-btn {
-        width: 50px;
-        height: 50px;
-        padding: 0;
-        justify-content: center;
-        border-radius: 50%;
+    .sync-btn i {
+        font-size: 18px;
+        margin: 0;
     }
     
     .sync-info {
         font-size: 10px;
-        padding: 6px 8px;
+        padding: 6px 10px;
     }
-}
-
-@media (max-width: 480px) {
-    .left-panel h1 {
-        font-size: 28px;
-    }
-
-    .right-panel h2 {
-        font-size: 26px;
-    }
-
+    
+    /* ===== MODALS ===== */
     .modal-content {
+        width: 95%;
         margin: 5% auto;
+        max-height: 90vh;
+        overflow-y: auto;
     }
-
+    
+    .modal-header {
+        padding: 20px 20px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
     .modal-body {
         padding: 20px;
     }
+    
+    /* ===== REPORT FILTERS ===== */
+    .report-filter-input {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    #reportBranchFilterContainer {
+        width: 100%;
+    }
+    
+    .filter-card > div:last-child {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-card > div:last-child > div {
+        width: 100%;
+    }
+    
+    /* ===== BRANCH LEGEND ===== */
+    .branch-legend-item {
+        flex-wrap: wrap;
+    }
+}
 
+/* Small Mobile Phones - 480px and below */
+@media (max-width: 480px) {
+    /* ===== LOGIN ===== */
+    .left-panel {
+        padding: 25px 15px;
+    }
+    
+    .left-panel h1 {
+        font-size: 20px;
+    }
+    
+    .left-panel > p {
+        font-size: 13px;
+    }
+    
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .icon-circle svg {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .right-panel {
+        padding: 25px 15px;
+    }
+    
+    .right-panel h2 {
+        font-size: 20px;
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+        padding: 12px 45px 12px 48px;
+        font-size: 14px;
+    }
+    
+    .btn-login {
+        padding: 14px;
+        font-size: 15px;
+    }
+    
+    /* ===== CONTENT ===== */
+    .main-content {
+        padding: 10px 8px;
+    }
+    
+    .form-card,
+    .table-card,
+    .chart-card {
+        padding: 15px 12px;
+        border-radius: 8px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+    }
+    
+    .stat-card-value {
+        font-size: 22px;
+    }
+    
+    .chart-container-dashboard {
+        height: 220px;
+    }
+    
+    /* ===== TABLES ===== */
+    table {
+        min-width: 700px;
+        font-size: 11px;
+    }
+    
+    th,
+    td {
+        padding: 8px 6px;
+        font-size: 11px;
+    }
+    
+    .edit-btn,
+    .delete-btn {
+        padding: 6px 8px;
+        min-width: 32px;
+        height: 32px;
+    }
+    
+    /* ===== MODALS ===== */
+    .modal-content {
+        border-radius: 12px;
+    }
+    
+    .modal-header {
+        padding: 18px 15px;
+    }
+    
+    .modal-header h3 {
+        font-size: 17px;
+    }
+    
+    .modal-body {
+        padding: 18px 15px;
+    }
+    
     .example-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 5px;
     }
-
+    
     .example-label {
         min-width: auto;
     }
-}
-
-@media (max-width: 360px) {
-    .login-container-new {
-        border-radius: 16px;
+    
+    /* ===== SUCCESS POPUP ===== */
+    .success-popup {
+        padding: 25px 20px;
+        width: 90%;
+        margin: 0 5%;
     }
     
-    .right-panel {
-        padding: 40px 20px;
+    .success-popup h3 {
+        font-size: 19px;
     }
     
-    .form-group input[type="text"],
-    .form-group input[type="password"] {
-        padding: 14px 45px 14px 50px;
+    .success-popup p {
         font-size: 14px;
     }
     
-    .btn-login {
-        padding: 15px;
-        font-size: 15px;
+    /* ===== SYNC BUTTONS ===== */
+    .sync-btn {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .sync-btn i {
+        font-size: 16px;
     }
 }
 
+/* Extra Small Phones - 360px and below */
+@media (max-width: 360px) {
+    .sidebar {
+        width: 50px;
+    }
+    
+    .main-content {
+        margin-left: 50px;
+        width: calc(100% - 50px);
+        padding: 10px 5px;
+    }
+    
+    .sidebar-menu li a {
+        padding: 12px 5px;
+    }
+    
+    .sidebar-menu li a i {
+        font-size: 18px;
+    }
+    
+    .sync-btn {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .sync-btn i {
+        font-size: 15px;
+    }
+    
+    table {
+        min-width: 650px;
+        font-size: 10px;
+    }
+    
+    th,
+    td {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+    
+    .stat-card-value {
+        font-size: 20px;
+    }
+    
+    .form-card,
+    .table-card {
+        padding: 12px 10px;
+    }
+}
+
+/* Landscape Tablets */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .dashboard-charts {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-row-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Touch Devices - Improve Touch Targets */
+@media (hover: none) and (pointer: coarse) {
+    .filter-btn,
+    .edit-btn,
+    .delete-btn,
+    .submit-btn,
+    .add-customer-btn,
+    .topup-btn,
+    .add-user-btn,
+    .social-btn,
+    .btn-login {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .sidebar-menu li a {
+        min-height: 48px;
+    }
+    
+    input,
+    select,
+    textarea,
+    button {
+        font-size: 16px !important;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 14px 18px;
+    }
+}
+
+/* Print Styles */
 @media print {
     .sidebar,
     .sync-buttons,
@@ -2242,7 +2721,13 @@ tfoot td {
     .delete-btn,
     .add-customer-btn,
     .add-user-btn,
-    .topup-btn {
+    .topup-btn,
+    .sync-status,
+    .success-popup,
+    .success-popup-overlay,
+    .modal,
+    .login-overlay,
+    .table-actions {
         display: none !important;
     }
     
@@ -2257,88 +2742,53 @@ tfoot td {
     
     table {
         page-break-inside: auto;
+        min-width: 100%;
+        font-size: 10px;
     }
     
     tr {
         page-break-inside: avoid;
         page-break-after: auto;
     }
-}
-
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #218838 0%, #1ba87d 100%);
-}
-
-tbody tr {
-    animation: fadeInRow 0.3s ease;
-}
-
-@keyframes fadeInRow {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+    
+    thead {
+        display: table-header-group;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    
+    tfoot {
+        display: table-footer-group;
+    }
+    
+    .chart-container-dashboard,
+    .dashboard-charts {
+        display: none;
+    }
+    
+    .table-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
     }
 }
 
-* {
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-*:focus-visible {
-    outline: 2px solid #28a745;
-    outline-offset: 2px;
-}
-
-::selection {
-    background: #28a745;
-    color: white;
-}
-
-::-moz-selection {
-    background: #28a745;
-    color: white;
-}
-
-button,
-.btn-login,
-.filter-btn,
-.social-btn,
-.submit-btn {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
-@media (max-width: 768px) {
-    input[type="text"],
-    input[type="password"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="number"],
-    input[type="date"],
-    select,
-    textarea {
-        font-size: 16px !important;
+/* High DPI Screens */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+    * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 }
 
-/* END OF STYLE.CSS */
+/* Reduced Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* END OF ENHANCED RESPONSIVE DESIGN */
