@@ -474,7 +474,6 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-/* Enhanced Professional Input Styling */
 .right-panel .form-group input[type="text"],
 .right-panel .form-group input[type="password"] {
     padding: 16px 50px 16px 55px;
@@ -524,7 +523,6 @@ body {
     font-family: 'Kantumruy Pro', 'Segoe UI', sans-serif;
 }
 
-/* Input with icons (for login page) */
 .input-wrapper input {
     padding-left: 55px;
 }
@@ -852,7 +850,7 @@ body {
     font-family: 'Kantumruy Pro', sans-serif;
 }
 
-/* SIGNUP MODAL */
+/* MODAL */
 .modal {
     display: none;
     position: fixed;
