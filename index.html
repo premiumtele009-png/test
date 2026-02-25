@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងការលក់ V20.0 - Smart Axiata</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងការលក់ V21.0 - Smart Axiata</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,6 @@
     <!-- Sync Status Bar -->
     <div id="syncStatus" class="sync-status" style="display:none;"></div>
 
-    <!-- ✅ GOOGLE APPS SCRIPT URL -->
     <script>
         window.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyymhCml5TyRKDxjOPmUrHaliX_u0oLPXh5Q8RstRLQUQ1PgYLP66vz5_8WAbfHG3xb/exec';
         
@@ -39,7 +38,7 @@
             PROMOTIONS: 'Promotions'
         };
         
-        console.log('✅ Config loaded v20.0');
+        console.log('✅ Config loaded v21.0 COMPLETE');
         console.log('🔗 URL:', window.GOOGLE_APPS_SCRIPT_URL);
     </script>
 
@@ -361,9 +360,8 @@
                     </div>
                 </div>
 
-                <!-- DAILY SALES PAGE - ENHANCED WITH PERFORMANCE CHART -->
+                <!-- DAILY SALES PAGE -->
                 <div id="daily-sales-page" class="hidden">
-                    <!-- Performance Chart Section -->
                     <div class="chart-card">
                         <div class="chart-card-header">
                             <div class="chart-card-title">
@@ -386,7 +384,6 @@
                             <canvas id="salesPerformanceChart"></canvas>
                         </div>
                         
-                        <!-- Performance Summary Cards -->
                         <div class="performance-summary">
                             <div class="performance-card growth">
                                 <div class="performance-icon">
@@ -427,7 +424,6 @@
                         </div>
                     </div>
 
-                    <!-- Sales Entry Form -->
                     <div class="form-card">
                         <div class="form-header">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -468,54 +464,23 @@
                     </div>
                 </div>
 
-                <!-- DEPOSIT PAGE -->
+                <!-- DEPOSIT PAGE - NEW WITH MODAL -->
                 <div id="deposit-page" class="hidden">
                     <div class="form-card">
                         <div class="form-header">
-                            <i class="fas fa-coins"></i><h2>បញ្ជូលការដាក់ប្រាក់</h2>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-coins"></i>
+                                <h2>ការដាក់ប្រាក់</h2>
+                            </div>
+                            <button class="add-customer-btn" onclick="openDepositModal()">
+                                <i class="fas fa-plus-circle"></i> បញ្ជូលការដាក់ប្រាក់
+                            </button>
                         </div>
 
                         <div class="info-message">
                             <i class="fas fa-info-circle"></i>
-                            <p>សូមបញ្ចូលទិន្ន័យរបស់លោកអ្នកអោយបានត្រឹមត្រូវ</p>
+                            <p>ចុចប៊ូតុង "បញ្ជូលការដាក់ប្រាក់" ដើម្បីបន្ថែមទិន្នន័យថ្មី</p>
                         </div>
-
-                        <form id="depositForm">
-                            <div class="form-row-4">
-                                <div class="form-group">
-                                    <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
-                                    <input type="date" id="deposit_date" required>
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label>
-                                    <input type="text" id="deposit_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-money-bill"></i> Cash ($)</label>
-                                    <input type="number" id="cash" value="0.00" step="0.01" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-credit-card"></i> Credit ($)</label>
-                                    <input type="number" id="credit" value="0.00" step="0.01" min="0">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group form-group-full">
-                                    <label><i class="fas fa-sticky-note"></i> កំណត់ចំណាំ</label>
-                                    <textarea id="note" placeholder="សំគាល់បន្ថែម..."></textarea>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group"></div>
-                                <div class="form-group">
-                                    <button type="submit" class="submit-btn">
-                                        <i class="fas fa-save"></i> រក្សាទុក
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
 
                         <div class="table-card">
                             <div class="table-header">
@@ -540,8 +505,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- REPORTS PAGE -->
+                                <!-- REPORTS PAGE -->
                 <div id="reports-page" class="hidden">
                     <div class="form-card">
                         <div class="form-header">
@@ -700,9 +664,201 @@
                     </div>
                 </div>
 
-                <!-- CUSTOMERS, PROMOTIONS, SETTINGS PAGES - Keep as previous version -->
-                <!-- (Due to character limit, these sections remain the same as v19.0) -->
-                
+                <!-- CUSTOMERS PAGE -->
+                <div id="customers-page" class="hidden">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-users"></i><h2>អតិថិជន</h2>
+                            </div>
+                            <div class="table-actions">
+                                <button class="add-customer-btn" onclick="openCustomerModal()">
+                                    <i class="fas fa-user-plus"></i> បន្ថែមអតិថិជន
+                                </button>
+                            </div>
+                        </div>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ថ្ងៃខែ</th>
+                                        <th>បុគ្គលិក</th>
+                                        <th>សាខា</th>
+                                        <th>ឈ្មោះអតិថិជន</th>
+                                        <th>លេខទូរសព្ទ</th>
+                                        <th>ផលិតផល</th>
+                                        <th>Status</th>
+                                        <th>Remark</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-mobile-alt"></i><h2>Top Up</h2>
+                            </div>
+                            <div class="table-actions">
+                                <button class="topup-btn" onclick="openTopUpModal()">
+                                    <i class="fas fa-plus-circle"></i> បន្ថែម Top Up
+                                </button>
+                            </div>
+                        </div>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ថ្ងៃខែ</th>
+                                        <th>បុគ្គលិក</th>
+                                        <th>សាខា</th>
+                                        <th>ឈ្មោះអតិថិជន</th>
+                                        <th>លេខទូរសព្ទ</th>
+                                        <th>លេខទាក់ទង</th>
+                                        <th>ផលិតផល</th>
+                                        <th>ថ្ងៃផុតកំណត់</th>
+                                        <th>Remark</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topupTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-card" style="border-left: 4px solid #dc3545;">
+                        <div class="table-header" style="border-bottom: 2px solid #dc3545;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                                <h2>អតិថិជនជិតផុតកំណត់ & ផុតកំណត់រួចហើយ</h2>
+                            </div>
+                        </div>
+
+                        <div id="expiryDangerWarning" class="hidden" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left: 4px solid #dc3545; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2); animation: pulseMsg 2s infinite;">
+                            <i class="fas fa-times-circle" style="color: #dc3545; font-size: 20px; margin-right: 10px;"></i>
+                            <p style="color: #721c24; font-size: 14px; font-weight: 600; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">មានអតិថិជន <span id="expiredCount" style="font-size: 18px; font-weight: 700;">0</span> នាក់ ផុតកំណត់រួចហើយ!</p>
+                        </div>
+
+                        <div id="expiryWarning" class="hidden" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 4px solid #ffc107; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
+                            <i class="fas fa-exclamation-triangle" style="color: #f57c00; font-size: 18px; margin-right: 10px;"></i>
+                            <p style="color: #856404; font-size: 14px; font-weight: 600; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">មានអតិថិជន <span id="expirySoonCount" style="font-size: 18px; font-weight: 700;">0</span> នាក់ ជិតផុតកំណត់ក្នុងរយៈពេល 7 ថ្ងៃខាងមុខ!</p>
+                        </div>
+
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ថ្ងៃខែ</th>
+                                        <th>បុគ្គលិក</th>
+                                        <th>សាខា</th>
+                                        <th>ឈ្មោះអតិថិជន</th>
+                                        <th>លេខទូរសព្ទ</th>
+                                        <th>លេខទាក់ទង</th>
+                                        <th>ផលិតផល</th>
+                                        <th>ថ្ងៃផុតកំណត់</th>
+                                        <th>ស្ថានភាព</th>
+                                        <th>Remark</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expiryTableBody">
+                                    <tr>
+                                        <td colspan="11" style="text-align: center; padding: 30px; color: #6c757d;">
+                                            <i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                                            គ្មានអតិថិជនជិតផុតកំណត់ ឬ ផុតកំណត់ទេ
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROMOTIONS PAGE -->
+                <div id="promotions-page" class="hidden">
+                    <div class="form-card">
+                        <div class="form-header">
+                            <i class="fas fa-gift"></i><h2>ប្រូម៉ូសិនថ្មី - Promotions Management</h2>
+                        </div>
+
+                        <div class="info-message">
+                            <i class="fas fa-info-circle"></i>
+                            <p>គ្រប់គ្រង និង តាមដានប្រូម៉ូសិនទាំងអស់របស់អ្នក</p>
+                        </div>
+
+                        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <input type="text" 
+                                   id="searchPromotion" 
+                                   placeholder="ស្វែងរក Channel, Campaign..." 
+                                   style="padding: 12px 18px; border: 2px solid #e1e8ed; border-radius: 10px; width: 300px; font-family: 'Kantumruy Pro', sans-serif; font-size: 14px; transition: all 0.3s ease;"
+                                   oninput="filterPromotions(this.value)">
+                            
+                            <button class="add-customer-btn" onclick="openPromotionModal()">
+                                <i class="fas fa-plus"></i> បន្ថែមប្រូម៉ូសិន
+                            </button>
+                        </div>
+
+                        <div id="promotionsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;"></div>
+
+                        <div id="promotionsEmptyState" class="hidden" style="text-align: center; padding: 60px 20px;">
+                            <i class="fas fa-gift" style="font-size: 64px; color: #bdc3c7; margin-bottom: 20px;"></i>
+                            <h3 style="color: #7f8c8d; margin-bottom: 10px;">មិនទាន់មានប្រូម៉ូសិននៅឡើយទេ</h3>
+                            <p style="color: #95a5a6;">សូមចុចប៊ូតុង "បន្ថែមប្រូម៉ូសិន" ដើម្បីបង្កើតប្រូម៉ូសិនថ្មី</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS PAGE -->
+                <div id="settings-page" class="hidden">
+                    <div class="form-card" id="settingsAdminOnly">
+                        <div class="form-header">
+                            <i class="fas fa-users-cog"></i><h2>គ្រប់គ្រងអ្នកប្រើប្រាស់</h2>
+                        </div>
+
+                        <div class="info-message">
+                            <i class="fas fa-info-circle"></i>
+                            <p>បង្កើត និង គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់សម្រាប់ Admin, Supervisor និង Agent</p>
+                        </div>
+
+                        <div class="table-card">
+                            <div class="table-header">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-users"></i><h2>បញ្ជីអ្នកប្រើប្រាស់</h2>
+                                </div>
+                                <div class="table-actions">
+                                    <button class="add-user-btn" onclick="openUserModal()">
+                                        <i class="fas fa-user-plus"></i> បន្ថែមអ្នកប្រើប្រាស់
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="data-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Full Name</th>
+                                            <th>Role</th>
+                                            <th>Branch</th>
+                                            <th>Status</th>
+                                            <th>Created Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-message hidden" id="settingsAgentMessage" style="background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left: 4px solid #dc3545;">
+                        <i class="fas fa-lock" style="color: #dc3545;"></i>
+                        <p style="color: #721c24;">អ្នកមិនមានសិទ្ធិចូលប្រើផ្នែកនេះទេ។ ទំព័រនេះសម្រាប់តែ Admin ប៉ុណ្ណោះ។</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -783,7 +939,329 @@
                     <div class="form-row" style="margin-top: 20px;">
                         <div class="form-group"></div>
                         <div class="form-group" style="display: flex; gap: 10px;">
-                            <button type="button" class="cancel-btn" onclick="closeSalesModal()" style="background: #6c757d; flex: 1;">
+                            <button type="button" class="cancel-btn" onclick="closeSalesModal()" style="flex: 1;">
+                                <i class="fas fa-times"></i> បិទ
+                            </button>
+                            <button type="submit" class="submit-btn" style="flex: 1;">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEPOSIT MODAL (NEW) -->
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header deposit-header">
+                <h3><i class="fas fa-coins"></i> <span id="depositModalTitle">បញ្ជូលការដាក់ប្រាក់</span></h3>
+                <span class="close" onclick="closeDepositModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="depositFormModal">
+                    <input type="hidden" id="edit_deposit_index">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
+                            <input type="date" id="modal_deposit_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label>
+                            <input type="text" id="modal_deposit_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-money-bill"></i> Cash ($)</label>
+                            <input type="number" id="modal_cash" value="0.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-credit-card"></i> Credit ($)</label>
+                            <input type="number" id="modal_credit" value="0.00" step="0.01" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group form-group-full">
+                            <label><i class="fas fa-sticky-note"></i> កំណត់ចំណាំ</label>
+                            <textarea id="modal_note" placeholder="សំគាល់បន្ថែម..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 20px;">
+                        <div class="form-group"></div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="cancel-btn" onclick="closeDepositModal()" style="flex: 1;">
+                                <i class="fas fa-times"></i> បិទ
+                            </button>
+                            <button type="submit" class="submit-btn" style="flex: 1;">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER MODAL -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> <span id="userModalTitle">បន្ថែមអ្នកប្រើប្រាស់ថ្មី</span></h3>
+                <span class="close" onclick="closeUserModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="edit_user_index">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Username</label>
+                            <input type="text" id="user_username" placeholder="បញ្ចូល username..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-id-card"></i> Full Name</label>
+                            <input type="text" id="user_fullname" placeholder="បញ្ចូលឈ្មោះពេញ..." required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" id="user_password" placeholder="បញ្ចូលពាក្យសម្ងាត់..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tag"></i> Role</label>
+                            <select id="user_role" required>
+                                <option value="">Select Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="agent">Agent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-building"></i> Branch</label>
+                            <input type="text" id="user_branch" placeholder="បញ្ចូលសាខា..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-toggle-on"></i> Status</label>
+                            <select id="user_status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="cancel-btn" onclick="closeUserModal()" style="flex: 1;">
+                                <i class="fas fa-times"></i> បិទ
+                            </button>
+                            <button type="submit" class="submit-btn" style="flex: 1;">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER MODAL -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> <span id="customerModalTitle">បន្ថែមអតិថិជនថ្មី</span></h3>
+                <span class="close" onclick="closeCustomerModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm">
+                    <input type="hidden" id="edit_customer_index">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែឆ្នាំ</label>
+                            <input type="date" id="cust_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tie"></i> បុគ្គលិក</label>
+                            <input type="text" id="cust_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label>
+                            <input type="text" id="cust_name" placeholder="បញ្ចូលឈ្មោះអតិថិជន..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label>
+                            <input type="tel" id="cust_phone" placeholder="បញ្ចូលលេខទូរសព្ទ..." required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> ផលិតផល</label>
+                            <select id="cust_product" required>
+                                <option value="">ជ្រើសរើសផលិតផល</option>
+                                <option value="Smart@Home">Smart@Home</option>
+                                <option value="Smart Fiber+">Smart Fiber+</option>
+                                <option value="M2M">M2M</option>
+                                <option value="Smart Laor 6">Smart Laor 6</option>
+                                <option value="Smart Laor 10">Smart Laor 10</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-flag"></i> Status</label>
+                            <select id="cust_status" required>
+                                <option value="">ជ្រើសរើស Status</option>
+                                <option value="New Lead">New Lead</option>
+                                <option value="Prospect">Prospect</option>
+                                <option value="Hot Prospect">Hot Prospect</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-group-full">
+                            <label><i class="fas fa-comment"></i> Remark</label>
+                            <textarea id="cust_remark" placeholder="បញ្ចូលកំណត់ចំណាំ..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="cancel-btn" onclick="closeCustomerModal()" style="flex: 1;">
+                                <i class="fas fa-times"></i> បិទ
+                            </button>
+                            <button type="submit" class="submit-btn" style="flex: 1;">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOPUP MODAL -->
+    <div id="topupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header topup-header">
+                <h3><i class="fas fa-mobile-alt"></i> <span id="topupModalTitle">បន្ថែម Top Up</span></h3>
+                <span class="close" onclick="closeTopUpModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="topupForm">
+                    <input type="hidden" id="edit_topup_index">
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label>
+                            <input type="date" id="topup_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tie"></i> បុគ្គលិក</label>
+                            <input type="text" id="topup_staff" placeholder="បញ្ចូលឈ្មោះបុគ្គលិក...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label>
+                            <input type="text" id="topup_customer" placeholder="បញ្ចូលឈ្មោះអតិថិជន..." required>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label>
+                            <input type="tel" id="topup_phone" placeholder="បញ្ចូលលេខទូរសព្ទ..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-phone-alt"></i> លេខទាក់ទង</label>
+                            <input type="tel" id="topup_contact" placeholder="លេខទាក់ទង (ជាជម្រើស)...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-box"></i> ផលិតផល</label>
+                            <select id="topup_product" required>
+                                <option value="">ជ្រើសរើសផលិតផល</option>
+                                <option value="Smart@Home">Smart@Home</option>
+                                <option value="Smart Fiber+">Smart Fiber+</option>
+                                <option value="M2M">M2M</option>
+                                <option value="Smart Laor 6">Smart Laor 6</option>
+                                <option value="Smart Laor 10">Smart Laor 10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-times"></i> ថ្ងៃផុតកំណត់</label>
+                            <input type="date" id="topup_expiry" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-comment"></i> Remark</label>
+                            <textarea id="topup_remark" placeholder="បញ្ចូលកំណត់ចំណាំ..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="cancel-btn" onclick="closeTopUpModal()" style="flex: 1;">
+                                <i class="fas fa-times"></i> បិទ
+                            </button>
+                            <button type="submit" class="submit-btn" style="flex: 1;">
+                                <i class="fas fa-save"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROMOTION MODAL -->
+    <div id="promotionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-gift"></i> <span id="promotionModalTitle">បន្ថែមប្រូម៉ូសិន</span></h3>
+                <span class="close" onclick="closePromotionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="promotionForm">
+                    <input type="hidden" id="edit_promotion_index">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-tv"></i> Channel</label>
+                            <input type="text" id="promo_channel" placeholder="បញ្ចូល Channel..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-bullhorn"></i> Campaign</label>
+                            <input type="text" id="promo_campaign" placeholder="បញ្ចូលឈ្មោះ Campaign..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> ថ្ងៃចាប់ផ្ដើម</label>
+                            <input type="date" id="promo_start_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-times"></i> ថ្ងៃបញ្ចប់</label>
+                            <input type="date" id="promo_end_date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group form-group-full">
+                            <label><i class="fas fa-file-alt"></i> លក្ខខណ្ឌ</label>
+                            <textarea id="promo_terms" placeholder="បញ្ចូលលក្ខខណ្ឌ..." required style="min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"></div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="cancel-btn" onclick="closePromotionModal()" style="flex: 1;">
                                 <i class="fas fa-times"></i> បិទ
                             </button>
                             <button type="submit" class="submit-btn" style="flex: 1;">
@@ -809,10 +1287,8 @@
         </div>
     </div>
 
-    <!-- Load app.js -->
     <script src="app.js"></script>
     
-    <!-- Sync Script -->
     <script>
 const GOOGLE_APPS_SCRIPT_URL = window.GOOGLE_APPS_SCRIPT_URL;
 const SHEETS = window.SHEETS;
