@@ -4,13 +4,13 @@ let usersData = [
     {username: 'admin', password: 'admin@2026', fullname: 'System Administrator', role: 'admin', branch: 'Head Office', status: 'active', createdDate: '2026-01-01'}
 ];
 let salesData = [], depositData = [], customersData = [], topupData = [], promotionsData = [];
-let salesChart = null, reportsChart = null, reportsGrowthChart = null, editingSalesIndex = null, editingDepositIndex = null;
+let salesChart = null, reportsChart = null, reportsGrowthChart = null, editingDepositIndex = null;
 let dashboardChart1 = null, dashboardChart2 = null, currentDashboardFilter = 'today';
 let currentReportPeriod = 'monthly';
 let reportFilteredData = [];
 let editingPromotionIndex = null;
 
-console.log('🚀 app.js loading with Enhanced Permissions v18.0...');
+console.log('🚀 app.js loading with Sales Modal v19.0...');
 console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
 
 // ===================== UTILITY FUNCTIONS =====================
@@ -250,15 +250,7 @@ window.addEventListener('load', async function() {
     document.getElementById('userRole').textContent = roleDisplay;
     
     const today = new Date().toISOString().split('T')[0];
-    if (document.getElementById('date')) document.getElementById('date').value = today;
     if (document.getElementById('deposit_date')) document.getElementById('deposit_date').value = today;
-    
-    if (userData.username !== 'admin') {
-        if (document.getElementById('staff_name')) document.getElementById('staff_name').value = userData.fullname;
-        if (document.getElementById('deposit_staff')) document.getElementById('deposit_staff').value = userData.fullname;
-    }
-    
-    if (document.getElementById('branch_name')) document.getElementById('branch_name').value = userData.branch;
     
     loadDataFromStorage();
     checkUserPermissions();
@@ -316,15 +308,7 @@ document.getElementById('loginFormPopup').addEventListener('submit', async funct
             document.getElementById('userRole').textContent = roleDisplay;
             
             const today = new Date().toISOString().split('T')[0];
-            if (document.getElementById('date')) document.getElementById('date').value = today;
             if (document.getElementById('deposit_date')) document.getElementById('deposit_date').value = today;
-            
-            if (user.username !== 'admin') {
-                if (document.getElementById('staff_name')) document.getElementById('staff_name').value = user.fullname;
-                if (document.getElementById('deposit_staff')) document.getElementById('deposit_staff').value = user.fullname;
-            }
-            
-            if (document.getElementById('branch_name')) document.getElementById('branch_name').value = user.branch;
             
             loadDataFromStorage();
             checkUserPermissions();
@@ -653,46 +637,75 @@ function generateLeaderboard() {
     }
 }
 
-// ===================== SALES FORM =====================
-document.getElementById('salesForm').addEventListener('submit', function(e) {
+// ===================== SALES MODAL FUNCTIONS =====================
+function openSalesModal() {
+    document.getElementById('salesModal').style.display = 'block';
+    document.getElementById('edit_sales_index').value = '';
+    document.getElementById('salesModalTitle').textContent = 'បញ្ចូលទិន្ន័យការលក់';
+    
+    // Set default values
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('modal_date').value = today;
+    
+    if (currentUser.username !== 'admin') {
+        document.getElementById('modal_staff_name').value = currentUser.fullname;
+        document.getElementById('modal_staff_name').readOnly = true;
+    } else {
+        document.getElementById('modal_staff_name').value = '';
+        document.getElementById('modal_staff_name').readOnly = false;
+    }
+    
+    document.getElementById('modal_branch_name').value = currentUser.branch;
+    
+    // Reset all number fields
+    ['modal_gross_ads', 'modal_change_sim', 'modal_s_at_home', 'modal_fiber_plus'].forEach(id => {
+        document.getElementById(id).value = '0';
+    });
+    
+    ['modal_recharge', 'modal_sc_shop', 'modal_sc_dealer', 'modal_total_revenue'].forEach(id => {
+        document.getElementById(id).value = '0.00';
+    });
+}
+
+function closeSalesModal() {
+    document.getElementById('salesModal').style.display = 'none';
+    document.getElementById('salesFormModal').reset();
+}
+
+// Sales Form Submit Handler
+document.getElementById('salesFormModal').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    const editIndex = document.getElementById('edit_sales_index').value;
+    
     const formData = {
-        date: document.getElementById('date').value,
-        staff_name: document.getElementById('staff_name').value.trim() || currentUser.fullname,
-        branch: currentUser.branch,
-        gross_ads: document.getElementById('gross_ads').value,
-        change_sim: document.getElementById('change_sim').value,
-        s_at_home: document.getElementById('s_at_home').value,
-        fiber_plus: document.getElementById('fiber_plus').value,
-        recharge: document.getElementById('recharge').value,
-        sc_shop: document.getElementById('sc_shop').value,
-        sc_dealer: document.getElementById('sc_dealer').value,
-        total_revenue: document.getElementById('total_revenue').value
+        date: document.getElementById('modal_date').value,
+        staff_name: document.getElementById('modal_staff_name').value.trim() || currentUser.fullname,
+        branch: document.getElementById('modal_branch_name').value,
+        gross_ads: document.getElementById('modal_gross_ads').value,
+        change_sim: document.getElementById('modal_change_sim').value,
+        s_at_home: document.getElementById('modal_s_at_home').value,
+        fiber_plus: document.getElementById('modal_fiber_plus').value,
+        recharge: document.getElementById('modal_recharge').value,
+        sc_shop: document.getElementById('modal_sc_shop').value,
+        sc_dealer: document.getElementById('modal_sc_dealer').value,
+        total_revenue: document.getElementById('modal_total_revenue').value
     };
-    if (editingSalesIndex !== null) {
-        salesData[editingSalesIndex] = formData;
-        editingSalesIndex = null;
+    
+    if (editIndex !== '') {
+        // Editing existing record
+        salesData[editIndex] = formData;
         showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
+        // Adding new record
         salesData.push(formData);
         showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
     }
+    
     saveDataToStorage();
     refreshSalesTable();
-    resetSalesForm();
+    closeSalesModal();
 });
-
-function resetSalesForm() {
-    document.getElementById('salesForm').reset();
-    editingSalesIndex = null;
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date').value = today;
-    if (currentUser.username !== 'admin') document.getElementById('staff_name').value = currentUser.fullname;
-    document.getElementById('branch_name').value = currentUser.branch;
-    ['gross_ads', 'change_sim', 's_at_home', 'fiber_plus'].forEach(id => document.getElementById(id).value = '0');
-    ['recharge', 'sc_shop', 'sc_dealer', 'total_revenue'].forEach(id => document.getElementById(id).value = '0.00');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 function refreshSalesTable() {
     const tbody = document.getElementById('tableBody');
@@ -701,8 +714,11 @@ function refreshSalesTable() {
     // Apply role-based filtering
     let filteredData = getFilteredDataByRole(salesData);
     
+    // Sort by date (newest first)
+    filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
     if (!filteredData.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មានទិន្នន័យនៅឡើយទេ</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មានទិន្នន័យនៅឡើយទេ<br><small>សូមចុចប៊ូតុង "បញ្ចូលទិន្ន័យការលក់" ដើម្បីបន្ថែម</small></td></tr>';
         return;
     }
     
@@ -710,8 +726,19 @@ function refreshSalesTable() {
         const idx = salesData.indexOf(data);
         const canEdit = canEditData(data);
         const row = tbody.insertRow();
+        
+        // Format date to display nicely
+        const dateObj = new Date(data.date);
+        const formattedDate = dateObj.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        
         row.innerHTML = `
-            <td>${data.date}</td><td>${data.staff_name}</td><td>${data.branch}</td>
+            <td>${formattedDate}</td>
+            <td>${data.staff_name}</td>
+            <td>${data.branch}</td>
             <td>${data.gross_ads}/${data.change_sim}/${data.s_at_home}/${data.fiber_plus}</td>
             <td class="amount">$${parseFloat(data.recharge).toFixed(2)}/$${parseFloat(data.sc_shop).toFixed(2)}/$${parseFloat(data.sc_dealer).toFixed(2)}</td>
             <td class="total-amount">$${parseFloat(data.total_revenue).toFixed(2)}</td>
@@ -725,22 +752,36 @@ function refreshSalesTable() {
 
 function editSalesRow(index) {
     const data = salesData[index];
-    if (!canEditData(data)) { showSuccessPopup('អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ!'); return; }
-    editingSalesIndex = index;
-    document.getElementById('date').value = data.date;
-    document.getElementById('staff_name').value = data.staff_name;
-    document.getElementById('branch_name').value = data.branch;
-    ['gross_ads', 'change_sim', 's_at_home', 'fiber_plus'].forEach(k => document.getElementById(k).value = data[k]);
-    ['recharge', 'sc_shop', 'sc_dealer', 'total_revenue'].forEach(k => document.getElementById(k).value = parseFloat(data[k]).toFixed(2));
-    showPage('daily-sales');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const fc = document.querySelector('#daily-sales-page .form-card');
-    fc.style.borderLeft = '4px solid #ffc107';
-    setTimeout(() => fc.style.borderLeft = '4px solid #28a745', 2000);
+    if (!canEditData(data)) { 
+        showSuccessPopup('អ្នកមិនអាចកែប្រែទិន្នន័យនេះបានទេ!'); 
+        return; 
+    }
+    
+    // Open modal
+    document.getElementById('salesModal').style.display = 'block';
+    document.getElementById('edit_sales_index').value = index;
+    document.getElementById('salesModalTitle').textContent = 'កែប្រែទិន្ន័យការលក់';
+    
+    // Fill form with existing data
+    document.getElementById('modal_date').value = data.date;
+    document.getElementById('modal_staff_name').value = data.staff_name;
+    document.getElementById('modal_branch_name').value = data.branch;
+    
+    ['gross_ads', 'change_sim', 's_at_home', 'fiber_plus'].forEach(k => {
+        document.getElementById('modal_' + k).value = data[k];
+    });
+    
+    ['recharge', 'sc_shop', 'sc_dealer', 'total_revenue'].forEach(k => {
+        document.getElementById('modal_' + k).value = parseFloat(data[k]).toFixed(2);
+    });
 }
 
 function deleteSalesRow(index) {
-    if (!canEditData(salesData[index])) { showSuccessPopup('អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ!'); return; }
+    if (!canEditData(salesData[index])) { 
+        showSuccessPopup('អ្នកមិនអាចលុបទិន្នន័យនេះបានទេ!'); 
+        return; 
+    }
+    
     if (confirm('តើអ្នកប្រាកដថាចង់លុបទិន្នន័យនេះមែនទេ?')) {
         salesData.splice(index, 1);
         saveDataToStorage();
@@ -1208,7 +1249,7 @@ function exportToExcel() {
     showSuccessPopup('បាន Export ទិន្នន័យជាឯកសារ Excel ដោយជោគជ័យ!');
 }
 
-// ===================== CUSTOMERS =====================
+// ===================== CUSTOMERS (Keeping existing code) =====================
 function openCustomerModal() {
     document.getElementById('customerModal').style.display = 'block';
     document.getElementById('edit_customer_index').value = '';
@@ -1297,7 +1338,7 @@ function deleteCustomerRow(i) {
     }
 }
 
-// ===================== TOP UP =====================
+// ===================== TOP UP (Keeping existing code - truncated for length) =====================
 function openTopUpModal() {
     document.getElementById('topupModal').style.display = 'block';
     document.getElementById('edit_topup_index').value = '';
@@ -1557,7 +1598,7 @@ function editUserRow(i) {
     document.getElementById('user_password').required = false;
     document.getElementById('user_password').placeholder = 'ទុកទទេដើម្បីរក្សាពាក្យសម្ងាត់ចាស់';
     document.getElementById('edit_user_index').value = i;
-    document.getElementById('userModalTitle').textContent = 'កែប្រែអ្នក��្រើប្រាស់';
+    document.getElementById('userModalTitle').textContent = 'កែប្រែអ្នកប្រើប្រាស់';
     
     document.getElementById('user_username').disabled = true;
     document.getElementById('user_role').disabled = false;
@@ -1859,8 +1900,8 @@ window.onclick = function(e) {
 }
 
 // ===================== END OF APP.JS =====================
-console.log('✅ app.js loaded successfully - Enhanced Permissions v18.0');
-console.log('📱 Sales Management System with Role-Based Access Control');
+console.log('✅ app.js loaded successfully - Sales Modal v19.0');
+console.log('📱 Sales Management System with Modal Forms');
 console.log('👤 Admin: Full access | Supervisor: Branch access | Agent: Own data only');
 console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
 console.log('🚀 Ready to use!');
