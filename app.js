@@ -84,11 +84,67 @@ function loadDataFromStorage() {
     refreshPromotionsGrid();
 }
 
+// ===================== CROSS-DEVICE LOGIN: LOAD USERS FROM GOOGLE SHEETS =====================
+async function loadUsersFromGoogleSheetsForLogin() {
+    const urlBase = window.GOOGLE_APPS_SCRIPT_URL;
+    const usersSheet = window.SHEETS?.USERS || 'Users';
+    
+    if (!urlBase) {
+        console.warn('GOOGLE_APPS_SCRIPT_URL not available. Login will use localStorage only.');
+        return false;
+    }
+
+    try {
+        const url = `${urlBase}?action=GET_ALL&sheet=${encodeURIComponent(usersSheet)}&t=${Date.now()}`;
+        const res = await fetch(url, { method: 'GET', cache: 'no-cache' });
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+        const text = await res.text();
+        const json = JSON.parse(text);
+
+        if (!json.success) throw new Error(json.message || 'Failed to load Users from Google Sheets');
+
+        // Map both normalized and non-normalized keys
+        const loaded = (json.data || []).map(u => ({
+            username: (u.username ?? u.Username ?? '').toString().trim(),
+            password: (u.password ?? u.Password ?? '').toString(),
+            fullname: (u.fullname ?? u.full_name ?? u.Fullname ?? u.fullName ?? '').toString().trim(),
+            role: (u.role ?? u.Role ?? '').toString().trim().toLowerCase(),
+            branch: (u.branch ?? u.Branch ?? '').toString().trim(),
+            status: (u.status ?? u.Status ?? 'active').toString().trim().toLowerCase(),
+            createdDate: (u.createdDate ?? u.created_date ?? u.createddate ?? u.CreatedDate ?? '').toString().trim()
+        })).filter(u => u.username);
+
+        if (loaded.length > 0) {
+            usersData = loaded;
+            localStorage.setItem('usersData', JSON.stringify(usersData));
+            console.log(`✅ Loaded ${usersData.length} users from Google Sheets for cross-device login`);
+            return true;
+        }
+
+        console.warn('Users sheet returned 0 users.');
+        return false;
+    } catch (err) {
+        console.error('❌ loadUsersFromGoogleSheetsForLogin error:', err);
+        return false;
+    }
+}
+
 // ===================== PAGE LOAD & LOGIN =====================
-window.addEventListener('load', function() {
+window.addEventListener('load', async function() {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    
     if (!isLoggedIn) {
         document.getElementById('loginOverlay').classList.add('show');
+        
+        // Load cached data first
+        loadDataFromStorage();
+        
+        // NEW: Load Users from Google Sheets (cross-device login support)
+        await loadUsersFromGoogleSheetsForLogin();
+        
+        return;
     } else {
         const userData = JSON.parse(sessionStorage.getItem('userData'));
         currentUser = userData;
@@ -118,16 +174,26 @@ window.addEventListener('load', function() {
 });
 
 // ===================== LOGIN FORM HANDLER =====================
-document.getElementById('loginFormPopup').addEventListener('submit', function(e) {
+document.getElementById('loginFormPopup').addEventListener('submit', async function(e) {
     e.preventDefault();
     document.getElementById('errorMessage').classList.remove('show');
-    const username = document.getElementById('loginUsername').value;
+    
+    // NEW: Refresh users from Google Sheets right before login check (for cross-device support)
+    await loadUsersFromGoogleSheetsForLogin();
+    
+    const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
+    
     setTimeout(function() {
-        const user = usersData.find(u => u.username === username && u.password === password && u.status === 'active');
+        const user = usersData.find(u => 
+            u.username === username && 
+            u.password === password && 
+            u.status === 'active'
+        );
+        
         if (user) {
             currentUser = user;
             sessionStorage.setItem('isLoggedIn', 'true');
@@ -1033,7 +1099,7 @@ document.getElementById('customerForm').addEventListener('submit', function(e) {
         showSuccessPopup('បានកែប្រែអតិថិជនដោយជោគជ័យ!');
     } else {
         customersData.push(fd);
-        showSuccessPopup('អតិថិជនត្រូវបានបន្ថែមដោយជោគជ័យ!');
+        showSuccessPopup('អតិថិជនត្រ���វបានបន្ថែមដោយជោគជ័យ!');
     }
     saveDataToStorage();
     refreshCustomersTable();
@@ -1651,7 +1717,7 @@ window.onclick = function(e) {
 
 // ===================== END OF APP.JS =====================
 console.log('✅ App.js loaded successfully');
-console.log('📱 Sales Management System V17.0 with Promotions');
+console.log('📱 Sales Management System V17.0 with Cross-Device Login');
 console.log('🔐 Promotions: Admin (Add/Edit), Supervisor/Agent (View Only)');
-console.log('🔗 Google Sheets: https://script.google.com/macros/s/AKfycbyife3a_9tnA4VLy6dYSN1NmtAp4mVcfhAt0NBKHB6l75MG3UO1ZzQtSd4mVU0foR9I/exec');
-console.log('🚀 Ready to use!');
+console.log('🔗 Google Sheets: ' + window.GOOGLE_APPS_SCRIPT_URL);
+console.log('🚀 Ready to use on any device!');
