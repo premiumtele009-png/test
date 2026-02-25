@@ -27,6 +27,21 @@
     <!-- Sync Status Bar -->
     <div id="syncStatus" class="sync-status" style="display: none;"></div>
 
+    <!-- ===================== IMPORTANT: CONFIG BEFORE app.js ===================== -->
+    <script>
+        // NEW URL - Make available for app.js login (any PC/phone)
+        window.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyM3JqNnBQW-DoSuX1b27A64GrDFEWRyJ5JA7Z3UAb86kYwOgLAJH75E0gAdp_zMY84/exec';
+
+        window.SHEETS = {
+            USERS: 'Users',
+            SALES: 'Sales',
+            DEPOSITS: 'Deposits',
+            CUSTOMERS: 'Customers',
+            TOPUP: 'TopUp',
+            PROMOTIONS: 'Promotions'
+        };
+    </script>
+
     <!-- NEW PROFESSIONAL LOGIN OVERLAY -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-container-new">
@@ -140,7 +155,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert-message">
-                        ⚠️ សូមកំណត់ឈ្មោះនិងលេខកូដសម្ងាត់របស់​អ្នក រួចរក្សាទុកអោយបានត្���ឹមត្រូវ!
+                        ⚠️ សូមកំណត់ឈ្មោះនិងលេខកូដសម្ងាត់របស់​អ្នក រួចរក្សាទុកអោយបានត្រឹមត្រូវ!
                     </div>
                     
                     <div class="example-box">
@@ -1218,19 +1233,11 @@
     <!-- Main App Script -->
     <script src="app.js"></script>
     
-    <!-- Google Sheets Sync Script - COMPLETE WORKING VERSION WITH NEW URL -->
+    <!-- Google Sheets Sync Script -->
     <script>
-// ===================== GOOGLE SHEETS SYNC - WORKING VERSION =====================
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyife3a_9tnA4VLy6dYSN1NmtAp4mVcfhAt0NBKHB6l75MG3UO1ZzQtSd4mVU0foR9I/exec';
-
-const SHEETS = {
-    USERS: 'Users',
-    SALES: 'Sales',
-    DEPOSITS: 'Deposits',
-    CUSTOMERS: 'Customers',
-    TOPUP: 'TopUp',
-    PROMOTIONS: 'Promotions'
-};
+// ===================== GOOGLE SHEETS SYNC - COMPLETE VERSION WITH NEW URL =====================
+const GOOGLE_APPS_SCRIPT_URL = window.GOOGLE_APPS_SCRIPT_URL;
+const SHEETS = window.SHEETS;
 
 let isSyncing = false;
 let lastSyncTime = null;
@@ -1504,44 +1511,9 @@ window.addEventListener('offline', () => {
     showSyncStatus('⚠️ អ៊ីនធឺណិតផ្តាច់', 'error');
 });
 
-// ===================== TEST CONNECTION =====================
-async function testSyncConnection() {
-    console.log('\n========== TESTING SYNC CONNECTION ==========');
-    console.log('URL:', GOOGLE_APPS_SCRIPT_URL);
-    
-    try {
-        const url = `${GOOGLE_APPS_SCRIPT_URL}?action=TEST&t=${new Date().getTime()}`;
-        console.log('Test URL:', url);
-        
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
-        
-        const text = await response.text();
-        console.log('Response text:', text);
-        
-        const result = JSON.parse(text);
-        console.log('Parsed result:', result);
-        
-        if (result.success) {
-            console.log('✅ CONNECTION TEST SUCCESSFUL!');
-            console.log('Timestamp:', result.timestamp);
-            alert('✅ Connection successful!\nCheck console for details.');
-        } else {
-            console.error('❌ Test failed:', result.message);
-            alert('❌ Test failed: ' + result.message);
-        }
-    } catch (error) {
-        console.error('❌ CONNECTION TEST FAILED:', error);
-        alert('❌ Connection failed: ' + error.message);
-    }
-    
-    console.log('==========================================\n');
-}
-
 console.log('✅ Google Sheets Sync loaded');
 console.log('📍 URL:', GOOGLE_APPS_SCRIPT_URL);
 console.log('📊 Available sheets:', Object.values(SHEETS).join(', '));
-console.log('💡 Run testSyncConnection() to test');
     </script>
 </body>
 </html>
