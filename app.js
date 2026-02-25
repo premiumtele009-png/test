@@ -97,49 +97,69 @@ async function loadUsersFromGoogleSheetsForLogin() {
     }
 
     try {
-        console.log('📥 Loading users from Google Sheets for login...');
-        console.log('🔗 URL:', urlBase);
+        console.log('📥 Loading users from Google Sheets for cross-device login...');
+        console.log('🔗 NEW URL v2.0:', urlBase);
         
-        const url = `${urlBase}?action=GET_ALL&sheet=${encodeURIComponent(usersSheet)}&t=${Date.now()}`;
-        const res = await fetch(url, { 
-            method: 'GET', 
-            cache: 'no-cache'
-        });
+        const url = `${urlBase}?action=GET_ALL&sheet=${encodeURIComponent(usersSheet)}&_=${Date.now()}`;
         
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const response = await Promise.race([
+            fetch(url, { 
+                method: 'GET', 
+                cache: 'no-cache',
+                redirect: 'follow'
+            }),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout loading users')), 15000)
+            )
+        ]);
+        
+        if (!response.ok) {
+            console.warn(`⚠️ HTTP ${response.status} - using cached users`);
+            return false;
         }
 
-        const text = await res.text();
+        const text = await response.text();
+        console.log('📄 Response received, parsing...');
+        
         const json = JSON.parse(text);
 
         if (!json.success) {
-            throw new Error(json.message || 'Failed to load Users from Google Sheets');
+            console.warn('⚠️ Response not successful:', json.message || json.error);
+            return false;
         }
 
-        const loaded = (json.data || []).map(u => ({
-            username: (u.username ?? '').toString().trim(),
-            password: (u.password ?? '').toString(),
-            fullname: (u.fullname ?? '').toString().trim(),
-            role: (u.role ?? '').toString().trim().toLowerCase(),
-            branch: (u.branch ?? '').toString().trim(),
-            status: (u.status ?? 'active').toString().trim().toLowerCase(),
-            createdDate: (u.createdDate ?? '').toString().trim()
-        })).filter(u => u.username);
+        console.log('📊 Raw data from Google Sheets:', json.data?.length, 'users');
+
+        const loaded = (json.data || []).map(u => {
+            const user = {
+                username: (u.username ?? '').toString().trim(),
+                password: (u.password ?? '').toString().trim(),
+                fullname: (u.fullname ?? '').toString().trim(),
+                role: (u.role ?? '').toString().trim().toLowerCase(),
+                branch: (u.branch ?? '').toString().trim(),
+                status: (u.status ?? 'active').toString().trim().toLowerCase(),
+                createdDate: (u.createdDate ?? '').toString().trim()
+            };
+            console.log('👤 User loaded:', user.username, '| role:', user.role, '| status:', user.status);
+            return user;
+        }).filter(u => u.username && u.password);
+
+        console.log('✅ Total valid users:', loaded.length);
 
         if (loaded.length > 0) {
             usersData = loaded;
             localStorage.setItem('usersData', JSON.stringify(usersData));
-            console.log(`✅ Loaded ${usersData.length} users from Google Sheets for cross-device login`);
-            console.log('👥 Users:', usersData.map(u => u.username));
+            console.log(`✅ Loaded ${usersData.length} users from Google Sheets v2.0`);
+            console.log('👥 Available users:', usersData.map(u => `${u.username} (${u.role})`));
             return true;
         }
 
-        console.warn('⚠️ Users sheet returned 0 users.');
+        console.warn('⚠️ No valid users found in Google Sheets');
         return false;
     } catch (err) {
         console.error('❌ loadUsersFromGoogleSheetsForLogin error:', err);
         console.error('Error details:', err.message);
+        console.log('📦 Falling back to localStorage users');
         return false;
     }
 }
@@ -297,12 +317,12 @@ function showPage(page) {
     
     const pages = {
         'dashboard': ['dashboard-page', 'menu-dashboard', () => setTimeout(initDashboard, 100)],
-        'daily-sales': ['daily-sales-page', 'menu-daily-sales', null],
-        'deposit': ['deposit-page', 'menu-deposit', null],
+        'daily-sales': ['daily-sales-page', 'menu-daily-sales', () => refreshSalesTable()],
+        'deposit': ['deposit-page', 'menu-deposit', () => refreshDepositTable()],
         'reports': ['reports-page', 'menu-reports', () => { setTimeout(initReportsPage, 100); }],
-        'customers': ['customers-page', 'menu-customers', checkExpiringCustomers],
+        'customers': ['customers-page', 'menu-customers', () => { refreshCustomersTable(); refreshTopUpTable(); checkExpiringCustomers(); }],
         'promotions': ['promotions-page', 'menu-promotions', () => { refreshPromotionsGrid(); checkPromotionsPermissions(); }],
-        'settings': ['settings-page', 'menu-settings', null]
+        'settings': ['settings-page', 'menu-settings', () => refreshUsersTable()]
     };
     
     if (pages[page]) {
@@ -591,7 +611,7 @@ document.getElementById('salesForm').addEventListener('submit', function(e) {
         showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
         salesData.push(formData);
-        showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
+        showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានរក្សាទុកដោយជោគ��័យ!');
     }
     saveDataToStorage();
     refreshSalesTable();
@@ -676,7 +696,7 @@ document.getElementById('depositForm').addEventListener('submit', function(e) {
     if (editingDepositIndex !== null) {
         depositData[editingDepositIndex] = formData;
         editingDepositIndex = null;
-        showSuccessPopup('ទិន្នន័យការដាក់ប្រាក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
+        showSuccessPopup('ទិន្នន័យ���ារដាក់ប្រាក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
         depositData.push(formData);
         showSuccessPopup('ទិន្នន័យការដាក់ប្រាក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
