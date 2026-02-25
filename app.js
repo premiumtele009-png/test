@@ -10,6 +10,9 @@ let currentReportPeriod = 'monthly';
 let reportFilteredData = [];
 let editingPromotionIndex = null;
 
+console.log('🚀 app.js loading...');
+console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
+
 // ===================== UTILITY FUNCTIONS =====================
 function showSuccessPopup(message) {
     document.getElementById('successMessage').textContent = message;
@@ -36,14 +39,11 @@ function canEditData(data) {
     return false;
 }
 
-// ===================== PROMOTIONS PERMISSION SYSTEM =====================
 function canEditPromotion(promotion) {
-    // Only Admin can add/edit promotions
     return currentUser.role === 'admin';
 }
 
 function canViewPromotions() {
-    // All roles can view promotions
     return true;
 }
 
@@ -55,7 +55,6 @@ function saveDataToStorage() {
     localStorage.setItem('topupData', JSON.stringify(topupData));
     localStorage.setItem('promotionsData', JSON.stringify(promotionsData));
     
-    // Auto sync to Google Sheets
     if (typeof autoSyncAfterSave === 'function') {
         autoSyncAfterSave();
     }
@@ -76,12 +75,15 @@ function loadDataFromStorage() {
     if (saved.customers) customersData = JSON.parse(saved.customers);
     if (saved.topup) topupData = JSON.parse(saved.topup);
     if (saved.promotions) promotionsData = JSON.parse(saved.promotions);
-    refreshSalesTable();
-    refreshDepositTable();
-    refreshCustomersTable();
-    refreshTopUpTable();
-    refreshUsersTable();
-    refreshPromotionsGrid();
+    
+    console.log('📦 Loaded from localStorage:', {
+        users: usersData.length,
+        sales: salesData.length,
+        deposits: depositData.length,
+        customers: customersData.length,
+        topup: topupData.length,
+        promotions: promotionsData.length
+    });
 }
 
 // ===================== CROSS-DEVICE LOGIN: LOAD USERS FROM GOOGLE SHEETS =====================
@@ -90,99 +92,128 @@ async function loadUsersFromGoogleSheetsForLogin() {
     const usersSheet = window.SHEETS?.USERS || 'Users';
     
     if (!urlBase) {
-        console.warn('GOOGLE_APPS_SCRIPT_URL not available. Login will use localStorage only.');
+        console.warn('⚠️ GOOGLE_APPS_SCRIPT_URL not available. Login will use localStorage only.');
         return false;
     }
 
     try {
-        const url = `${urlBase}?action=GET_ALL&sheet=${encodeURIComponent(usersSheet)}&t=${Date.now()}`;
-        const res = await fetch(url, { method: 'GET', cache: 'no-cache' });
+        console.log('📥 Loading users from Google Sheets for login...');
+        console.log('🔗 URL:', urlBase);
         
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const url = `${urlBase}?action=GET_ALL&sheet=${encodeURIComponent(usersSheet)}&t=${Date.now()}`;
+        const res = await fetch(url, { 
+            method: 'GET', 
+            cache: 'no-cache'
+        });
+        
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
 
         const text = await res.text();
         const json = JSON.parse(text);
 
-        if (!json.success) throw new Error(json.message || 'Failed to load Users from Google Sheets');
+        if (!json.success) {
+            throw new Error(json.message || 'Failed to load Users from Google Sheets');
+        }
 
-        // Map both normalized and non-normalized keys
         const loaded = (json.data || []).map(u => ({
-            username: (u.username ?? u.Username ?? '').toString().trim(),
-            password: (u.password ?? u.Password ?? '').toString(),
-            fullname: (u.fullname ?? u.full_name ?? u.Fullname ?? u.fullName ?? '').toString().trim(),
-            role: (u.role ?? u.Role ?? '').toString().trim().toLowerCase(),
-            branch: (u.branch ?? u.Branch ?? '').toString().trim(),
-            status: (u.status ?? u.Status ?? 'active').toString().trim().toLowerCase(),
-            createdDate: (u.createdDate ?? u.created_date ?? u.createddate ?? u.CreatedDate ?? '').toString().trim()
+            username: (u.username ?? '').toString().trim(),
+            password: (u.password ?? '').toString(),
+            fullname: (u.fullname ?? '').toString().trim(),
+            role: (u.role ?? '').toString().trim().toLowerCase(),
+            branch: (u.branch ?? '').toString().trim(),
+            status: (u.status ?? 'active').toString().trim().toLowerCase(),
+            createdDate: (u.createdDate ?? '').toString().trim()
         })).filter(u => u.username);
 
         if (loaded.length > 0) {
             usersData = loaded;
             localStorage.setItem('usersData', JSON.stringify(usersData));
             console.log(`✅ Loaded ${usersData.length} users from Google Sheets for cross-device login`);
+            console.log('👥 Users:', usersData.map(u => u.username));
             return true;
         }
 
-        console.warn('Users sheet returned 0 users.');
+        console.warn('⚠️ Users sheet returned 0 users.');
         return false;
     } catch (err) {
         console.error('❌ loadUsersFromGoogleSheetsForLogin error:', err);
+        console.error('Error details:', err.message);
         return false;
     }
 }
 
 // ===================== PAGE LOAD & LOGIN =====================
 window.addEventListener('load', async function() {
+    console.log('📱 Page loaded, checking login status...');
+    
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     
     if (!isLoggedIn) {
+        console.log('👤 Not logged in, showing login screen...');
         document.getElementById('loginOverlay').classList.add('show');
         
-        // Load cached data first
         loadDataFromStorage();
         
-        // NEW: Load Users from Google Sheets (cross-device login support)
+        console.log('🔄 Loading users from Google Sheets for cross-device login...');
         await loadUsersFromGoogleSheetsForLogin();
         
         return;
-    } else {
-        const userData = JSON.parse(sessionStorage.getItem('userData'));
-        currentUser = userData;
-        document.getElementById('systemContent').classList.add('show');
-        document.getElementById('loggedInUser').textContent = userData.fullname;
-        let roleDisplay = userData.role === 'admin' ? 'Admin' : userData.role === 'supervisor' ? 'Supervisor' : 'Agent';
-        document.getElementById('userRole').textContent = roleDisplay;
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('date').value = today;
-        document.getElementById('deposit_date').value = today;
-        if (userData.username !== 'admin') {
-            document.getElementById('staff_name').value = userData.fullname;
-            document.getElementById('deposit_staff').value = userData.fullname;
-        }
-        document.getElementById('branch_name').value = userData.branch;
-        loadDataFromStorage();
-        checkUserPermissions();
-        
-        // Show sync buttons
-        document.getElementById('syncButtons').style.display = 'flex';
-        if (typeof getLastSyncTime === 'function') {
-            document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
-        }
-        
-        showPage('dashboard');
     }
+    
+    console.log('✅ User already logged in, loading system...');
+    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    currentUser = userData;
+    
+    document.getElementById('systemContent').classList.add('show');
+    document.getElementById('loggedInUser').textContent = userData.fullname;
+    
+    let roleDisplay = userData.role === 'admin' ? 'Admin' : userData.role === 'supervisor' ? 'Supervisor' : 'Agent';
+    document.getElementById('userRole').textContent = roleDisplay;
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (document.getElementById('date')) document.getElementById('date').value = today;
+    if (document.getElementById('deposit_date')) document.getElementById('deposit_date').value = today;
+    
+    if (userData.username !== 'admin') {
+        if (document.getElementById('staff_name')) document.getElementById('staff_name').value = userData.fullname;
+        if (document.getElementById('deposit_staff')) document.getElementById('deposit_staff').value = userData.fullname;
+    }
+    
+    if (document.getElementById('branch_name')) document.getElementById('branch_name').value = userData.branch;
+    
+    loadDataFromStorage();
+    checkUserPermissions();
+    
+    const syncButtons = document.getElementById('syncButtons');
+    if (syncButtons) syncButtons.style.display = 'flex';
+    
+    if (typeof getLastSyncTime === 'function') {
+        const lastSync = document.getElementById('lastSyncDisplay');
+        if (lastSync) lastSync.textContent = getLastSyncTime();
+    }
+    
+    showPage('dashboard');
+    console.log('✅ System loaded successfully');
 });
 
 // ===================== LOGIN FORM HANDLER =====================
 document.getElementById('loginFormPopup').addEventListener('submit', async function(e) {
     e.preventDefault();
+    console.log('🔐 Login attempt...');
+    
     document.getElementById('errorMessage').classList.remove('show');
     
-    // NEW: Refresh users from Google Sheets right before login check (for cross-device support)
+    console.log('🔄 Refreshing users from Google Sheets before login...');
     await loadUsersFromGoogleSheetsForLogin();
     
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
+    
+    console.log('👤 Attempting login for username:', username);
+    console.log('📊 Available users:', usersData.map(u => ({username: u.username, role: u.role, status: u.status})));
+    
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
@@ -195,35 +226,46 @@ document.getElementById('loginFormPopup').addEventListener('submit', async funct
         );
         
         if (user) {
+            console.log('✅ Login successful for user:', user.username);
             currentUser = user;
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userData', JSON.stringify(user));
+            
             document.getElementById('loginOverlay').classList.remove('show');
             document.getElementById('systemContent').classList.add('show');
+            
             document.getElementById('loggedInUser').textContent = user.fullname;
             let roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'supervisor' ? 'Supervisor' : 'Agent';
             document.getElementById('userRole').textContent = roleDisplay;
+            
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('date').value = today;
-            document.getElementById('deposit_date').value = today;
+            if (document.getElementById('date')) document.getElementById('date').value = today;
+            if (document.getElementById('deposit_date')) document.getElementById('deposit_date').value = today;
+            
             if (user.username !== 'admin') {
-                document.getElementById('staff_name').value = user.fullname;
-                document.getElementById('deposit_staff').value = user.fullname;
+                if (document.getElementById('staff_name')) document.getElementById('staff_name').value = user.fullname;
+                if (document.getElementById('deposit_staff')) document.getElementById('deposit_staff').value = user.fullname;
             }
-            document.getElementById('branch_name').value = user.branch;
+            
+            if (document.getElementById('branch_name')) document.getElementById('branch_name').value = user.branch;
+            
             loadDataFromStorage();
             checkUserPermissions();
             
-            // Show sync buttons
-            document.getElementById('syncButtons').style.display = 'flex';
+            const syncButtons = document.getElementById('syncButtons');
+            if (syncButtons) syncButtons.style.display = 'flex';
+            
             if (typeof getLastSyncTime === 'function') {
-                document.getElementById('lastSyncDisplay').textContent = getLastSyncTime();
+                const lastSync = document.getElementById('lastSyncDisplay');
+                if (lastSync) lastSync.textContent = getLastSyncTime();
             }
             
             showPage('dashboard');
         } else {
+            console.error('❌ Login failed: Invalid username/password or inactive user');
             document.getElementById('errorMessage').classList.add('show');
         }
+        
         loginBtn.classList.remove('loading');
         loginBtn.disabled = false;
     }, 1000);
@@ -241,13 +283,10 @@ document.getElementById('loginTogglePassword').addEventListener('click', functio
 // ===================== LOGOUT =====================
 function logout() {
     if (confirm('តើអ្នកប្រាកដថាចង់ចាកចេញមែនទេ?')) {
+        console.log('👋 Logging out...');
         sessionStorage.clear();
         currentUser = null;
-        document.getElementById('systemContent').classList.remove('show');
-        document.getElementById('loginOverlay').classList.add('show');
-        document.getElementById('loginFormPopup').reset();
-        document.getElementById('errorMessage').classList.remove('show');
-        document.getElementById('syncButtons').style.display = 'none';
+        location.reload();
     }
 }
 
@@ -255,6 +294,7 @@ function logout() {
 function showPage(page) {
     document.querySelectorAll('.main-content > .container > div').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+    
     const pages = {
         'dashboard': ['dashboard-page', 'menu-dashboard', () => setTimeout(initDashboard, 100)],
         'daily-sales': ['daily-sales-page', 'menu-daily-sales', null],
@@ -264,9 +304,13 @@ function showPage(page) {
         'promotions': ['promotions-page', 'menu-promotions', () => { refreshPromotionsGrid(); checkPromotionsPermissions(); }],
         'settings': ['settings-page', 'menu-settings', null]
     };
+    
     if (pages[page]) {
-        document.getElementById(pages[page][0]).classList.remove('hidden');
-        document.getElementById(pages[page][1]).classList.add('active');
+        const pageEl = document.getElementById(pages[page][0]);
+        const menuEl = document.getElementById(pages[page][1]);
+        
+        if (pageEl) pageEl.classList.remove('hidden');
+        if (menuEl) menuEl.classList.add('active');
         if (pages[page][2]) pages[page][2]();
     }
 }
@@ -276,15 +320,19 @@ function checkUserPermissions() {
     const settingsMenu = document.getElementById('menu-settings');
     const addUserBtn = document.querySelector('.add-user-btn');
     
-    if (currentUser.role === 'admin') {
-        settingsMenu.style.display = 'block';
-        document.getElementById('settingsAdminOnly').style.display = 'block';
-        document.getElementById('settingsAgentMessage').classList.add('hidden');
+    if (currentUser?.role === 'admin') {
+        if (settingsMenu) settingsMenu.style.display = 'block';
+        const adminOnly = document.getElementById('settingsAdminOnly');
+        if (adminOnly) adminOnly.style.display = 'block';
+        const agentMsg = document.getElementById('settingsAgentMessage');
+        if (agentMsg) agentMsg.classList.add('hidden');
         if (addUserBtn) addUserBtn.style.display = 'flex';
     } else {
-        settingsMenu.style.display = 'none';
-        document.getElementById('settingsAdminOnly').style.display = 'none';
-        document.getElementById('settingsAgentMessage').classList.remove('hidden');
+        if (settingsMenu) settingsMenu.style.display = 'none';
+        const adminOnly = document.getElementById('settingsAdminOnly');
+        if (adminOnly) adminOnly.style.display = 'none';
+        const agentMsg = document.getElementById('settingsAgentMessage');
+        if (agentMsg) agentMsg.classList.remove('hidden');
         if (addUserBtn) addUserBtn.style.display = 'none';
     }
 }
@@ -294,31 +342,19 @@ function checkPromotionsPermissions() {
     const addPromotionBtn = document.querySelector('.add-customer-btn[onclick="openPromotionModal()"]');
     const searchInput = document.getElementById('searchPromotion');
     
-    if (currentUser.role === 'admin') {
-        // Admin can add and edit
-        if (addPromotionBtn) {
-            addPromotionBtn.style.display = 'flex';
-        }
-        if (searchInput) {
-            searchInput.parentElement.style.justifyContent = 'space-between';
+    if (currentUser?.role === 'admin') {
+        if (addPromotionBtn) addPromotionBtn.style.display = 'flex';
+        if (searchInput?.parentElement) {
+            const badge = searchInput.parentElement.querySelector('.view-only-badge');
+            if (badge) badge.remove();
         }
     } else {
-        // Supervisor and Agent - View only
-        if (addPromotionBtn) {
-            addPromotionBtn.style.display = 'none';
-        }
-        if (searchInput) {
-            // Add view-only badge
-            const parentDiv = searchInput.parentElement;
-            parentDiv.style.justifyContent = 'space-between';
-            
-            // Check if badge already exists
-            if (!parentDiv.querySelector('.view-only-badge')) {
-                const badge = document.createElement('div');
-                badge.className = 'view-only-badge';
-                badge.innerHTML = '<i class="fas fa-eye"></i> មើលប៉ុណ្ណោះ (View Only)';
-                parentDiv.appendChild(badge);
-            }
+        if (addPromotionBtn) addPromotionBtn.style.display = 'none';
+        if (searchInput?.parentElement && !searchInput.parentElement.querySelector('.view-only-badge')) {
+            const badge = document.createElement('div');
+            badge.className = 'view-only-badge';
+            badge.innerHTML = '<i class="fas fa-eye"></i> មើលប៉ុណ្ណោះ (View Only)';
+            searchInput.parentElement.appendChild(badge);
         }
     }
 }
@@ -1099,7 +1135,7 @@ document.getElementById('customerForm').addEventListener('submit', function(e) {
         showSuccessPopup('បានកែប្រែអតិថិជនដោយជោគជ័យ!');
     } else {
         customersData.push(fd);
-        showSuccessPopup('អតិថិជនត្រ���វបានបន្ថែមដោយជោគជ័យ!');
+        showSuccessPopup('អតិថិជនត្រូវបានបន្ថែមដោយជោគជ័យ!');
     }
     saveDataToStorage();
     refreshCustomersTable();
@@ -1456,7 +1492,6 @@ function getPromotionStatus(endDate) {
 }
 
 function openPromotionModal() {
-    // Check if user has permission to add promotions
     if (!canEditPromotion(null)) {
         showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចបន្ថែមប្រូម៉ូសិនបាន!');
         return;
@@ -1481,7 +1516,6 @@ function closePromotionModal() {
 document.getElementById('promotionForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Check permission before saving
     if (!canEditPromotion(null)) {
         showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចបន្ថែម/កែប្រែប្រូម៉ូសិនបាន!');
         return;
@@ -1520,9 +1554,6 @@ function refreshPromotionsGrid(filteredData = null) {
     
     let dataToShow = filteredData !== null ? filteredData : promotionsData;
     
-    // Admin can see all promotions, others see all too (view only)
-    // No filtering by branch for promotions - everyone can view all promotions
-    
     if (dataToShow.length === 0) {
         grid.classList.add('hidden');
         emptyState.classList.remove('hidden');
@@ -1534,7 +1565,7 @@ function refreshPromotionsGrid(filteredData = null) {
     
     dataToShow.forEach((promo, index) => {
         const originalIndex = promotionsData.indexOf(promo);
-        const canEdit = canEditPromotion(promo); // Only admin can edit
+        const canEdit = canEditPromotion(promo);
         const status = getPromotionStatus(promo.end_date);
         const statusClass = status === 'active' ? 'status-active' : 'status-expired';
         const statusText = status === 'active' ? 'សកម្ម' : 'ផុតកំណត់';
@@ -1612,7 +1643,6 @@ function togglePromotionTerms(index) {
 function editPromotion(index) {
     const promo = promotionsData[index];
     
-    // Check permission
     if (!canEditPromotion(promo)) {
         showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចកែប្រែប្រូម៉ូសិនបាន!');
         return;
@@ -1634,7 +1664,6 @@ function editPromotion(index) {
 function deletePromotion(index) {
     const promo = promotionsData[index];
     
-    // Check permission
     if (!canEditPromotion(promo)) {
         showSuccessPopup('មានតែ Admin ប៉ុណ្ណោះដែលអាចលុបប្រូម៉ូសិនបាន!');
         return;
@@ -1691,10 +1720,13 @@ function loginWithFacebook() {
 }
 
 // ===================== EVENT LISTENERS =====================
-document.getElementById('signupLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    openSignupModal();
-});
+const signupLink = document.getElementById('signupLink');
+if (signupLink) {
+    signupLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSignupModal();
+    });
+}
 
 window.addEventListener('click', function(event) {
     const modal = document.getElementById('signupModal');
@@ -1716,8 +1748,8 @@ window.onclick = function(e) {
 }
 
 // ===================== END OF APP.JS =====================
-console.log('✅ App.js loaded successfully');
+console.log('✅ app.js loaded successfully');
 console.log('📱 Sales Management System V17.0 with Cross-Device Login');
 console.log('🔐 Promotions: Admin (Add/Edit), Supervisor/Agent (View Only)');
-console.log('🔗 Google Sheets: ' + window.GOOGLE_APPS_SCRIPT_URL);
+console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
 console.log('🚀 Ready to use on any device!');
