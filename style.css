@@ -1211,7 +1211,6 @@ body {
 .stat-card-footer i {
     color: #28a745;
 }
-
 /* ===================== DASHBOARD CHARTS ===================== */
 .dashboard-charts {
     display: grid;
@@ -1529,6 +1528,10 @@ body {
 
 .topup-header {
     background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.deposit-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
 }
 
 .close {
