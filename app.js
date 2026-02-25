@@ -10,7 +10,7 @@ let currentReportPeriod = 'monthly';
 let reportFilteredData = [];
 let editingPromotionIndex = null;
 
-console.log('🚀 app.js loading...');
+console.log('🚀 app.js loading with Enhanced Permissions v18.0...');
 console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
 
 // ===================== UTILITY FUNCTIONS =====================
@@ -25,17 +25,50 @@ function closeSuccessPopup() {
     document.getElementById('successPopup').classList.remove('show');
 }
 
-// ===================== PERMISSION SYSTEM =====================
-function canEditData(data) {
+// ===================== ENHANCED PERMISSION SYSTEM =====================
+function canViewData(data) {
+    if (!currentUser) return false;
+    
+    // Admin can view everything
     if (currentUser.role === 'admin') return true;
+    
+    // Get data properties
     const dataStaff = data.staff_name || data.staff || data.created_by;
     const dataBranch = data.branch;
+    
+    // Supervisor can view all data from their branch
     if (currentUser.role === 'supervisor') {
         return dataBranch === currentUser.branch;
     }
+    
+    // Agent can view only their own data from their branch
     if (currentUser.role === 'agent') {
         return dataStaff === currentUser.fullname && dataBranch === currentUser.branch;
     }
+    
+    return false;
+}
+
+function canEditData(data) {
+    if (!currentUser) return false;
+    
+    // Admin can edit everything
+    if (currentUser.role === 'admin') return true;
+    
+    // Get data properties
+    const dataStaff = data.staff_name || data.staff || data.created_by;
+    const dataBranch = data.branch;
+    
+    // Supervisor can edit all data from their branch
+    if (currentUser.role === 'supervisor') {
+        return dataBranch === currentUser.branch;
+    }
+    
+    // Agent can edit only their own data from their branch
+    if (currentUser.role === 'agent') {
+        return dataStaff === currentUser.fullname && dataBranch === currentUser.branch;
+    }
+    
     return false;
 }
 
@@ -45,6 +78,30 @@ function canEditPromotion(promotion) {
 
 function canViewPromotions() {
     return true;
+}
+
+function getFilteredDataByRole(dataArray) {
+    if (!currentUser) return [];
+    
+    // Admin sees everything
+    if (currentUser.role === 'admin') {
+        return dataArray;
+    }
+    
+    // Supervisor sees all data from their branch
+    if (currentUser.role === 'supervisor') {
+        return dataArray.filter(d => d.branch === currentUser.branch);
+    }
+    
+    // Agent sees only their own data
+    if (currentUser.role === 'agent') {
+        return dataArray.filter(d => {
+            const dataStaff = d.staff_name || d.staff || d.created_by;
+            return dataStaff === currentUser.fullname && d.branch === currentUser.branch;
+        });
+    }
+    
+    return [];
 }
 
 function saveDataToStorage() {
@@ -98,7 +155,7 @@ async function loadUsersFromGoogleSheetsForLogin() {
 
     try {
         console.log('📥 Loading users from Google Sheets for cross-device login...');
-        console.log('🔗 NEW URL v2.0:', urlBase);
+        console.log('🔗 URL:', urlBase);
         
         const url = `${urlBase}?action=GET_ALL&sheet=${encodeURIComponent(usersSheet)}&_=${Date.now()}`;
         
@@ -149,7 +206,7 @@ async function loadUsersFromGoogleSheetsForLogin() {
         if (loaded.length > 0) {
             usersData = loaded;
             localStorage.setItem('usersData', JSON.stringify(usersData));
-            console.log(`✅ Loaded ${usersData.length} users from Google Sheets v2.0`);
+            console.log(`✅ Loaded ${usersData.length} users from Google Sheets`);
             console.log('👥 Available users:', usersData.map(u => `${u.username} (${u.role})`));
             return true;
         }
@@ -215,7 +272,7 @@ window.addEventListener('load', async function() {
     }
     
     showPage('dashboard');
-    console.log('✅ System loaded successfully');
+    console.log('✅ System loaded successfully with role:', userData.role);
 });
 
 // ===================== LOGIN FORM HANDLER =====================
@@ -246,7 +303,7 @@ document.getElementById('loginFormPopup').addEventListener('submit', async funct
         );
         
         if (user) {
-            console.log('✅ Login successful for user:', user.username);
+            console.log('✅ Login successful for user:', user.username, '- Role:', user.role);
             currentUser = user;
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userData', JSON.stringify(user));
@@ -417,13 +474,15 @@ function initDashboard() {
 }
 
 function calculateDashboardStats() {
-    let filteredData = salesData;
-    if (currentUser.role !== 'admin') filteredData = salesData.filter(d => d.branch === currentUser.branch);
+    // Apply role-based filtering
+    let filteredData = getFilteredDataByRole(salesData);
     filteredData = getFilteredDataByPeriod(filteredData);
+    
     const totalRevenue = filteredData.reduce((sum, d) => sum + parseFloat(d.total_revenue || 0), 0);
     const totalRecharge = filteredData.reduce((sum, d) => sum + parseFloat(d.recharge || 0), 0);
     const totalGrossAds = filteredData.reduce((sum, d) => sum + parseInt(d.gross_ads || 0), 0);
     const totalTransactions = filteredData.length;
+    
     document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(2);
     document.getElementById('totalRecharge').textContent = '$' + totalRecharge.toFixed(2);
     document.getElementById('totalGrossAds').textContent = totalGrossAds;
@@ -436,13 +495,16 @@ function initDashboardCharts() {
     const ctx1 = document.getElementById('dashboardChart1');
     const ctx2 = document.getElementById('dashboardChart2');
     if (!ctx1 || !ctx2) return;
-    let filteredData = salesData;
-    if (currentUser.role !== 'admin') filteredData = salesData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let filteredData = getFilteredDataByRole(salesData);
     filteredData = getFilteredDataByPeriod(filteredData);
+    
     if (filteredData.length === 0) {
         document.getElementById('branchLegend').innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">គ្មានទិន្នន័យ</p>';
         return;
     }
+    
     if (currentUser.role === 'admin') {
         document.getElementById('chartTitle').textContent = 'Revenue by Staff';
         const staffData = {};
@@ -500,7 +562,7 @@ function initDashboardCharts() {
             </div>
         `).join('');
     } else {
-        document.getElementById('chartTitle').textContent = 'Revenue by Staff (Your Branch)';
+        document.getElementById('chartTitle').textContent = currentUser.role === 'supervisor' ? 'Revenue by Staff (Your Branch)' : 'Your Revenue';
         const staffData = {};
         filteredData.forEach(d => {
             if (!staffData[d.staff_name]) staffData[d.staff_name] = { revenue: 0 };
@@ -541,9 +603,11 @@ function initDashboardCharts() {
 function generateLeaderboard() {
     const tbody = document.getElementById('leaderboardBody');
     tbody.innerHTML = '';
-    let filteredData = salesData;
-    if (currentUser.role !== 'admin') filteredData = salesData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let filteredData = getFilteredDataByRole(salesData);
     filteredData = getFilteredDataByPeriod(filteredData);
+    
     let leaderboardData = [];
     if (currentUser.role === 'admin') {
         document.getElementById('leaderboardTitle').textContent = 'Top Branches';
@@ -558,7 +622,7 @@ function generateLeaderboard() {
         });
         leaderboardData = Object.keys(branchData).map(b => ({ name: b, ...branchData[b] }));
     } else {
-        document.getElementById('leaderboardTitle').textContent = 'Top Staff (Your Branch)';
+        document.getElementById('leaderboardTitle').textContent = currentUser.role === 'supervisor' ? 'Top Staff (Your Branch)' : 'Your Performance';
         document.getElementById('leaderboardEntityHeader').textContent = 'Staff';
         const staffData = {};
         filteredData.forEach(d => {
@@ -611,7 +675,7 @@ document.getElementById('salesForm').addEventListener('submit', function(e) {
         showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
         salesData.push(formData);
-        showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានរក្សាទុកដោយជោគ��័យ!');
+        showSuccessPopup('ទិន្នន័យការលក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
     }
     saveDataToStorage();
     refreshSalesTable();
@@ -633,12 +697,15 @@ function resetSalesForm() {
 function refreshSalesTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
-    let filteredData = salesData;
-    if (currentUser.role !== 'admin') filteredData = salesData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let filteredData = getFilteredDataByRole(salesData);
+    
     if (!filteredData.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មានទិន្នន័យនៅឡើយទេ</td></tr>';
         return;
     }
+    
     filteredData.forEach(data => {
         const idx = salesData.indexOf(data);
         const canEdit = canEditData(data);
@@ -696,7 +763,7 @@ document.getElementById('depositForm').addEventListener('submit', function(e) {
     if (editingDepositIndex !== null) {
         depositData[editingDepositIndex] = formData;
         editingDepositIndex = null;
-        showSuccessPopup('ទិន្នន័យ���ារដាក់ប្រាក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
+        showSuccessPopup('ទិន្នន័យការដាក់ប្រាក់ត្រូវបានកែប្រែដោយជោគជ័យ!');
     } else {
         depositData.push(formData);
         showSuccessPopup('ទិន្នន័យការដាក់ប្រាក់ត្រូវបានរក្សាទុកដោយជោគជ័យ!');
@@ -720,12 +787,15 @@ function resetDepositForm() {
 function refreshDepositTable() {
     const tbody = document.getElementById('depositTableBody');
     tbody.innerHTML = '';
-    let filteredData = depositData;
-    if (currentUser.role !== 'admin') filteredData = depositData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let filteredData = getFilteredDataByRole(depositData);
+    
     if (!filteredData.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មានទិន្នន័យនៅឡើយទេ</td></tr>';
         return;
     }
+    
     filteredData.forEach(data => {
         const idx = depositData.indexOf(data);
         const canEdit = canEditData(data);
@@ -815,17 +885,19 @@ function applyReportFilters() {
     const branchFilter = document.getElementById('reportBranchFilter') ? document.getElementById('reportBranchFilter').value : '';
     const staffFilter = document.getElementById('reportStaffFilter').value.toLowerCase().trim();
     
-    let filteredData = salesData;
+    // Start with role-based filtered data
+    let filteredData = getFilteredDataByRole(salesData);
     
-    if (currentUser.role !== 'admin') {
-        filteredData = filteredData.filter(d => d.branch === currentUser.branch);
-    }
-    
+    // Apply date filters
     if (startDate) filteredData = filteredData.filter(d => d.date >= startDate);
     if (endDate) filteredData = filteredData.filter(d => d.date <= endDate);
+    
+    // Apply branch filter (only for admin)
     if (currentUser.role === 'admin' && branchFilter) {
         filteredData = filteredData.filter(d => d.branch === branchFilter);
     }
+    
+    // Apply staff filter
     if (staffFilter) filteredData = filteredData.filter(d => d.staff_name.toLowerCase().includes(staffFilter));
     
     reportFilteredData = filteredData;
@@ -1050,6 +1122,13 @@ function updateReportStats() {
     if (branchFilter) infoText += ' - សាខា: ' + branchFilter;
     if (staffFilter) infoText += ' - បុគ្គលិក: ' + staffFilter;
     
+    // Add role-based info
+    if (currentUser.role === 'supervisor') {
+        infoText += ' - សាខារបស់អ្នក: ' + currentUser.branch;
+    } else if (currentUser.role === 'agent') {
+        infoText += ' - ទិន្នន័យរបស់អ្នក';
+    }
+    
     document.getElementById('reportTableInfo').textContent = infoText;
 }
 
@@ -1070,6 +1149,12 @@ function exportToExcel() {
         ['របាយការណ៍ការលក់ - Smart Axiata'],
         ['កាលបរិច្ឆេទ: ' + (startDate ? startDate : 'N/A') + ' - ' + (endDate ? endDate : 'N/A')],
     ];
+    
+    if (currentUser.role === 'supervisor') {
+        wsData.push(['សាខា: ' + currentUser.branch]);
+    } else if (currentUser.role === 'agent') {
+        wsData.push(['បុគ្គលិក: ' + currentUser.fullname]);
+    }
     
     if (branchFilter) wsData.push(['សាខា: ' + branchFilter]);
     if (staffFilter) wsData.push(['បុគ្គលិក: ' + staffFilter]);
@@ -1117,7 +1202,7 @@ function exportToExcel() {
     
     XLSX.utils.book_append_sheet(wb, ws, 'Sales Report');
     
-    const filename = `Sales_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const filename = `Sales_Report_${currentUser.role}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, filename);
     
     showSuccessPopup('បាន Export ទិន្នន័យជាឯកសារ Excel ដោយជោគជ័យ!');
@@ -1165,8 +1250,10 @@ document.getElementById('customerForm').addEventListener('submit', function(e) {
 function refreshCustomersTable() {
     const tbody = document.getElementById('customersTableBody');
     tbody.innerHTML = '';
-    let fd = customersData;
-    if (currentUser.role !== 'admin') fd = customersData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let fd = getFilteredDataByRole(customersData);
+    
     if (!fd.length) {
         tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-users" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មានអតិថិជននៅឡើយទេ</td></tr>';
         return;
@@ -1254,8 +1341,10 @@ document.getElementById('topupForm').addEventListener('submit', function(e) {
 function refreshTopUpTable() {
     const tbody = document.getElementById('topupTableBody');
     tbody.innerHTML = '';
-    let fd = topupData;
-    if (currentUser.role !== 'admin') fd = topupData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let fd = getFilteredDataByRole(topupData);
+    
     if (!fd.length) {
         tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 30px; color: #6c757d;"><i class="fas fa-mobile-alt" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>មិនទាន់មាន Top Up នៅឡើយទេ</td></tr>';
         return;
@@ -1306,8 +1395,10 @@ function checkExpiringCustomers() {
     const sevenDays = new Date(today);
     sevenDays.setDate(today.getDate() + 7);
     let ec = 0, esc = 0, rows = [];
-    let fd = topupData;
-    if (currentUser.role !== 'admin') fd = topupData.filter(d => d.branch === currentUser.branch);
+    
+    // Apply role-based filtering
+    let fd = getFilteredDataByRole(topupData);
+    
     fd.forEach(d => {
         const ed = new Date(d.expiry);
         ed.setHours(0, 0, 0, 0);
@@ -1466,7 +1557,7 @@ function editUserRow(i) {
     document.getElementById('user_password').required = false;
     document.getElementById('user_password').placeholder = 'ទុកទទេដើម្បីរក្សាពាក្យសម្ងាត់ចាស់';
     document.getElementById('edit_user_index').value = i;
-    document.getElementById('userModalTitle').textContent = 'កែប្រែអ្នកប្រើប្រាស់';
+    document.getElementById('userModalTitle').textContent = 'កែប្រែអ្នក��្រើប្រាស់';
     
     document.getElementById('user_username').disabled = true;
     document.getElementById('user_role').disabled = false;
@@ -1768,8 +1859,8 @@ window.onclick = function(e) {
 }
 
 // ===================== END OF APP.JS =====================
-console.log('✅ app.js loaded successfully');
-console.log('📱 Sales Management System V17.0 with Cross-Device Login');
-console.log('🔐 Promotions: Admin (Add/Edit), Supervisor/Agent (View Only)');
+console.log('✅ app.js loaded successfully - Enhanced Permissions v18.0');
+console.log('📱 Sales Management System with Role-Based Access Control');
+console.log('👤 Admin: Full access | Supervisor: Branch access | Agent: Own data only');
 console.log('🔗 Google Sheets URL:', window.GOOGLE_APPS_SCRIPT_URL);
-console.log('🚀 Ready to use on any device!');
+console.log('🚀 Ready to use!');
