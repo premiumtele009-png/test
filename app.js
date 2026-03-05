@@ -386,14 +386,14 @@ function selectItemGroup(grp) {
   }
 }
 
-function toggleCustomCurrency() {
+function handleCurrencySelectChange() {
   const sel = g('item-currency');
   const inp = g('item-custom-currency');
   if (!inp) return;
   inp.style.display = sel && sel.value === 'custom' ? '' : 'none';
 }
 
-function toggleCustomUnit() {
+function handleUnitSelectChange() {
   const sel = g('item-unit');
   const inp = g('item-custom-unit');
   if (!inp) return;
@@ -448,6 +448,8 @@ function deleteItem(id) {
   renderDashboard();
 }
 
+// openItemModal in openItemModal() already uses `item` object directly for editing;
+// renderItemChips uses ID-based onclick to avoid XSS from JSON-in-attribute
 function renderItemChips() {
   const strip = g('items-strip');
   if (!strip) return;
@@ -459,8 +461,7 @@ function renderItemChips() {
   strip.innerHTML = active.map(function(item) {
     const chipClass = item.group === 'unit' ? 'item-chip-unit' : 'item-chip-dollar';
     const iconClass = item.group === 'unit' ? 'fa-box' : 'fa-dollar-sign';
-    const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
-    return '<span class="item-chip ' + chipClass + '" onclick="openItemModal(' + itemJson + ')">' +
+    return '<span class="item-chip ' + chipClass + '" onclick="editItem(\'' + esc(item.id) + '\')">' +
       '<i class="fas ' + iconClass + '"></i> ' + esc(item.shortcut || item.name) + '</span>';
   }).join('');
 }
@@ -1336,7 +1337,8 @@ function openKpiModal(item) {
   openModal('modal-kpi');
 }
 
-function selectKpiType(el, type) {
+function selectKpiType(el) {
+  const type = el ? el.getAttribute('data-value') : 'Sales';
   kpiTypeSelected = type;
   $$('.kpi-type-chip').forEach(function(c) { c.classList.remove('active'); });
   if (el) el.classList.add('active');
