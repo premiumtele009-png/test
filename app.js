@@ -1428,11 +1428,23 @@ function renderKpiTable() {
 // ------------------------------------------------------------
 // Init
 // ------------------------------------------------------------
+// ------------------------------------------------------------
+// Compatibility aliases (HTML uses these names)
+// ------------------------------------------------------------
+function applySaleFilters() { applyReportFilters(); }
+function clearSaleFilters() { clearReportFilters(); }
+function loadDashboard() { renderDashboard(); }
+function selectKpiMode(mode) { setValueMode(mode); }
+function submitKPI(e) { submitKpi(e); }
+function switchSaleView(view) { setReportView(view); }
+function togglePasswordVisibility(inputId, eyeId) { togglePwd(inputId, eyeId); }
+function toggleSidebar() {
+  const sidebar = g('sidebar');
+  if (sidebar) sidebar.classList.toggle('sidebar-collapsed');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   filteredSales = saleRecords.slice();
-
-  const saleDateEl = g('sale-date');
-  if (saleDateEl) saleDateEl.value = new Date().toISOString().split('T')[0];
 
   navigateTo('dashboard', null);
 
