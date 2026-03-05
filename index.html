@@ -1,272 +1,1206 @@
 <!DOCTYPE html>
-<html lang="km">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Smart Axiata V21.1</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart 5G Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div class="success-popup-overlay" id="successOverlay"></div>
-<div class="success-popup" id="successPopup">
-<div class="success-popup-icon"><i class="fas fa-check"></i></div>
-<h3>ជោគជ័យ!</h3>
-<p id="successMessage">ទិន្នន័យត្រូវបានរក្សាទុកដោយជោគជ័យ!</p>
-<button class="success-popup-btn" onclick="closeSuccessPopup()">យល់ព្រម</button>
-</div>
-<div id="syncStatus" class="sync-status" style="display:none;"></div>
-<script>
-window.GOOGLE_APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyymhCml5TyRKDxjOPmUrHaliX_u0oLPXh5Q8RstRLQUQ1PgYLP66vz5_8WAbfHG3xb/exec';
-window.SHEETS={USERS:'Users',SALES:'Sales',DEPOSITS:'Deposits',CUSTOMERS:'Customers',TOPUP:'TopUp',PROMOTIONS:'Promotions'};
-</script>
-<div class="login-overlay" id="loginOverlay">
-<div class="login-container-new">
-<div class="left-panel">
-<div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div>
-<h1>ប្រព័ន្ធគ្រប់គ្រងការលក់</h1>
-<p>ប្រព័ន្ធគ្រប់គ្រងការលក់ ទំនើប និង សុវត្ថិភាព</p>
-<div class="features">
-<div class="feature-item"><svg viewBox="0 0 24 24"><path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg><span>របាយការណ៍ស្ថិតិ</span></div>
-<div class="feature-item"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>គ្រប់គ្រងអ្នកប្រើប្រាស់</span></div>
-<div class="feature-item"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg><span>សុវត្ថិភាពខ្ពស់</span></div>
-</div>
-</div>
-<div class="right-panel">
-<h2>ចូលប្រើប្រាស់</h2>
-<p class="subtitle">សូមបញ្ចូលពត៌មានដើម្បីចូលប្រើប្រាស់គណនីរបស់អ្នក</p>
-<div class="error-message" id="errorMessage"><i class="fas fa-exclamation-circle"></i><p>ឈ្មោះអ្នកប្រើប្រាស់ ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវ!</p></div>
-<div class="success-message" id="successMessageLogin"><i class="fas fa-check-circle"></i><p>ចូលប្រើប្រាស់ដោយជោគជ័យ!</p></div>
-<form id="loginFormPopup">
-<div class="form-group"><label>ឈ្មោះអ្នកប្រើប្រាស់</label>
-<div class="input-wrapper"><input type="text" id="loginUsername" placeholder="បញ្ចូលឈ្មោះអ្នកប្រើប្រាស់" required>
-<svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div>
-<div class="form-group"><label>ពាក្យសម្ងាត់</label>
-<div class="input-wrapper"><input type="password" id="loginPassword" placeholder="បញ្ចូលពាក្យសម្ងាត់" required>
-<svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-<i class="fas fa-eye toggle-password" id="loginTogglePassword"></i></div></div>
-<div class="remember-forgot"><label class="remember-label"><input type="checkbox" id="loginRememberMe"> ចងចាំខ្ញុំ</label>
-<a href="https://t.me/saray2026123" target="_blank">ភ្លេចពាក្យសម្ងាត់?</a></div>
-<button type="submit" class="btn-login" id="loginBtn"><span class="btn-text">ចូលប្រើប្រាស់</span><i class="fas fa-arrow-right btn-text"></i><div class="login-spinner"></div></button>
-<div class="divider"><span>ឬ</span></div>
-<div class="social-login">
-<button type="button" class="social-btn" onclick="loginWithGoogle()"><span class="google-icon">G</span><span class="social-btn-text">Google</span></button>
-<button type="button" class="social-btn" onclick="loginWithFacebook()"><span class="facebook-icon">f</span><span class="social-btn-text">Facebook</span></button>
-</div>
-<div class="signup-link">មិនទាន់មានគណនី? <a href="#" id="signupLink">ចុះឈ្មោះ</a></div>
-</form>
-</div>
-</div>
-<div id="signupModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h3>ចុះឈ��មោះគណនីថ្មី</h3><span class="close" onclick="closeSignupModal()">&times;</span></div>
-<div class="modal-body">
-<div class="alert-message">⚠️ សូមកំណត់ឈ្មោះនិងលេខកូដសម្ងាត់របស់​អ្នក រួចរក្សាទុកអោយបានត្រឹមត្រូវ!</div>
-<div class="example-box"><h4><span>📋</span> ឧទាហរណ៍៖</h4>
-<div class="example-item"><span class="example-label">ឈ្មោះអ្នកប្រើប្រាស់:</span><span class="example-value">rim.saray</span></div>
-<div class="example-item"><span class="example-label">ពាក្យសម្ងាត់:</span><span class="example-value">Saray@123</span></div>
-</div>
-<button class="btn-telegram" onclick="sendToTelegram()"><span class="telegram-icon">✈️</span>ផ្ញើសារទៅកាន់ Admin តាម Telegram</button>
-</div>
-</div>
-</div>
-</div>
 
-<div class="system-content" id="systemContent">
-<div class="sidebar">
-<div class="sidebar-header">
-<div class="sidebar-title"><i class="fas fa-signal sidebar-icon"></i><h1>Smart Axiata</h1></div>
-<div class="user-info"><i class="fas fa-user-circle"></i><span id="loggedInUser">Admin</span><span class="user-role" id="userRole">Admin</span></div>
-</div>
-<ul class="sidebar-menu">
-<li id="menu-dashboard" class="active"><a href="#" onclick="showPage('dashboard');return false;"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
-<li id="menu-daily-sales"><a href="#" onclick="showPage('daily-sales');return false;"><i class="fas fa-cash-register"></i><span>ការលក់ប្រចាំថ្ងៃ</span></a></li>
-<li id="menu-deposit"><a href="#" onclick="showPage('deposit');return false;"><i class="fas fa-coins"></i><span>ការដាក់ប្រាក់</span></a></li>
-<li id="menu-reports"><a href="#" onclick="showPage('reports');return false;"><i class="fas fa-chart-bar"></i><span>របាយការណ៍</span></a></li>
-<li id="menu-customers"><a href="#" onclick="showPage('customers');return false;"><i class="fas fa-users"></i><span>អតិថិជន</span></a></li>
-<li id="menu-promotions"><a href="#" onclick="showPage('promotions');return false;"><i class="fas fa-gift"></i><span>ប្រូម៉ូសិន</span></a></li>
-<li id="menu-settings"><a href="#" onclick="showPage('settings');return false;"><i class="fas fa-cog"></i><span>ការកំណត់</span></a></li>
-</ul>
-<div class="sidebar-footer"><a href="#" class="logout-link" onclick="logout();return false;"><i class="fas fa-sign-out-alt"></i><span>ចាកចេញ</span></a></div>
-</div>
+  <!-- ===================== SIDEBAR ===================== -->
+  <nav id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><i class="fas fa-signal"></i></div>
+      <span class="sidebar-logo-text">Smart 5G</span>
+    </div>
 
-<div class="main-content"><div class="container">
-<div id="dashboard-page">
-<div class="filter-card">
-<div style="display:flex;align-items:center;gap:10px"><i class="fas fa-filter" style="color:#28a745;font-size:20px"></i><h3 style="font-size:16px;color:#333;font-weight:600;margin:0">តម្រងទិន្នន័យ</h3></div>
-<div style="display:flex;gap:10px;flex-wrap:wrap">
-<button class="filter-btn active" onclick="filterDashboard('today')" id="filter-today"><i class="fas fa-calendar-day"></i> ថ្ងៃនេះ</button>
-<button class="filter-btn" onclick="filterDashboard('week')" id="filter-week"><i class="fas fa-calendar-week"></i> សប្តាហ៍នេះ</button>
-<button class="filter-btn" onclick="filterDashboard('month')" id="filter-month"><i class="fas fa-calendar-alt"></i> ខែនេះ</button>
-<button class="filter-btn" onclick="filterDashboard('year')" id="filter-year"><i class="fas fa-calendar"></i> ឆ្នាំនេះ</button>
-<button class="filter-btn" onclick="filterDashboard('all')" id="filter-all"><i class="fas fa-globe"></i> ទាំងអស់</button>
-</div>
-</div>
-<div class="dashboard-cards">
-<div class="stat-card revenue"><div class="stat-card-header"><div><div class="stat-card-title">Total Revenue</div><div class="stat-card-value" id="totalRevenue">$0.00</div></div><div class="stat-card-icon"><i class="fas fa-dollar-sign"></i></div></div><div class="stat-card-footer"><i class="fas fa-arrow-up"></i><span>ចំណូលសរុបទាំងអស់</span></div></div>
-<div class="stat-card recharge"><div class="stat-card-header"><div><div class="stat-card-title">Total Recharge</div><div class="stat-card-value" id="totalRecharge">$0.00</div></div><div class="stat-card-icon"><i class="fas fa-money-bill-wave"></i></div></div><div class="stat-card-footer"><i class="fas fa-arrow-up"></i><span>Recharge សរុប</span></div></div>
-<div class="stat-card ads"><div class="stat-card-header"><div><div class="stat-card-title">Total Gross Ads</div><div class="stat-card-value" id="totalGrossAds">0</div></div><div class="stat-card-icon"><i class="fas fa-mobile-alt"></i></div></div><div class="stat-card-footer"><i class="fas fa-arrow-up"></i><span>Gross Ads សរុប</span></div></div>
-<div class="stat-card transactions"><div class="stat-card-header"><div><div class="stat-card-title">Transactions</div><div class="stat-card-value" id="totalTransactions">0</div></div><div class="stat-card-icon"><i class="fas fa-receipt"></i></div></div><div class="stat-card-footer"><i class="fas fa-arrow-up"></i><span>ប្រតិបត្តិការសរុប</span></div></div>
-</div>
-<div class="dashboard-charts">
-<div class="chart-card"><div class="chart-card-header"><div class="chart-card-title"><i class="fas fa-chart-bar"></i><h3 id="chartTitle">Revenue by Staff</h3></div></div><div class="chart-container-dashboard"><canvas id="dashboardChart1"></canvas></div></div>
-<div class="chart-card"><div class="chart-card-header"><div class="chart-card-title"><i class="fas fa-chart-pie"></i><h3>Revenue Breakdown by Branch</h3></div></div><div class="chart-container-dashboard"><canvas id="dashboardChart2"></canvas></div><div id="branchLegend" style="margin-top:15px;max-height:150px;overflow-y:auto"></div></div>
-</div>
-<div class="leaderboard-table"><div class="chart-card-header"><div class="chart-card-title"><i class="fas fa-trophy"></i><h3 id="leaderboardTitle">Top Performance</h3></div></div>
-<div class="data-table"><table><thead><tr><th>Rank</th><th id="leaderboardEntityHeader">Branch/Staff</th><th>Revenue ($)</th><th>Recharge ($)</th><th>Gross Ads</th><th>Home Internet (Units)</th></tr></thead><tbody id="leaderboardBody"></tbody></table></div></div>
-</div>
+    <ul class="sidebar-nav">
 
-<div id="daily-sales-page" class="hidden">
-<div class="chart-card"><div class="chart-card-header"><div class="chart-card-title"><i class="fas fa-chart-line"></i><h3 id="salesPerformanceTitle">Sales Performance Growth</h3></div>
-<div style="display:flex;gap:10px" id="performanceFilters">
-<select id="performancePeriod" class="report-filter-input" onchange="updatePerformanceChart()"><option value="1">Last 1 Month</option><option value="3" selected>Last 3 Months</option><option value="6">Last 6 Months</option><option value="12">Last 12 Months</option></select>
-<select id="performanceBranch" class="report-filter-input" onchange="updatePerformanceChart()" style="display:none"><option value="">All Branches</option></select>
-</div></div>
-<div class="chart-container-dashboard" style="height:400px"><canvas id="salesPerformanceChart"></canvas></div>
-<div class="performance-summary">
-<div class="performance-card growth"><div class="performance-icon"><i class="fas fa-arrow-up"></i></div><div class="performance-content"><div class="performance-label">Growth Rate</div><div class="performance-value" id="growthRate">0%</div></div></div>
-<div class="performance-card revenue"><div class="performance-icon"><i class="fas fa-dollar-sign"></i></div><div class="performance-content"><div class="performance-label">Current Month Revenue</div><div class="performance-value" id="currentMonthRevenue">$0.00</div></div></div>
-<div class="performance-card compare"><div class="performance-icon"><i class="fas fa-chart-bar"></i></div><div class="performance-content"><div class="performance-label">Previous Month Revenue</div><div class="performance-value" id="previousMonthRevenue">$0.00</div></div></div>
-<div class="performance-card trend"><div class="performance-icon"><i class="fas fa-trending-up"></i></div><div class="performance-content"><div class="performance-label">Avg Monthly Growth</div><div class="performance-value" id="avgGrowth">0%</div></div></div>
-</div></div>
-<div class="form-card"><div class="form-header"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-cash-register"></i><h2>ការលក់ប្រចាំថ្ងៃ</h2></div>
-<button class="add-customer-btn" onclick="openSalesModal()"><i class="fas fa-plus-circle"></i> បញ្ចូលទិន្ន័យការលក់</button></div>
-<div class="info-message"><i class="fas fa-info-circle"></i><p>ចុចប៊ូតុង "បញ្ចូលទិន្ន័យការលក់" ដើម្បីបន្ថែមទិន្នន័យថ្មី</p></div>
-<div class="table-card"><div class="table-header"><i class="fas fa-history"></i><h2>ប្រវត្តិការលក់</h2></div>
-<div class="data-table"><table><thead><tr><th>ថ្ងៃខែ</th><th>ឈ្មោះបុគ្គលិក</th><th>សាខា</th><th>A/S/H/F</th><th>R/S/D ($)</th><th>សរុប ($)</th><th>Action</th></tr></thead><tbody id="tableBody"></tbody></table></div></div></div>
-</div>
+      <!-- Dashboard -->
+      <li class="nav-item" id="nav-dashboard" onclick="navigateTo('dashboard')">
+        <span class="nav-active-bar"></span>
+        <i class="fas fa-tachometer-alt nav-icon"></i>
+        <span class="nav-label">Dashboard</span>
+      </li>
 
-<div id="deposit-page" class="hidden">
-<div class="form-card"><div class="form-header"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-coins"></i><h2>ការដាក់ប្រាក់</h2></div>
-<button class="add-customer-btn" onclick="openDepositModal()"><i class="fas fa-plus-circle"></i> បញ្ជូលការដាក់ប្រាក់</button></div>
-<div class="info-message"><i class="fas fa-info-circle"></i><p>ចុចប៊ូតុង "បញ្ជូលការដាក់ប្រាក់" ដើម្បីបន្ថែមទិន្នន័យថ្មី</p></div>
-<div class="table-card"><div class="table-header"><i class="fas fa-history"></i><h2>ប្រវត្តិការដាក់ប្រាក់</h2></div>
-<div class="data-table"><table><thead><tr><th>ថ្ងៃខែ</th><th>ឈ្មោះបុគ្គលិក</th><th>សាខា</th><th>Cash</th><th>Credit</th><th>ចំណាំ</th><th>សកម្មភាព</th></tr></thead><tbody id="depositTableBody"></tbody></table></div></div></div>
-</div>
+      <!-- Promotion -->
+      <li class="nav-item" id="nav-promotion" onclick="navigateTo('promotionPage')">
+        <span class="nav-active-bar"></span>
+        <i class="fas fa-tag nav-icon"></i>
+        <span class="nav-label">Promotion</span>
+      </li>
 
-<div id="reports-page" class="hidden">
-<div class="form-card"><div class="form-header"><i class="fas fa-chart-line"></i><h2>របាយការណ៍ការលក់ពេញលេញ</h2></div>
-<div class="table-card"><div class="data-table"><table id="reportTable"><thead><tr><th>ថ្ងៃខែ</th><th>បុគ្គលិក</th><th>សាខា</th><th>Gross Ads</th><th>Change SIM</th><th>S@Home</th><th>Fiber+</th><th>Recharge ($)</th><th>SC-Shop ($)</th><th>SC-Dealer ($)</th><th>Total Revenue ($)</th></tr></thead><tbody id="reportTableBody"></tbody></table></div></div></div>
-</div>
+      <!-- Sale (with submenu) -->
+      <li class="nav-item has-submenu" id="nav-sale" onclick="toggleSubmenu('submenu-sale', 'nav-sale')">
+        <span class="nav-active-bar"></span>
+        <i class="fas fa-receipt nav-icon"></i>
+        <span class="nav-label">Sale</span>
+        <i class="fas fa-chevron-down nav-chevron"></i>
+      </li>
+      <ul class="submenu" id="submenu-sale">
+        <li class="submenu-item" id="nav-daily-sale" onclick="navigateTo('sale')">
+          <i class="fas fa-calendar-day submenu-icon"></i>
+          <span>Daily Sale</span>
+        </li>
+      </ul>
 
-<div id="customers-page" class="hidden">
-<div class="table-card"><div class="table-header"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-users"></i><h2>អតិថិជន</h2></div>
-<button class="add-customer-btn" onclick="openCustomerModal()"><i class="fas fa-user-plus"></i> បន្ថែមអតិថិជន</button></div>
-<div class="data-table"><table><thead><tr><th>ថ្ងៃខែ</th><th>បុគ្គលិក</th><th>សាខា</th><th>ឈ្មោះអតិថិជន</th><th>លេខទូរសព្ទ</th><th>ផលិតផល</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody id="customersTableBody"></tbody></table></div></div>
-<div class="table-card"><div class="table-header"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-mobile-alt"></i><h2>Top Up</h2></div>
-<button class="topup-btn" onclick="openTopUpModal()"><i class="fas fa-plus-circle"></i> បន្ថែម Top Up</button></div>
-<div class="data-table"><table><thead><tr><th>ថ្ងៃខែ</th><th>បុគ្គលិក</th><th>សាខា</th><th>ឈ្មោះអតិថិជន</th><th>លេខទូរសព្ទ</th><th>លេខទាក់ទង</th><th>ផលិតផល</th><th>ថ្ងៃផុតកំណត់</th><th>Remark</th><th>Action</th></tr></thead><tbody id="topupTableBody"></tbody></table></div></div>
-</div>
+      <!-- Deposit -->
+      <li class="nav-item" id="nav-deposit" onclick="navigateTo('deposit')">
+        <span class="nav-active-bar"></span>
+        <i class="fas fa-piggy-bank nav-icon"></i>
+        <span class="nav-label">Deposit</span>
+      </li>
 
-<div id="promotions-page" class="hidden">
-<div class="form-card"><div class="form-header"><i class="fas fa-gift"></i><h2>ប្រូម៉ូសិនថ្មី</h2></div>
-<div style="margin-bottom:20px"><button class="add-customer-btn" onclick="openPromotionModal()"><i class="fas fa-plus"></i> បន្ថែមប្រូម៉ូសិន</button></div>
-<div id="promotionsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:20px"></div></div>
-</div>
+      <!-- Customer (with submenu) -->
+      <li class="nav-item has-submenu" id="nav-customer" onclick="toggleSubmenu('submenu-customer', 'nav-customer')">
+        <span class="nav-active-bar"></span>
+        <i class="fas fa-users nav-icon"></i>
+        <span class="nav-label">Customer</span>
+        <i class="fas fa-chevron-down nav-chevron"></i>
+      </li>
+      <ul class="submenu" id="submenu-customer">
+        <li class="submenu-item" id="nav-new-customer" onclick="navigateTo('customer'); switchCustomerTab('new-customer')">
+          <i class="fas fa-user-plus submenu-icon"></i>
+          <span>New Customer</span>
+        </li>
+        <li class="submenu-item" id="nav-topup" onclick="navigateTo('customer'); switchCustomerTab('topup')">
+          <i class="fas fa-wallet submenu-icon"></i>
+          <span>Top Up</span>
+        </li>
+        <li class="submenu-item" id="nav-termination" onclick="navigateTo('customer'); switchCustomerTab('termination')">
+          <i class="fas fa-user-times submenu-icon"></i>
+          <span>Termination</span>
+        </li>
+      </ul>
 
-<div id="settings-page" class="hidden">
-<div class="form-card" id="settingsAdminOnly"><div class="form-header"><i class="fas fa-users-cog"></i><h2>គ្រប់គ្រងអ្នកប្រើប្រាស់</h2></div>
-<div class="table-card"><div class="table-header"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-users"></i><h2>បញ្ជីអ្នកប្រើប្រាស់</h2></div>
-<button class="add-user-btn" onclick="openUserModal()"><i class="fas fa-user-plus"></i> បន្ថែមអ្នកប្រើប្រាស់</button></div>
-<div class="data-table"><table><thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th>Branch</th><th>Status</th><th>Created Date</th><th>Action</th></tr></thead><tbody id="usersTableBody"></tbody></table></div></div></div>
-</div>
+      <!-- Settings (with submenu) -->
+      <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', 'nav-settings')">
+        <span class="nav-active-bar"></span>
+        <i class="fas fa-cog nav-icon"></i>
+        <span class="nav-label">Settings</span>
+        <i class="fas fa-chevron-down nav-chevron"></i>
+      </li>
+      <ul class="submenu" id="submenu-settings">
+        <li class="submenu-item" id="nav-permission" onclick="navigateTo('settings'); switchSettingsTab('permission')">
+          <i class="fas fa-shield-alt submenu-icon"></i>
+          <span>Permission</span>
+        </li>
+        <li class="submenu-item" id="nav-kpi" onclick="navigateTo('settings'); switchSettingsTab('kpi')">
+          <i class="fas fa-bullseye submenu-icon"></i>
+          <span>KPI Setting</span>
+        </li>
+        <li class="submenu-item" id="nav-promo-setting" onclick="navigateTo('settings'); switchSettingsTab('promo')">
+          <i class="fas fa-percent submenu-icon"></i>
+          <span>Promotion</span>
+        </li>
+      </ul>
 
-</div></div>
-</div>
+    </ul>
+  </nav>
+  <!-- END SIDEBAR -->
 
-<div id="salesModal" class="modal"><div class="modal-content modal-sales"><div class="modal-header"><h3><i class="fas fa-plus-circle"></i> <span id="salesModalTitle">បញ្ចូលទិន្ន័យការលក់</span></h3><span class="close" onclick="closeSalesModal()">&times;</span></div>
-<div class="modal-body"><form id="salesFormModal"><input type="hidden" id="edit_sales_index">
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label><input type="date" id="modal_date" required></div>
-<div class="modal-form-group"><label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label><input type="text" id="modal_staff_name" required></div></div>
-<div class="modal-form-row-1"><div class="modal-form-group"><label><i class="fas fa-building"></i> សាខា</label><input type="text" id="modal_branch_name" readonly></div></div>
-<div class="modal-section-title"><h3><i class="fas fa-sort-amount-up"></i> ចំនួន</h3></div>
-<div class="modal-form-row-4">
-<div class="modal-form-group"><label><i class="fas fa-mobile-alt"></i> Gross-Ads</label><input type="number" id="modal_gross_ads" value="0" min="0" required></div>
-<div class="modal-form-group"><label><i class="fas fa-sim-card"></i> Change-SIM</label><input type="number" id="modal_change_sim" value="0" min="0" required></div>
-<div class="modal-form-group"><label><i class="fas fa-home"></i> S@Home</label><input type="number" id="modal_s_at_home" value="0" min="0" required></div>
-<div class="modal-form-group"><label><i class="fas fa-wifi"></i> Fiber+</label><input type="number" id="modal_fiber_plus" value="0" min="0" required></div>
-</div>
-<div class="modal-section-title"><h3><i class="fas fa-dollar-sign"></i> ទឹកប្រាក់ $</h3></div>
-<div class="modal-form-row-4">
-<div class="modal-form-group"><label><i class="fas fa-money-bill-wave"></i> Recharge</label><input type="number" id="modal_recharge" value="0.00" step="0.01" min="0" required></div>
-<div class="modal-form-group"><label><i class="fas fa-shopping-cart"></i> SC-Shop</label><input type="number" id="modal_sc_shop" value="0.00" step="0.01" min="0" required></div>
-<div class="modal-form-group"><label><i class="fas fa-store"></i> SC-Dealer</label><input type="number" id="modal_sc_dealer" value="0.00" step="0.01" min="0" required></div>
-<div class="modal-form-group modal-highlight"><label><i class="fas fa-chart-line"></i> Total Revenue</label><input type="number" id="modal_total_revenue" value="0.00" step="0.01" min="0" required></div>
-</div>
-<div class="modal-form-buttons"><button type="button" class="modal-cancel-btn" onclick="closeSalesModal()"><i class="fas fa-times"></i> បិទ</button>
-<button type="submit" class="modal-submit-btn"><i class="fas fa-save"></i> រក្សាទុក</button></div>
-</form></div></div></div>
+  <!-- ===================== MAIN WRAPPER ===================== -->
+  <div id="main-wrapper">
 
-<div id="depositModal" class="modal"><div class="modal-content modal-deposit"><div class="modal-header modal-header-deposit"><h3><i class="fas fa-coins"></i> <span id="depositModalTitle">បញ្ជូលការដាក់ប្រាក់</span></h3><span class="close" onclick="closeDepositModal()">&times;</span></div>
-<div class="modal-body"><form id="depositFormModal"><input type="hidden" id="edit_deposit_index">
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label><input type="date" id="modal_deposit_date" required></div>
-<div class="modal-form-group"><label><i class="fas fa-user"></i> ឈ្មោះបុគ្គលិក</label><input type="text" id="modal_deposit_staff"></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-money-bill"></i> Cash ($)</label><input type="number" id="modal_cash" value="0.00" step="0.01" min="0" required></div>
-<div class="modal-form-group"><label><i class="fas fa-credit-card"></i> Credit ($)</label><input type="number" id="modal_credit" value="0.00" step="0.01" min="0" required></div></div>
-<div class="modal-form-row-1"><div class="modal-form-group"><label><i class="fas fa-sticky-note"></i> កំណត់ចំណាំ</label><textarea id="modal_note"></textarea></div></div>
-<div class="modal-form-buttons"><button type="button" class="modal-cancel-btn" onclick="closeDepositModal()"><i class="fas fa-times"></i> បិទ</button>
-<button type="submit" class="modal-submit-btn"><i class="fas fa-save"></i> រក្សាទុក</button></div>
-</form></div></div></div>
+    <!-- TOPBAR -->
+    <header id="topbar">
+      <div class="topbar-left">
+        <button class="topbar-menu-btn" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="topbar-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-icon-btn" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="topbar-badge">3</span>
+        </button>
+        <div class="topbar-user-pill">
+          <div class="topbar-avatar" id="topbar-avatar">A</div>
+          <span class="topbar-name" id="topbar-name">Admin User</span>
+        </div>
+        <span class="topbar-role-badge" id="topbar-role">Admin</span>
+      </div>
+    </header>
+    <!-- END TOPBAR -->
 
-<div id="userModal" class="modal"><div class="modal-content modal-user"><div class="modal-header"><h3><i class="fas fa-user-plus"></i> <span id="userModalTitle">បន្ថែមអ្នកប្រើប្រាស់ថ្មី</span></h3><span class="close" onclick="closeUserModal()">&times;</span></div>
-<div class="modal-body"><form id="userForm"><input type="hidden" id="edit_user_index">
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-user"></i> Username</label><input type="text" id="user_username" required></div>
-<div class="modal-form-group"><label><i class="fas fa-id-card"></i> Full Name</label><input type="text" id="user_fullname" required></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="user_password" required></div>
-<div class="modal-form-group"><label><i class="fas fa-user-tag"></i> Role</label><select id="user_role" required><option value="">Select Role</option><option value="admin">Admin</option><option value="supervisor">Supervisor</option><option value="agent">Agent</option></select></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-building"></i> Branch</label><input type="text" id="user_branch" required></div>
-<div class="modal-form-group"><label><i class="fas fa-toggle-on"></i> Status</label><select id="user_status" required><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div>
-<div class="modal-form-buttons"><button type="button" class="modal-cancel-btn" onclick="closeUserModal()"><i class="fas fa-times"></i> បិទ</button>
-<button type="submit" class="modal-submit-btn"><i class="fas fa-save"></i> រក្សាទុក</button></div>
-</form></div></div></div>
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <main id="main-content">
 
-<div id="customerModal" class="modal"><div class="modal-content modal-customer"><div class="modal-header"><h3><i class="fas fa-user-plus"></i> <span id="customerModalTitle">បន្ថែមអតិថិជនថ្មី</span></h3><span class="close" onclick="closeCustomerModal()">&times;</span></div>
-<div class="modal-body"><form id="customerForm"><input type="hidden" id="edit_customer_index">
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែឆ្នាំ</label><input type="date" id="cust_date" required></div>
-<div class="modal-form-group"><label><i class="fas fa-user-tie"></i> បុគ្គលិក</label><input type="text" id="cust_staff"></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label><input type="text" id="cust_name" required></div>
-<div class="modal-form-group"><label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label><input type="tel" id="cust_phone" required></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-box"></i> ផលិតផល</label><select id="cust_product" required><option value="">ជ្រើសរើសផលិតផល</option><option value="Smart@Home">Smart@Home</option><option value="Smart Fiber+">Smart Fiber+</option><option value="M2M">M2M</option><option value="Smart Laor 6">Smart Laor 6</option><option value="Smart Laor 10">Smart Laor 10</option></select></div>
-<div class="modal-form-group"><label><i class="fas fa-flag"></i> Status</label><select id="cust_status" required><option value="">ជ្រើសរើស Status</option><option value="New Lead">New Lead</option><option value="Prospect">Prospect</option><option value="Hot Prospect">Hot Prospect</option><option value="Closed">Closed</option></select></div></div>
-<div class="modal-form-row-1"><div class="modal-form-group"><label><i class="fas fa-comment"></i> Remark</label><textarea id="cust_remark"></textarea></div></div>
-<div class="modal-form-buttons"><button type="button" class="modal-cancel-btn" onclick="closeCustomerModal()"><i class="fas fa-times"></i> បិទ</button>
-<button type="submit" class="modal-submit-btn"><i class="fas fa-save"></i> រក្សាទុក</button></div>
-</form></div></div></div>
+      <!-- ========== DASHBOARD PAGE ========== -->
+      <section class="page" id="page-dashboard">
 
-<div id="topupModal" class="modal"><div class="modal-content modal-topup"><div class="modal-header modal-header-topup"><h3><i class="fas fa-mobile-alt"></i> <span id="topupModalTitle">បន្ថែម Top Up</span></h3><span class="close" onclick="closeTopUpModal()">&times;</span></div>
-<div class="modal-body"><form id="topupForm"><input type="hidden" id="edit_topup_index">
-<div class="modal-form-row-3"><div class="modal-form-group"><label><i class="fas fa-calendar-alt"></i> ថ្ងៃខែ</label><input type="date" id="topup_date" required></div>
-<div class="modal-form-group"><label><i class="fas fa-user-tie"></i> បុគ្���លិក</label><input type="text" id="topup_staff"></div>
-<div class="modal-form-group"><label><i class="fas fa-user"></i> ឈ្មោះអតិថិជន</label><input type="text" id="topup_customer" required></div></div>
-<div class="modal-form-row-3"><div class="modal-form-group"><label><i class="fas fa-phone"></i> លេខទូរសព្ទ</label><input type="tel" id="topup_phone" required></div>
-<div class="modal-form-group"><label><i class="fas fa-phone-alt"></i> លេខទាក់ទង</label><input type="tel" id="topup_contact"></div>
-<div class="modal-form-group"><label><i class="fas fa-box"></i> ផលិតផល</label><select id="topup_product" required><option value="">ជ្រើសរើសផលិតផល</option><option value="Smart@Home">Smart@Home</option><option value="Smart Fiber+">Smart Fiber+</option><option value="M2M">M2M</option><option value="Smart Laor 6">Smart Laor 6</option><option value="Smart Laor 10">Smart Laor 10</option></select></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-calendar-times"></i> ថ្ងៃផុតកំណត់</label><input type="date" id="topup_expiry" required></div>
-<div class="modal-form-group"><label><i class="fas fa-comment"></i> Remark</label><textarea id="topup_remark"></textarea></div></div>
-<div class="modal-form-buttons"><button type="button" class="modal-cancel-btn" onclick="closeTopUpModal()"><i class="fas fa-times"></i> បិទ</button>
-<button type="submit" class="modal-submit-btn"><i class="fas fa-save"></i> រក្សាទុក</button></div>
-</form></div></div></div>
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <label class="toolbar-label" for="dash-branch-filter">Branch</label>
+            <select class="form-select toolbar-select" id="dash-branch-filter" onchange="loadDashboard()">
+              <option value="all">All Branches</option>
+            </select>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-outline" onclick="loadDashboard()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
 
-<div id="promotionModal" class="modal"><div class="modal-content modal-promotion"><div class="modal-header"><h3><i class="fas fa-gift"></i> <span id="promotionModalTitle">បន្ថែមប្រូម៉ូសិន</span></h3><span class="close" onclick="closePromotionModal()">&times;</span></div>
-<div class="modal-body"><form id="promotionForm"><input type="hidden" id="edit_promotion_index">
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-tv"></i> Channel</label><input type="text" id="promo_channel" required></div>
-<div class="modal-form-group"><label><i class="fas fa-bullhorn"></i> Campaign</label><input type="text" id="promo_campaign" required></div></div>
-<div class="modal-form-row-2"><div class="modal-form-group"><label><i class="fas fa-calendar-alt"></i> ថ្ងៃចាប់ផ្ដើម</label><input type="date" id="promo_start_date" required></div>
-<div class="modal-form-group"><label><i class="fas fa-calendar-times"></i> ថ្ងៃបញ្ចប់</label><input type="date" id="promo_end_date" required></div></div>
-<div class="modal-form-row-1"><div class="modal-form-group"><label><i class="fas fa-file-alt"></i> លក្ខខណ្ឌ</label><textarea id="promo_terms" required style="min-height:120px"></textarea></div></div>
-<div class="modal-form-buttons"><button type="button" class="modal-cancel-btn" onclick="closePromotionModal()"><i class="fas fa-times"></i> បិទ</button>
-<button type="submit" class="modal-submit-btn"><i class="fas fa-save"></i> រក្សាទុក</button></div>
-</form></div></div></div>
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card" id="kpi-sales">
+            <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-shopping-cart"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Total Sales</p>
+              <p class="kpi-value" id="kv-sales">0</p>
+            </div>
+            <span class="trend-badge trend-flat" id="tr-sales"><i class="fas fa-minus"></i> 0%</span>
+          </div>
+          <div class="kpi-card" id="kpi-units">
+            <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-box"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Total Units</p>
+              <p class="kpi-value" id="kv-units">0</p>
+            </div>
+            <span class="trend-badge trend-flat" id="tr-units"><i class="fas fa-minus"></i> 0%</span>
+          </div>
+          <div class="kpi-card" id="kpi-revenue">
+            <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-dollar-sign"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Total Revenue</p>
+              <p class="kpi-value" id="kv-revenue">$0</p>
+            </div>
+            <span class="trend-badge trend-flat" id="tr-revenue"><i class="fas fa-minus"></i> 0%</span>
+          </div>
+          <div class="kpi-card" id="kpi-agents">
+            <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-user-tie"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Active Agents</p>
+              <p class="kpi-value" id="kv-agents">0</p>
+            </div>
+            <span class="trend-badge trend-flat" id="tr-agents"><i class="fas fa-minus"></i> 0%</span>
+          </div>
+        </div>
 
-<div class="sync-buttons" id="syncButtons" style="display:none">
-<button class="sync-btn sync-btn-upload" onclick="syncToGoogleSheets()"><i class="fas fa-cloud-upload-alt"></i><span>Sync Up</span></button>
-<button class="sync-btn sync-btn-download" onclick="loadFromGoogleSheets()"><i class="fas fa-cloud-download-alt"></i><span>Sync Down</span></button>
-<div class="sync-info"><i class="fas fa-clock"></i><span id="lastSyncDisplay">មិនទាន់ Sync</span></div>
-</div>
+        <!-- Chart Row 1 -->
+        <div class="chart-row">
+          <div class="chart-card" id="chart-trend">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Monthly Trend</span>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="cTrend"></canvas>
+            </div>
+          </div>
+          <div class="chart-card" id="chart-mix">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Item Mix</span>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="cMix"></canvas>
+            </div>
+          </div>
+        </div>
 
-<script src="app.js"></script>
+        <!-- Chart Row 2 -->
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Agent Performance</span>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="cAgent"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Growth vs Last Month</span>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="cGrowth"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branch Summary Table -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">Branch Summary</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="branch-table">
+              <thead>
+                <tr>
+                  <th>Branch</th>
+                  <th>This Month</th>
+                  <th>Last Month</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+      <!-- END DASHBOARD PAGE -->
+
+      <!-- ========== PROMOTION PAGE ========== -->
+      <section class="page" id="page-promotionPage" style="display:none;">
+        <div class="page-header">
+          <h2 class="page-header-title">Promotion</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-addPromotion')">
+            <i class="fas fa-plus"></i> Add Promotion
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="promotion-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Discount</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <!-- END PROMOTION PAGE -->
+
+      <!-- ========== DEPOSIT PAGE ========== -->
+      <section class="page" id="page-deposit" style="display:none;">
+        <div class="page-header">
+          <h2 class="page-header-title">Deposit</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-addDeposit')">
+            <i class="fas fa-plus"></i> Add Deposit
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="deposit-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Agent</th>
+                  <th>Branch</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Note</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <!-- END DEPOSIT PAGE -->
+
+      <!-- ========== SALE PAGE ========== -->
+      <section class="page" id="page-sale" style="display:none;">
+
+        <!-- Sale Tabs -->
+        <div class="tab-header">
+          <button class="tab-btn active" id="tab-sale-report" data-tab="sale-report" onclick="switchSaleTab('sale-report')">
+            <i class="fas fa-chart-bar"></i> Report
+          </button>
+          <button class="tab-btn" id="tab-daily-sale" data-tab="daily-sale" onclick="switchSaleTab('daily-sale')">
+            <i class="fas fa-calendar-day"></i> Daily Sale
+          </button>
+        </div>
+
+        <!-- Items Strip -->
+        <div class="items-strip-wrapper">
+          <div class="items-strip" id="items-strip"></div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+            <input type="date" class="form-input" id="sale-date-from" onchange="applySaleFilters()" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+            <input type="date" class="form-input" id="sale-date-to" onchange="applySaleFilters()" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Agent</label>
+            <select class="form-select" id="sale-filter-agent" onchange="applySaleFilters()">
+              <option value="">All Agents</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Branch</label>
+            <select class="form-select" id="sale-filter-branch" onchange="applySaleFilters()">
+              <option value="">All Branches</option>
+            </select>
+          </div>
+          <button class="btn btn-outline" onclick="clearSaleFilters()">
+            <i class="fas fa-times"></i> Clear
+          </button>
+        </div>
+
+        <!-- Sale KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-shopping-cart"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Total Sales</p>
+              <p class="kpi-value" id="sale-kv-sales">0</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-box"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Total Units</p>
+              <p class="kpi-value" id="sale-kv-units">0</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-dollar-sign"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Total Revenue</p>
+              <p class="kpi-value" id="sale-kv-revenue">$0</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-user-tie"></i></div>
+            <div class="kpi-card-body">
+              <p class="kpi-label">Active Agents</p>
+              <p class="kpi-value" id="sale-kv-agents">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle-bar">
+          <button class="view-toggle-btn active" id="btn-view-table" onclick="switchSaleView('table')">
+            <i class="fas fa-table"></i> Table View
+          </button>
+          <button class="view-toggle-btn" id="btn-view-summary" onclick="switchSaleView('summary')">
+            <i class="fas fa-chart-pie"></i> Summary View
+          </button>
+          <div class="view-toggle-spacer"></div>
+          <button class="btn btn-primary" id="btn-new-sale" onclick="openNewSaleModal()">
+            <i class="fas fa-plus"></i> New Sale
+          </button>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-card" id="sale-table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="sale-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Agent</th>
+                  <th>Branch</th>
+                  <th>Items</th>
+                  <th>Units</th>
+                  <th>Revenue</th>
+                  <th>Note</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Summary View (hidden by default) -->
+        <div id="sale-summary-view" style="display:none;">
+          <div class="chart-row">
+            <div class="chart-card">
+              <div class="chart-card-header"><span class="chart-card-title">Sales by Item</span></div>
+              <div class="chart-card-body"><canvas id="cSaleMix"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header"><span class="chart-card-title">Sales by Agent</span></div>
+              <div class="chart-card-body"><canvas id="cSaleAgent"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Bar -->
+        <div class="total-bar" id="sale-total-bar">
+          <span class="total-bar-item"><strong>Total Records:</strong> <span id="sale-total-records">0</span></span>
+          <span class="total-bar-item"><strong>Total Units:</strong> <span id="sale-bar-units">0</span></span>
+          <span class="total-bar-item"><strong>Total Revenue:</strong> <span id="sale-bar-revenue">$0</span></span>
+        </div>
+
+      </section>
+      <!-- END SALE PAGE -->
+
+      <!-- ========== CUSTOMER PAGE ========== -->
+      <section class="page" id="page-customer" style="display:none;">
+
+        <!-- Customer Tabs -->
+        <div class="tab-header">
+          <button class="tab-btn active" id="tab-new-customer" data-tab="new-customer" onclick="switchCustomerTab('new-customer')">
+            <i class="fas fa-user-plus"></i> New Customer
+          </button>
+          <button class="tab-btn" id="tab-topup" data-tab="topup" onclick="switchCustomerTab('topup')">
+            <i class="fas fa-wallet"></i> Top Up
+          </button>
+          <button class="tab-btn" id="tab-termination" data-tab="termination" onclick="switchCustomerTab('termination')">
+            <i class="fas fa-user-times"></i> Termination
+          </button>
+        </div>
+
+        <!-- New Customer Tab Content -->
+        <div class="tab-content active" id="tab-content-new-customer">
+          <div class="page-header">
+            <h2 class="page-header-title">New Customer</h2>
+            <button class="btn btn-primary" onclick="openModal('modal-newCustomer')">
+              <i class="fas fa-plus"></i> Add New Customer
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="new-customer-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>ID/Passport</th>
+                    <th>Package</th>
+                    <th>Agent</th>
+                    <th>Branch</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Up Tab Content -->
+        <div class="tab-content" id="tab-content-topup" style="display:none;">
+          <div class="page-header">
+            <h2 class="page-header-title">Top Up</h2>
+            <button class="btn btn-primary" onclick="openModal('modal-topUp')">
+              <i class="fas fa-plus"></i> Add Top Up
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="topup-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Customer Name</th>
+                    <th>Phone</th>
+                    <th>Amount</th>
+                    <th>Agent</th>
+                    <th>Branch</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Termination Tab Content -->
+        <div class="tab-content" id="tab-content-termination" style="display:none;">
+          <div class="page-header">
+            <h2 class="page-header-title">Termination</h2>
+            <button class="btn btn-primary" onclick="openModal('modal-termination')">
+              <i class="fas fa-plus"></i> Add Termination
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="termination-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Customer Name</th>
+                    <th>Phone</th>
+                    <th>Reason</th>
+                    <th>Agent</th>
+                    <th>Branch</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+      <!-- END CUSTOMER PAGE -->
+
+      <!-- ========== SETTINGS PAGE ========== -->
+      <section class="page" id="page-settings" style="display:none;">
+
+        <!-- Settings Tabs -->
+        <div class="tab-header">
+          <button class="tab-btn active" id="stab-permission" data-tab="permission" onclick="switchSettingsTab('permission')">
+            <i class="fas fa-shield-alt"></i> Permission
+          </button>
+          <button class="tab-btn" id="stab-kpi" data-tab="kpi" onclick="switchSettingsTab('kpi')">
+            <i class="fas fa-bullseye"></i> KPI Setting
+          </button>
+          <button class="tab-btn" id="stab-promo" data-tab="promo" onclick="switchSettingsTab('promo')">
+            <i class="fas fa-percent"></i> Promotion
+          </button>
+        </div>
+
+        <!-- Permission Tab Content -->
+        <div class="tab-content active" id="stab-content-permission">
+          <div class="page-header">
+            <h2 class="page-header-title">User Permissions</h2>
+            <button class="btn btn-primary" onclick="openModal('modal-addUser')">
+              <i class="fas fa-plus"></i> Add User
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="staff-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Branch</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Setting Tab Content -->
+        <div class="tab-content" id="stab-content-kpi" style="display:none;">
+          <div class="page-header">
+            <h2 class="page-header-title">KPI Settings</h2>
+            <button class="btn btn-primary" onclick="openModal('modal-kpi')">
+              <i class="fas fa-plus"></i> Add KPI
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="kpi-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>KPI Name</th>
+                    <th>Type</th>
+                    <th>Target</th>
+                    <th>Period</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Promotion Setting Tab Content -->
+        <div class="tab-content" id="stab-content-promo" style="display:none;">
+          <div class="page-header">
+            <h2 class="page-header-title">Promotion Settings</h2>
+            <button class="btn btn-primary" onclick="openModal('modal-addItem')">
+              <i class="fas fa-plus"></i> Add Promotion
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="promo-setting-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Group</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+      <!-- END SETTINGS PAGE -->
+
+    </main>
+    <!-- END MAIN CONTENT -->
+
+  </div>
+  <!-- END MAIN WRAPPER -->
+
+  <!-- ===================== MODALS ===================== -->
+
+  <!-- ---- modal-addItem (Add/Edit Item) ---- -->
+  <div class="modal-overlay" id="modal-addItem" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-addItem-title">Add Item</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-addItem')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-addItem" onsubmit="submitItem(event)">
+        <div class="modal-body">
+
+          <!-- Group Toggle -->
+          <div class="form-group">
+            <label class="form-label">Item Group</label>
+            <div class="toggle-btn-group">
+              <button type="button" class="toggle-btn active" id="grp-btn-unit" onclick="selectItemGroup('unit')">
+                <i class="fas fa-box"></i> Unit Group
+              </button>
+              <button type="button" class="toggle-btn" id="grp-btn-dollar" onclick="selectItemGroup('dollar')">
+                <i class="fas fa-dollar-sign"></i> Dollar Group
+              </button>
+            </div>
+          </div>
+
+          <!-- Item Name -->
+          <div class="form-group">
+            <label class="form-label" for="item-name">Item Name <span class="required">*</span></label>
+            <input type="text" class="form-input" id="item-name" placeholder="Enter item name" required />
+          </div>
+
+          <!-- Shortcut -->
+          <div class="form-group">
+            <label class="form-label" for="item-shortcut">Shortcut</label>
+            <input type="text" class="form-input" id="item-shortcut" placeholder="e.g. PP50" />
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label" for="item-category">Category <span class="required">*</span></label>
+            <select class="form-select" id="item-category" required>
+              <option value="">Select category</option>
+              <option value="Prepaid">Prepaid</option>
+              <option value="Postpaid">Postpaid</option>
+              <option value="Data">Data</option>
+              <option value="Voice">Voice</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Unit Group Fields -->
+          <div id="item-unit-fields">
+            <div class="form-group">
+              <label class="form-label" for="item-unit">Unit</label>
+              <select class="form-select" id="item-unit" onchange="handleUnitSelectChange()">
+                <option value="SIM">SIM</option>
+                <option value="Card">Card</option>
+                <option value="Package">Package</option>
+                <option value="Voucher">Voucher</option>
+                <option value="custom">+ Custom Unit</option>
+              </select>
+            </div>
+            <div class="form-group" id="item-custom-unit-group" style="display:none;">
+              <label class="form-label" for="item-custom-unit">Custom Unit</label>
+              <input type="text" class="form-input" id="item-custom-unit" placeholder="Enter custom unit" />
+            </div>
+          </div>
+
+          <!-- Dollar Group Fields -->
+          <div id="item-dollar-fields" style="display:none;">
+            <div class="form-row">
+              <div class="form-group form-col">
+                <label class="form-label" for="item-currency">Currency</label>
+                <select class="form-select" id="item-currency" onchange="handleCurrencySelectChange()">
+                  <option value="USD">USD ($)</option>
+                  <option value="KHR">KHR (៛)</option>
+                  <option value="custom">+ Custom</option>
+                </select>
+              </div>
+              <div class="form-group form-col">
+                <label class="form-label" for="item-price">Price</label>
+                <input type="number" class="form-input" id="item-price" placeholder="0.00" min="0" step="0.01" />
+              </div>
+            </div>
+            <div class="form-group" id="item-custom-currency-group" style="display:none;">
+              <label class="form-label" for="item-custom-currency">Custom Currency</label>
+              <input type="text" class="form-input" id="item-custom-currency" placeholder="Enter currency code" />
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label class="form-label" for="item-status">Status</label>
+            <select class="form-select" id="item-status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label" for="item-desc">Description</label>
+            <textarea class="form-textarea" id="item-desc" placeholder="Optional description" rows="3"></textarea>
+          </div>
+
+          <input type="hidden" id="item-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-addItem')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="item-submit-btn">Add Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-newSale (New/Edit Sale) ---- -->
+  <div class="modal-overlay" id="modal-newSale" style="display:none;">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-newSale-title">New Sale</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-newSale')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-newSale" onsubmit="submitSale(event)">
+        <div class="modal-body">
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="sale-agent-name">Agent Name <span class="required">*</span></label>
+              <input type="text" class="form-input" id="sale-agent-name" placeholder="Enter agent name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="sale-branch">Branch <span class="required">*</span></label>
+              <select class="form-select" id="sale-branch" required>
+                <option value="">Select branch</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="sale-date">Date <span class="required">*</span></label>
+              <input type="date" class="form-input" id="sale-date" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="sale-note">Note</label>
+              <input type="text" class="form-input" id="sale-note" placeholder="Optional note" />
+            </div>
+          </div>
+
+          <!-- Unit Group Items -->
+          <div class="sale-items-section">
+            <h4 class="sale-section-title"><i class="fas fa-box"></i> Unit Group Items</h4>
+            <div class="sale-items-grid" id="sale-unit-items"></div>
+          </div>
+
+          <!-- Dollar Group Items -->
+          <div class="sale-items-section">
+            <h4 class="sale-section-title"><i class="fas fa-dollar-sign"></i> Dollar Group Items</h4>
+            <div class="sale-items-grid" id="sale-dollar-items"></div>
+          </div>
+
+          <input type="hidden" id="sale-edit-id" />
+        </div>
+
+        <!-- Live Totals Footer -->
+        <div class="sale-totals-footer">
+          <div class="sale-total-item">
+            <span class="sale-total-label">Total Units</span>
+            <span class="sale-total-value" id="sale-total-units">0</span>
+          </div>
+          <div class="sale-total-item">
+            <span class="sale-total-label">Total Revenue</span>
+            <span class="sale-total-value" id="sale-total-rev">$0.00</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-newSale')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="sale-submit-btn">Save Sale</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-newCustomer (Add/Edit New Customer) ---- -->
+  <div class="modal-overlay" id="modal-newCustomer" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-newCustomer-title">Add New Customer</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-newCustomer')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-newCustomer" onsubmit="submitNewCustomer(event)">
+        <div class="modal-body">
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="nc-name">Customer Name <span class="required">*</span></label>
+              <input type="text" class="form-input" id="nc-name" placeholder="Full name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="nc-phone">Phone <span class="required">*</span></label>
+              <input type="tel" class="form-input" id="nc-phone" placeholder="Phone number" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="nc-id">ID / Passport</label>
+              <input type="text" class="form-input" id="nc-id" placeholder="ID or Passport number" />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="nc-package">Package</label>
+              <input type="text" class="form-input" id="nc-package" placeholder="Package name" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="nc-agent">Agent <span class="required">*</span></label>
+              <input type="text" class="form-input" id="nc-agent" placeholder="Agent name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="nc-branch">Branch <span class="required">*</span></label>
+              <select class="form-select" id="nc-branch" required>
+                <option value="">Select branch</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="nc-date">Date <span class="required">*</span></label>
+            <input type="date" class="form-input" id="nc-date" required />
+          </div>
+
+          <input type="hidden" id="nc-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-newCustomer')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="nc-submit-btn">Add Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-topUp (Add/Edit Top Up) ---- -->
+  <div class="modal-overlay" id="modal-topUp" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-topUp-title">Add Top Up</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-topUp')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-topUp" onsubmit="submitTopUp(event)">
+        <div class="modal-body">
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="tu-name">Customer Name <span class="required">*</span></label>
+              <input type="text" class="form-input" id="tu-name" placeholder="Customer name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="tu-phone">Phone <span class="required">*</span></label>
+              <input type="tel" class="form-input" id="tu-phone" placeholder="Phone number" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tu-amount">Amount <span class="required">*</span></label>
+            <input type="number" class="form-input" id="tu-amount" placeholder="0.00" min="0" step="0.01" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="tu-agent">Agent <span class="required">*</span></label>
+              <input type="text" class="form-input" id="tu-agent" placeholder="Agent name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="tu-branch">Branch <span class="required">*</span></label>
+              <select class="form-select" id="tu-branch" required>
+                <option value="">Select branch</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tu-date">Date <span class="required">*</span></label>
+            <input type="date" class="form-input" id="tu-date" required />
+          </div>
+
+          <input type="hidden" id="tu-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-topUp')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="tu-submit-btn">Add Top Up</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-termination (Add/Edit Termination) ---- -->
+  <div class="modal-overlay" id="modal-termination" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-termination-title">Add Termination</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-termination')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-termination" onsubmit="submitTermination(event)">
+        <div class="modal-body">
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="term-name">Customer Name <span class="required">*</span></label>
+              <input type="text" class="form-input" id="term-name" placeholder="Customer name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="term-phone">Phone <span class="required">*</span></label>
+              <input type="tel" class="form-input" id="term-phone" placeholder="Phone number" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="term-reason">Reason <span class="required">*</span></label>
+            <textarea class="form-textarea" id="term-reason" placeholder="Reason for termination" rows="3" required></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="term-agent">Agent <span class="required">*</span></label>
+              <input type="text" class="form-input" id="term-agent" placeholder="Agent name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="term-branch">Branch <span class="required">*</span></label>
+              <select class="form-select" id="term-branch" required>
+                <option value="">Select branch</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="term-date">Date <span class="required">*</span></label>
+            <input type="date" class="form-input" id="term-date" required />
+          </div>
+
+          <input type="hidden" id="term-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-termination')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="term-submit-btn">Add Termination</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-kpi (Add/Edit KPI) ---- -->
+  <div class="modal-overlay" id="modal-kpi" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-kpi-title">Add KPI</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-kpi')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-kpi" onsubmit="submitKPI(event)">
+        <div class="modal-body">
+
+          <!-- KPI Name -->
+          <div class="form-group">
+            <label class="form-label" for="kpi-name">KPI Name <span class="required">*</span></label>
+            <input type="text" class="form-input" id="kpi-name" placeholder="Enter KPI name" required />
+          </div>
+
+          <!-- KPI Type Chips -->
+          <div class="form-group">
+            <label class="form-label">KPI Type <span class="required">*</span></label>
+            <div class="chip-group" id="kpi-type-chips">
+              <button type="button" class="chip" data-value="Sales" onclick="selectKpiType(this)">Sales</button>
+              <button type="button" class="chip" data-value="Units" onclick="selectKpiType(this)">Units</button>
+              <button type="button" class="chip" data-value="Revenue" onclick="selectKpiType(this)">Revenue</button>
+              <button type="button" class="chip" data-value="Customers" onclick="selectKpiType(this)">Customers</button>
+            </div>
+          </div>
+
+          <!-- Target -->
+          <div class="form-group">
+            <label class="form-label" for="kpi-target">Target Value <span class="required">*</span></label>
+            <input type="number" class="form-input" id="kpi-target" placeholder="0" min="0" required />
+          </div>
+
+          <!-- Value Mode Toggle -->
+          <div class="form-group">
+            <label class="form-label">Value Mode</label>
+            <div class="toggle-btn-group">
+              <button type="button" class="toggle-btn active" id="kpi-unit-toggle" onclick="selectKpiMode('unit')">
+                <i class="fas fa-box"></i> Unit
+              </button>
+              <button type="button" class="toggle-btn" id="kpi-currency-toggle" onclick="selectKpiMode('currency')">
+                <i class="fas fa-dollar-sign"></i> Currency
+              </button>
+            </div>
+          </div>
+
+          <!-- Unit Field -->
+          <div class="form-group" id="kpi-unit-field">
+            <label class="form-label" for="kpi-unit-val">Unit Label</label>
+            <input type="text" class="form-input" id="kpi-unit-val" placeholder="e.g. SIM, Card, Package" />
+          </div>
+
+          <!-- Currency Field -->
+          <div class="form-group" id="kpi-currency-field" style="display:none;">
+            <label class="form-label">Currency &amp; Amount</label>
+            <div class="form-row">
+              <div class="form-col">
+                <select class="form-select" id="kpi-currency-sel">
+                  <option value="USD">USD ($)</option>
+                  <option value="KHR">KHR (៛)</option>
+                </select>
+              </div>
+              <div class="form-col">
+                <input type="number" class="form-input" id="kpi-currency-amount" placeholder="0.00" min="0" step="0.01" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Period -->
+          <div class="form-group">
+            <label class="form-label" for="kpi-period">Period <span class="required">*</span></label>
+            <select class="form-select" id="kpi-period" required>
+              <option value="Monthly">Monthly</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Daily">Daily</option>
+            </select>
+          </div>
+
+          <input type="hidden" id="kpi-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-kpi')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="kpi-submit-btn">Add KPI</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-addUser (Add/Edit User) ---- -->
+  <div class="modal-overlay" id="modal-addUser" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-addUser-title">Add User</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-addUser')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-addUser" onsubmit="submitUser(event)">
+        <div class="modal-body">
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="user-name">Full Name <span class="required">*</span></label>
+              <input type="text" class="form-input" id="user-name" placeholder="Full name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="user-username">Username <span class="required">*</span></label>
+              <input type="text" class="form-input" id="user-username" placeholder="Username" required autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- Password with eye toggle -->
+          <div class="form-group">
+            <label class="form-label" for="user-password">Password <span class="required">*</span></label>
+            <div class="input-with-icon">
+              <input type="password" class="form-input" id="user-password" placeholder="Password" required autocomplete="new-password" />
+              <button type="button" class="input-icon-btn" id="user-pwd-eye" onclick="togglePasswordVisibility('user-password', 'user-pwd-eye')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="user-role">Role <span class="required">*</span></label>
+              <select class="form-select" id="user-role" required>
+                <option value="">Select role</option>
+                <option value="Admin">Admin</option>
+                <option value="Supervisor">Supervisor</option>
+                <option value="User">User</option>
+              </select>
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="user-branch">Branch <span class="required">*</span></label>
+              <select class="form-select" id="user-branch" required>
+                <option value="">Select branch</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="user-status">Status</label>
+            <select class="form-select" id="user-status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <input type="hidden" id="user-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-addUser')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="user-submit-btn">Add User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== ROLE SELECTOR WIDGET ===================== -->
+  <div class="role-widget" id="role-widget">
+    <button class="role-widget-btn" id="role-widget-btn" onclick="toggleRoleWidget()">
+      <i class="fas fa-user-shield"></i>
+      <span id="role-widget-label">Admin</span>
+      <i class="fas fa-chevron-up role-widget-chevron"></i>
+    </button>
+    <div class="role-widget-dropdown" id="role-widget-dropdown" style="display:none;">
+      <div class="role-widget-header">Switch Role</div>
+      <button class="role-widget-option" onclick="switchRole('admin')">
+        <i class="fas fa-user-shield"></i> Admin
+      </button>
+      <button class="role-widget-option" onclick="switchRole('supervisor')">
+        <i class="fas fa-user-tie"></i> Supervisor
+      </button>
+      <button class="role-widget-option" onclick="switchRole('user')">
+        <i class="fas fa-user"></i> User
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
