@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Smart 5G Dashboard</title>
+  <meta name="description" content="Smart 5G Dashboard — Sales, KPI, Customer Management" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📶</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -16,86 +18,86 @@
   <!-- ===================== SIDEBAR ===================== -->
   <nav id="sidebar">
     <div class="sidebar-logo">
-      <div class="sidebar-logo-icon"><i class="fas fa-signal"></i></div>
-      <span class="sidebar-logo-text">Smart 5G</span>
+      <div class="logo-icon"><i class="fas fa-signal"></i></div>
+      <span class="logo-text">Smart 5G</span>
     </div>
 
     <ul class="sidebar-nav">
 
       <!-- Dashboard -->
-      <li class="nav-item" id="nav-dashboard" onclick="navigateTo('dashboard')">
+      <li class="nav-item" id="nav-dashboard" onclick="navigateTo('dashboard', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-tachometer-alt nav-icon"></i>
         <span class="nav-label">Dashboard</span>
       </li>
 
       <!-- Promotion -->
-      <li class="nav-item" id="nav-promotion" onclick="navigateTo('promotionPage')">
+      <li class="nav-item" id="nav-promotion" onclick="navigateTo('promotionPage', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-tag nav-icon"></i>
         <span class="nav-label">Promotion</span>
       </li>
 
       <!-- Sale (with submenu) -->
-      <li class="nav-item has-submenu" id="nav-sale" onclick="toggleSubmenu('submenu-sale', 'nav-sale')">
+      <li class="nav-item has-submenu" id="nav-sale" onclick="toggleSubmenu('submenu-sale', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-receipt nav-icon"></i>
         <span class="nav-label">Sale</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-sale">
-        <li class="submenu-item" id="nav-daily-sale" onclick="navigateTo('sale')">
+        <li class="submenu-item" id="nav-daily-sale" onclick="navigateTo('sale', this)">
           <i class="fas fa-calendar-day submenu-icon"></i>
           <span>Daily Sale</span>
         </li>
       </ul>
 
       <!-- Deposit -->
-      <li class="nav-item" id="nav-deposit" onclick="navigateTo('deposit')">
+      <li class="nav-item" id="nav-deposit" onclick="navigateTo('deposit', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-piggy-bank nav-icon"></i>
         <span class="nav-label">Deposit</span>
       </li>
 
       <!-- Customer (with submenu) -->
-      <li class="nav-item has-submenu" id="nav-customer" onclick="toggleSubmenu('submenu-customer', 'nav-customer')">
+      <li class="nav-item has-submenu" id="nav-customer" onclick="toggleSubmenu('submenu-customer', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-users nav-icon"></i>
         <span class="nav-label">Customer</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-customer">
-        <li class="submenu-item" id="nav-new-customer" onclick="navigateTo('customer'); switchCustomerTab('new-customer')">
+        <li class="submenu-item" id="nav-new-customer" onclick="navigateTo('customer', this); switchCustomerTab('new-customer')">
           <i class="fas fa-user-plus submenu-icon"></i>
           <span>New Customer</span>
         </li>
-        <li class="submenu-item" id="nav-topup" onclick="navigateTo('customer'); switchCustomerTab('topup')">
+        <li class="submenu-item" id="nav-topup" onclick="navigateTo('customer', this); switchCustomerTab('topup')">
           <i class="fas fa-wallet submenu-icon"></i>
           <span>Top Up</span>
         </li>
-        <li class="submenu-item" id="nav-termination" onclick="navigateTo('customer'); switchCustomerTab('termination')">
+        <li class="submenu-item" id="nav-termination" onclick="navigateTo('customer', this); switchCustomerTab('termination')">
           <i class="fas fa-user-times submenu-icon"></i>
           <span>Termination</span>
         </li>
       </ul>
 
       <!-- Settings (with submenu) -->
-      <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', 'nav-settings')">
+      <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-cog nav-icon"></i>
         <span class="nav-label">Settings</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-settings">
-        <li class="submenu-item" id="nav-permission" onclick="navigateTo('settings'); switchSettingsTab('permission')">
+        <li class="submenu-item" id="nav-permission" onclick="navigateTo('settings', this); openSettingsTab('permission')">
           <i class="fas fa-shield-alt submenu-icon"></i>
           <span>Permission</span>
         </li>
-        <li class="submenu-item" id="nav-kpi" onclick="navigateTo('settings'); switchSettingsTab('kpi')">
+        <li class="submenu-item" id="nav-kpi" onclick="navigateTo('settings', this); openSettingsTab('kpi')">
           <i class="fas fa-bullseye submenu-icon"></i>
           <span>KPI Setting</span>
         </li>
-        <li class="submenu-item" id="nav-promo-setting" onclick="navigateTo('settings'); switchSettingsTab('promo')">
+        <li class="submenu-item" id="nav-promo-setting" onclick="navigateTo('settings', this); openSettingsTab('promo')">
           <i class="fas fa-percent submenu-icon"></i>
           <span>Promotion</span>
         </li>
@@ -111,7 +113,7 @@
     <!-- TOPBAR -->
     <header id="topbar">
       <div class="topbar-left">
-        <button class="topbar-menu-btn" onclick="toggleSidebar()">
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
           <i class="fas fa-bars"></i>
         </button>
         <h1 class="topbar-title" id="page-title">Dashboard</h1>
@@ -250,7 +252,7 @@
       <!-- END DASHBOARD PAGE -->
 
       <!-- ========== PROMOTION PAGE ========== -->
-      <section class="page" id="page-promotionPage" style="display:none;">
+      <section class="page" id="page-promotionPage">
         <div class="page-header">
           <h2 class="page-header-title">Promotion</h2>
           <button class="btn btn-primary" onclick="openModal('modal-addPromotion')">
@@ -279,7 +281,7 @@
       <!-- END PROMOTION PAGE -->
 
       <!-- ========== DEPOSIT PAGE ========== -->
-      <section class="page" id="page-deposit" style="display:none;">
+      <section class="page" id="page-deposit">
         <div class="page-header">
           <h2 class="page-header-title">Deposit</h2>
           <button class="btn btn-primary" onclick="openModal('modal-addDeposit')">
@@ -308,17 +310,20 @@
       <!-- END DEPOSIT PAGE -->
 
       <!-- ========== SALE PAGE ========== -->
-      <section class="page" id="page-sale" style="display:none;">
+      <section class="page" id="page-sale">
 
         <!-- Sale Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="tab-sale-report" data-tab="sale-report" onclick="switchSaleTab('sale-report')">
+          <button class="tab-btn sale-tab-btn active" id="tab-sale-report" data-tab="report" onclick="openSaleTab('report', this)">
             <i class="fas fa-chart-bar"></i> Report
           </button>
-          <button class="tab-btn" id="tab-daily-sale" data-tab="daily-sale" onclick="switchSaleTab('daily-sale')">
+          <button class="tab-btn sale-tab-btn" id="tab-daily-sale" data-tab="daily-sale" onclick="openSaleTab('daily-sale', this)">
             <i class="fas fa-calendar-day"></i> Daily Sale
           </button>
         </div>
+
+        <!-- Sale Report Tab Content -->
+        <div class="tab-content sale-tab-content active" id="sale-tab-report">
 
         <!-- Items Strip -->
         <div class="items-strip-wrapper">
@@ -358,38 +363,38 @@
             <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-shopping-cart"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Sales</p>
-              <p class="kpi-value" id="sale-kv-sales">0</p>
+              <p class="kpi-value" id="sale-kpi-sales">0</p>
             </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-box"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Units</p>
-              <p class="kpi-value" id="sale-kv-units">0</p>
+              <p class="kpi-value" id="sale-kpi-units">0</p>
             </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-dollar-sign"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Revenue</p>
-              <p class="kpi-value" id="sale-kv-revenue">$0</p>
+              <p class="kpi-value" id="sale-kpi-revenue">$0</p>
             </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-user-tie"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Active Agents</p>
-              <p class="kpi-value" id="sale-kv-agents">0</p>
+              <p class="kpi-value" id="sale-kpi-agents">0</p>
             </div>
           </div>
         </div>
 
         <!-- View Toggle -->
         <div class="view-toggle-bar">
-          <button class="view-toggle-btn active" id="btn-view-table" onclick="switchSaleView('table')">
+          <button class="view-toggle-btn active" id="view-btn-table" onclick="switchSaleView('table')">
             <i class="fas fa-table"></i> Table View
           </button>
-          <button class="view-toggle-btn" id="btn-view-summary" onclick="switchSaleView('summary')">
+          <button class="view-toggle-btn" id="view-btn-summary" onclick="switchSaleView('summary')">
             <i class="fas fa-chart-pie"></i> Summary View
           </button>
           <div class="view-toggle-spacer"></div>
@@ -441,27 +446,57 @@
           <span class="total-bar-item"><strong>Total Revenue:</strong> <span id="sale-bar-revenue">$0</span></span>
         </div>
 
+        </div><!-- end sale-tab-report -->
+
+        <!-- Daily Sale Tab Content -->
+        <div class="tab-content sale-tab-content" id="sale-tab-daily-sale">
+          <div class="page-header">
+            <h2 class="page-header-title">Daily Sale</h2>
+            <button class="btn btn-primary" onclick="openNewSaleModal()">
+              <i class="fas fa-plus"></i> New Sale
+            </button>
+          </div>
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="daily-sale-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Agent</th>
+                    <th>Branch</th>
+                    <th>Units</th>
+                    <th>Revenue</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div><!-- end sale-tab-daily-sale -->
+
       </section>
       <!-- END SALE PAGE -->
 
       <!-- ========== CUSTOMER PAGE ========== -->
-      <section class="page" id="page-customer" style="display:none;">
+      <section class="page" id="page-customer">
 
         <!-- Customer Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="tab-new-customer" data-tab="new-customer" onclick="switchCustomerTab('new-customer')">
+          <button class="tab-btn customer-tab-btn active" id="tab-new-customer" data-tab="new-customer" onclick="openCustomerTab('new-customer', this)">
             <i class="fas fa-user-plus"></i> New Customer
           </button>
-          <button class="tab-btn" id="tab-topup" data-tab="topup" onclick="switchCustomerTab('topup')">
+          <button class="tab-btn customer-tab-btn" id="tab-topup" data-tab="topup" onclick="openCustomerTab('topup', this)">
             <i class="fas fa-wallet"></i> Top Up
           </button>
-          <button class="tab-btn" id="tab-termination" data-tab="termination" onclick="switchCustomerTab('termination')">
+          <button class="tab-btn customer-tab-btn" id="tab-termination" data-tab="termination" onclick="openCustomerTab('termination', this)">
             <i class="fas fa-user-times"></i> Termination
           </button>
         </div>
 
         <!-- New Customer Tab Content -->
-        <div class="tab-content active" id="tab-content-new-customer">
+        <div class="tab-content customer-tab-content active" id="tab-content-new-customer">
           <div class="page-header">
             <h2 class="page-header-title">New Customer</h2>
             <button class="btn btn-primary" onclick="openModal('modal-newCustomer')">
@@ -491,7 +526,7 @@
         </div>
 
         <!-- Top Up Tab Content -->
-        <div class="tab-content" id="tab-content-topup" style="display:none;">
+        <div class="tab-content customer-tab-content" id="tab-content-topup">
           <div class="page-header">
             <h2 class="page-header-title">Top Up</h2>
             <button class="btn btn-primary" onclick="openModal('modal-topUp')">
@@ -520,7 +555,7 @@
         </div>
 
         <!-- Termination Tab Content -->
-        <div class="tab-content" id="tab-content-termination" style="display:none;">
+        <div class="tab-content customer-tab-content" id="tab-content-termination">
           <div class="page-header">
             <h2 class="page-header-title">Termination</h2>
             <button class="btn btn-primary" onclick="openModal('modal-termination')">
@@ -552,23 +587,23 @@
       <!-- END CUSTOMER PAGE -->
 
       <!-- ========== SETTINGS PAGE ========== -->
-      <section class="page" id="page-settings" style="display:none;">
+      <section class="page" id="page-settings">
 
         <!-- Settings Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="stab-permission" data-tab="permission" onclick="switchSettingsTab('permission')">
+          <button class="tab-btn settings-tab-btn active" id="stab-permission" data-tab="permission" onclick="openSettingsTab('permission', this)">
             <i class="fas fa-shield-alt"></i> Permission
           </button>
-          <button class="tab-btn" id="stab-kpi" data-tab="kpi" onclick="switchSettingsTab('kpi')">
+          <button class="tab-btn settings-tab-btn" id="stab-kpi" data-tab="kpi" onclick="openSettingsTab('kpi', this)">
             <i class="fas fa-bullseye"></i> KPI Setting
           </button>
-          <button class="tab-btn" id="stab-promo" data-tab="promo" onclick="switchSettingsTab('promo')">
+          <button class="tab-btn settings-tab-btn" id="stab-promo" data-tab="promo" onclick="openSettingsTab('promo', this)">
             <i class="fas fa-percent"></i> Promotion
           </button>
         </div>
 
         <!-- Permission Tab Content -->
-        <div class="tab-content active" id="stab-content-permission">
+        <div class="tab-content settings-tab-content active" id="stab-content-permission">
           <div class="page-header">
             <h2 class="page-header-title">User Permissions</h2>
             <button class="btn btn-primary" onclick="openModal('modal-addUser')">
@@ -596,7 +631,7 @@
         </div>
 
         <!-- KPI Setting Tab Content -->
-        <div class="tab-content" id="stab-content-kpi" style="display:none;">
+        <div class="tab-content settings-tab-content" id="stab-content-kpi">
           <div class="page-header">
             <h2 class="page-header-title">KPI Settings</h2>
             <button class="btn btn-primary" onclick="openModal('modal-kpi')">
@@ -623,7 +658,7 @@
         </div>
 
         <!-- Promotion Setting Tab Content -->
-        <div class="tab-content" id="stab-content-promo" style="display:none;">
+        <div class="tab-content settings-tab-content" id="stab-content-promo">
           <div class="page-header">
             <h2 class="page-header-title">Promotion Settings</h2>
             <button class="btn btn-primary" onclick="openModal('modal-addItem')">
@@ -769,7 +804,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-addItem')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="item-submit-btn">Add Item</button>
+          <button type="submit" class="btn btn-primary" id="modal-addItem-submit">Add Item</button>
         </div>
       </form>
     </div>
@@ -840,7 +875,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-newSale')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="sale-submit-btn">Save Sale</button>
+          <button type="submit" class="btn btn-primary" id="modal-newSale-submit">Save Sale</button>
         </div>
       </form>
     </div>
@@ -1042,10 +1077,10 @@
           <div class="form-group">
             <label class="form-label">KPI Type <span class="required">*</span></label>
             <div class="chip-group" id="kpi-type-chips">
-              <button type="button" class="chip" data-value="Sales" onclick="selectKpiType(this)">Sales</button>
-              <button type="button" class="chip" data-value="Units" onclick="selectKpiType(this)">Units</button>
-              <button type="button" class="chip" data-value="Revenue" onclick="selectKpiType(this)">Revenue</button>
-              <button type="button" class="chip" data-value="Customers" onclick="selectKpiType(this)">Customers</button>
+              <button type="button" class="chip kpi-type-chip" id="kpi-chip-Sales" data-value="Sales" onclick="selectKpiType(this)">Sales</button>
+              <button type="button" class="chip kpi-type-chip" id="kpi-chip-Units" data-value="Units" onclick="selectKpiType(this)">Units</button>
+              <button type="button" class="chip kpi-type-chip" id="kpi-chip-Revenue" data-value="Revenue" onclick="selectKpiType(this)">Revenue</button>
+              <button type="button" class="chip kpi-type-chip" id="kpi-chip-Customers" data-value="Customers" onclick="selectKpiType(this)">Customers</button>
             </div>
           </div>
 
@@ -1104,7 +1139,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-kpi')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="kpi-submit-btn">Add KPI</button>
+          <button type="submit" class="btn btn-primary" id="modal-kpi-submit">Add KPI</button>
         </div>
       </form>
     </div>
@@ -1174,7 +1209,94 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-addUser')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="user-submit-btn">Add User</button>
+          <button type="submit" class="btn btn-primary" id="modal-addUser-submit">Add User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-addPromotion (Add Promotion) ---- -->
+  <div class="modal-overlay" id="modal-addPromotion" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-addPromotion-title">Add Promotion</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-addPromotion')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-addPromotion" onsubmit="submitPromotion(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="promo-name">Name <span class="required">*</span></label>
+            <input type="text" class="form-input" id="promo-name" placeholder="Promotion name" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="promo-start">Start Date <span class="required">*</span></label>
+              <input type="date" class="form-input" id="promo-start" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="promo-end">End Date <span class="required">*</span></label>
+              <input type="date" class="form-input" id="promo-end" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="promo-status">Status</label>
+            <select class="form-select" id="promo-status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-addPromotion')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modal-addPromotion-submit">Add Promotion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- modal-addDeposit (Add Deposit) ---- -->
+  <div class="modal-overlay" id="modal-addDeposit" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-addDeposit-title">Add Deposit</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-addDeposit')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="form-addDeposit" onsubmit="submitDeposit(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="deposit-agent">Agent <span class="required">*</span></label>
+              <input type="text" class="form-input" id="deposit-agent" placeholder="Agent name" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="deposit-branch">Branch <span class="required">*</span></label>
+              <select class="form-select" id="deposit-branch" required>
+                <option value="">Select branch</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="deposit-amount">Amount <span class="required">*</span></label>
+              <input type="number" class="form-input" id="deposit-amount" placeholder="0.00" min="0" step="0.01" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="deposit-date">Date <span class="required">*</span></label>
+              <input type="date" class="form-input" id="deposit-date" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="deposit-note">Note</label>
+            <textarea class="form-textarea" id="deposit-note" placeholder="Optional note" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-addDeposit')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modal-addDeposit-submit">Add Deposit</button>
         </div>
       </form>
     </div>
