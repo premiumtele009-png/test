@@ -1754,7 +1754,7 @@ input, select, textarea, button {
 }
 
 /* ============================================================
-   30. TOAST NOTIFICATIONS  ← NEW (required by app.js showToast)
+   30. TOAST NOTIFICATIONS
    ============================================================ */
 .toast {
   position: fixed;
