@@ -6,96 +6,371 @@
   <title>Smart 5G Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha384-XOG8kGLavFO0/5LLTfE1eZZcx0RpJ/4zI5IGvEVW6T5PJPWCEQ1RA6U/gjweCmND" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Professional overrides ── */
+    :root {
+      --color-primary: #1B7D3D;
+      --color-primary-dark: #155f2e;
+      --sidebar-width: 240px;
+      --topbar-height: 60px;
+    }
+
+    /* Sidebar logo */
+    .sidebar-logo { display:flex; align-items:center; gap:10px; padding:18px 16px 14px; border-bottom:1px solid rgba(255,255,255,.15); }
+    .sidebar-logo-icon { width:36px; height:36px; min-width:36px; background:rgba(255,255,255,.2); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#fff; flex-shrink:0; }
+    .sidebar-logo-text { font-size:1rem; font-weight:700; color:#fff; letter-spacing:.02em; }
+
+    /* Nav items */
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 14px; margin:2px 8px; border-radius:8px; cursor:pointer; color:rgba(255,255,255,.85); font-size:.875rem; font-weight:500; transition:background .15s,color .15s; position:relative; user-select:none; }
+    .nav-item:hover { background:rgba(255,255,255,.12); color:#fff; }
+    .nav-item.active { background:rgba(255,255,255,.18); color:#fff; font-weight:600; }
+    .nav-active-bar { display:none; }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:6px; bottom:6px; width:3px; background:#fff; border-radius:0 3px 3px 0; }
+    .nav-icon { font-size:1rem; min-width:18px; text-align:center; }
+    .nav-label { flex:1; }
+    .nav-chevron { font-size:.7rem; opacity:.7; transition:transform .2s; margin-left:auto; }
+    .nav-item.submenu-open .nav-chevron { transform:rotate(180deg); }
+
+    /* Submenu */
+    .submenu { display:none; flex-direction:column; list-style:none; padding:2px 0 4px; margin:0; }
+    .submenu.open { display:flex; }
+    .submenu-item { display:flex; align-items:center; gap:8px; padding:8px 14px 8px 40px; cursor:pointer; color:rgba(255,255,255,.75); font-size:.8125rem; font-weight:500; transition:background .12s,color .12s; }
+    .submenu-item:hover { background:rgba(255,255,255,.1); color:#fff; }
+    .submenu-icon { font-size:.875rem; min-width:16px; }
+
+    /* Topbar */
+    #topbar { height:60px; min-height:60px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-shadow:0 1px 4px rgba(0,0,0,.1); z-index:50; flex-shrink:0; }
+    .topbar-left { display:flex; align-items:center; gap:12px; }
+    .topbar-right { display:flex; align-items:center; gap:10px; }
+    .topbar-menu-btn { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:none; border:none; cursor:pointer; color:#555; font-size:1.05rem; transition:background .15s; }
+    .topbar-menu-btn:hover { background:#F0F2F5; }
+    .topbar-title { font-size:1rem; font-weight:600; color:#1A1A2E; }
+    .topbar-icon-btn { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:none; border:none; cursor:pointer; color:#555; font-size:.95rem; position:relative; transition:background .15s; }
+    .topbar-icon-btn:hover { background:#F0F2F5; }
+    .topbar-badge { position:absolute; top:4px; right:4px; width:8px; height:8px; background:#e53935; border-radius:50%; border:2px solid #fff; }
+    .topbar-user-pill { display:flex; align-items:center; gap:8px; padding:4px 10px 4px 4px; border-radius:24px; background:#F0F2F5; }
+    .topbar-avatar { width:32px; height:32px; border-radius:50%; background:#1B7D3D; color:#fff; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; flex-shrink:0; }
+    .topbar-name { font-size:.8125rem; font-weight:600; color:#1A1A2E; white-space:nowrap; }
+    .topbar-role-badge { font-size:.65rem; font-weight:700; color:#1B7D3D; background:#E8F5E9; border-radius:20px; padding:3px 10px; white-space:nowrap; }
+
+    /* Main content padding */
+    #main-content { flex:1; overflow-y:auto; padding:20px; scrollbar-width:thin; scrollbar-color:#ccc transparent; }
+    #main-content::-webkit-scrollbar { width:6px; }
+    #main-content::-webkit-scrollbar-thumb { background:#ccc; border-radius:4px; }
+
+    /* Page sections */
+    .page { display:none; }
+    .page.active { display:block; animation:fadeInPage .2s ease; }
+    @keyframes fadeInPage { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Page toolbar */
+    .page-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+    .toolbar-left,.toolbar-right { display:flex; align-items:center; gap:8px; }
+    .toolbar-label { font-size:.8125rem; font-weight:600; color:#555; white-space:nowrap; }
+    .toolbar-select { padding:7px 28px 7px 10px; border:1.5px solid #D0D0D0; border-radius:8px; font-size:.8125rem; background:#fff; cursor:pointer; }
+
+    /* KPI Grid */
+    .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+    .kpi-card { background:#fff; border-radius:12px; padding:18px 20px; box-shadow:0 2px 8px rgba(0,0,0,.07); display:flex; align-items:center; gap:14px; transition:box-shadow .2s,transform .2s; }
+    .kpi-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.11); transform:translateY(-2px); }
+    .kpi-card-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+    .kpi-icon-blue { background:#E3F2FD; color:#1565C0; }
+    .kpi-icon-green { background:#E8F5E9; color:#1B7D3D; }
+    .kpi-icon-purple { background:#F3E5F5; color:#6A1B9A; }
+    .kpi-icon-orange { background:#FFF3E0; color:#E65100; }
+    .kpi-card-body { flex:1; min-width:0; }
+    .kpi-label { font-size:.72rem; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px; }
+    .kpi-value { font-size:1.6rem; font-weight:800; color:#1A1A2E; line-height:1.1; }
+    .trend-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:.72rem; font-weight:600; white-space:nowrap; flex-shrink:0; }
+    .trend-up { background:#E8F5E9; color:#1B7D3D; }
+    .trend-down { background:#FFEBEE; color:#C62828; }
+    .trend-flat { background:#F5F5F5; color:#757575; }
+
+    /* Chart cards */
+    .chart-row { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
+    .chart-card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,.07); display:flex; flex-direction:column; gap:12px; }
+    .chart-card-header { display:flex; align-items:center; justify-content:space-between; }
+    .chart-card-title { font-size:.9375rem; font-weight:700; color:#1A1A2E; }
+    .chart-card-body { position:relative; min-height:200px; }
+    .chart-card-body canvas { width:100%!important; }
+
+    /* Table card */
+    .table-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:16px; }
+    .table-card-header { padding:16px 20px; border-bottom:1px solid #EEEEEE; display:flex; align-items:center; justify-content:space-between; }
+    .table-card-title { font-size:.9375rem; font-weight:700; color:#1A1A2E; }
+    .table-responsive { overflow-x:auto; }
+    .data-table { width:100%; border-collapse:collapse; font-size:.8125rem; }
+    .data-table thead th { background:#1B7D3D; color:#fff; font-weight:600; padding:11px 14px; text-align:left; white-space:nowrap; font-size:.75rem; letter-spacing:.03em; }
+    .data-table thead th:first-child { border-radius:0; }
+    .data-table tbody td { padding:10px 14px; color:#333; border-bottom:1px solid #F0F0F0; vertical-align:middle; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr:hover td { background:#FAFAFA; }
+    .th-group-unit { background:#E8F5E9!important; color:#1B7D3D!important; text-align:center; font-weight:700; }
+    .th-group-dollar { background:#FFF3E0!important; color:#E65100!important; text-align:center; font-weight:700; }
+    .th-unit { background:#C8E6C9!important; color:#1B5E20!important; }
+    .th-dollar { background:#FFE0B2!important; color:#BF360C!important; }
+    .td-unit { background:#F1F8E9!important; color:#2E7D32; }
+    .td-dollar { background:#FFF8E1!important; color:#E65100; }
+    .td-revenue { font-weight:700; color:#1B7D3D; }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding:40px 20px; color:#aaa; font-size:.875rem; }
+
+    /* Avatar */
+    .avatar { width:32px; height:32px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; text-transform:uppercase; flex-shrink:0; color:#fff; }
+    .av-0{background:#1B7D3D} .av-1{background:#1565C0} .av-2{background:#6A1B9A} .av-3{background:#C62828}
+    .av-4{background:#E65100} .av-5{background:#00695C} .av-6{background:#AD1457} .av-7{background:#4527A0}
+    .name-cell { display:flex; align-items:center; gap:8px; }
+
+    /* Pills */
+    .pill { display:inline-flex; align-items:center; padding:2px 10px; border-radius:20px; font-size:.72rem; font-weight:600; }
+    .pill-green{background:#E8F5E9;color:#1B7D3D} .pill-blue{background:#E3F2FD;color:#1565C0}
+    .pill-red{background:#FFEBEE;color:#C62828} .pill-gray{background:#F5F5F5;color:#757575}
+    .pill-orange{background:#FFF3E0;color:#E65100} .pill-purple{background:#F3E5F5;color:#6A1B9A}
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:.875rem; font-weight:600; cursor:pointer; border:none; transition:background .15s,box-shadow .15s; white-space:nowrap; }
+    .btn-primary { background:#1B7D3D; color:#fff; }
+    .btn-primary:hover { background:#155f2e; box-shadow:0 2px 8px rgba(27,125,61,.3); }
+    .btn-outline { background:#fff; color:#555; border:1.5px solid #D0D0D0; }
+    .btn-outline:hover { border-color:#999; color:#1A1A2E; }
+    .btn-edit { display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:6px; font-size:.75rem; font-weight:600; cursor:pointer; background:#E3F2FD; color:#1565C0; border:1px solid #BBDEFB; transition:background .15s; }
+    .btn-edit:hover { background:#BBDEFB; }
+    .btn-delete { display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:6px; font-size:.75rem; font-weight:600; cursor:pointer; background:#FFEBEE; color:#C62828; border:1px solid #FFCDD2; transition:background .15s; }
+    .btn-delete:hover { background:#FFCDD2; }
+
+    /* Tab header */
+    .tab-header { display:flex; gap:0; border-bottom:2px solid #E0E0E0; margin-bottom:20px; overflow-x:auto; scrollbar-width:none; }
+    .tab-header::-webkit-scrollbar { display:none; }
+    .tab-btn { padding:10px 18px; font-size:.875rem; font-weight:500; color:#666; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; white-space:nowrap; transition:color .15s,border-color .15s; display:flex; align-items:center; gap:6px; }
+    .tab-btn:hover { color:#1B7D3D; }
+    .tab-btn.active { color:#1B7D3D; border-bottom-color:#1B7D3D; font-weight:600; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; animation:fadeInPage .15s ease; }
+
+    /* Page header */
+    .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+    .page-header-title { font-size:1.1rem; font-weight:700; color:#1A1A2E; }
+
+    /* Filter bar */
+    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:14px 16px; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); margin-bottom:16px; }
+    .filter-group { display:flex; align-items:center; gap:6px; }
+    .filter-label { font-size:.8125rem; font-weight:600; color:#555; white-space:nowrap; }
+    .form-input,.form-select { padding:8px 12px; border:1.5px solid #D0D0D0; border-radius:8px; font-size:.875rem; color:#333; background:#FAFAFA; transition:border-color .15s; outline:none; font-family:inherit; }
+    .form-input:focus,.form-select:focus { border-color:#1B7D3D; background:#fff; box-shadow:0 0 0 3px rgba(27,125,61,.1); }
+    .form-select { appearance:none; padding-right:28px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%23888' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+    .form-textarea { padding:9px 12px; border:1.5px solid #D0D0D0; border-radius:8px; font-size:.875rem; color:#333; background:#FAFAFA; transition:border-color .15s; outline:none; font-family:inherit; resize:vertical; min-height:80px; width:100%; }
+    .form-textarea:focus { border-color:#1B7D3D; background:#fff; }
+
+    /* View toggle bar */
+    .view-toggle-bar { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    .view-toggle-btn { padding:7px 14px; font-size:.8125rem; font-weight:500; color:#666; background:#fff; border:1.5px solid #D0D0D0; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:background .15s,color .15s,border-color .15s; }
+    .view-toggle-btn:hover { background:#F5F5F5; color:#1A1A2E; }
+    .view-toggle-btn.active { background:#1B7D3D; color:#fff; border-color:#1B7D3D; font-weight:600; }
+    .view-toggle-spacer { flex:1; }
+
+    /* Items strip */
+    .items-strip-wrapper { margin-bottom:12px; }
+    .items-strip { display:flex; gap:8px; overflow-x:auto; padding:6px 0; scrollbar-width:thin; scrollbar-color:#ccc transparent; align-items:center; flex-wrap:nowrap; }
+    .items-strip::-webkit-scrollbar { height:4px; }
+    .items-strip::-webkit-scrollbar-thumb { background:#ccc; border-radius:4px; }
+    .item-chip { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:20px; font-size:.8125rem; font-weight:500; white-space:nowrap; cursor:pointer; border:1.5px solid #D0D0D0; background:#fff; color:#444; transition:border-color .15s,background .15s,color .15s; }
+    .item-chip-unit { border-color:#81C784; background:#F1F8E9; color:#2E7D32; }
+    .item-chip-unit:hover { background:#C8E6C9; }
+    .item-chip-dollar { border-color:#FFCC80; background:#FFF8E1; color:#E65100; }
+    .item-chip-dollar:hover { background:#FFE0B2; }
+    .empty-chips { font-size:.8125rem; color:#aaa; }
+
+    /* Total bar */
+    #sale-total-bar { display:flex; justify-content:flex-end; gap:20px; padding:12px 20px; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.07); margin-top:8px; flex-wrap:wrap; }
+    .total-label { font-size:.8125rem; color:#555; }
+    .total-label strong { color:#1A1A2E; }
+
+    /* Sale items section */
+    .sale-items-section { margin-bottom:16px; }
+    .sale-section-title { font-size:.875rem; font-weight:700; color:#444; margin-bottom:8px; display:flex; align-items:center; gap:6px; padding:8px 12px; background:#F5F5F5; border-radius:8px; }
+    .sale-items-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .sic-card { border-radius:10px; padding:12px; border:1.5px solid #E0E0E0; background:#fff; }
+    .sic-card-unit { border-color:#81C784; background:#F9FBF9; }
+    .sic-card-dollar { border-color:#FFCC80; background:#FFFDF8; }
+    .sic-label { font-size:.75rem; font-weight:600; color:#444; margin-bottom:6px; }
+    .sic-card-unit .sic-label { color:#2E7D32; }
+    .sic-card-dollar .sic-label { color:#E65100; }
+    .sic-sub { font-size:.7rem; color:#999; margin-bottom:6px; }
+    .sic-input { width:100%; padding:7px 10px; border:1.5px solid #D0D0D0; border-radius:7px; font-size:.875rem; font-weight:600; text-align:center; outline:none; font-family:inherit; }
+    .sic-card-unit .sic-input:focus { border-color:#1B7D3D; }
+    .sic-card-dollar .sic-input:focus { border-color:#FB8C00; }
+
+    /* Sale totals footer */
+    .sale-totals-footer { display:flex; gap:20px; padding:14px 24px; background:#F8FAF8; border-top:1px solid #EEEEEE; flex-wrap:wrap; }
+    .sale-total-item { display:flex; flex-direction:column; gap:2px; }
+    .sale-total-label { font-size:.7rem; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:.05em; }
+    .sale-total-value { font-size:1.2rem; font-weight:700; color:#1B7D3D; }
+
+    /* Modal */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.active { display:flex; }
+    .modal { background:#fff; border-radius:14px; box-shadow:0 8px 40px rgba(0,0,0,.2); max-height:90vh; overflow-y:auto; width:100%; animation:slideUpModal .22s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; scrollbar-width:thin; }
+    .modal::-webkit-scrollbar { width:5px; }
+    .modal::-webkit-scrollbar-thumb { background:#ccc; border-radius:4px; }
+    .modal-md { max-width:480px; }
+    .modal-lg { max-width:640px; }
+    @keyframes slideUpModal { from{opacity:0;transform:translateY(20px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .modal-header { position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid #EEEEEE; background:#fff; z-index:5; border-radius:14px 14px 0 0; }
+    .modal-title { font-size:1rem; font-weight:700; color:#1A1A2E; }
+    .modal-close-btn { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:none; border:none; cursor:pointer; color:#888; font-size:1rem; transition:background .15s,color .15s; }
+    .modal-close-btn:hover { background:#F0F2F5; color:#1A1A2E; }
+    .modal-body { padding:20px 24px; flex:1; }
+    .modal-footer { position:sticky; bottom:0; display:flex; justify-content:flex-end; gap:10px; padding:14px 24px; border-top:1px solid #EEEEEE; background:#fff; border-radius:0 0 14px 14px; }
+
+    /* Form */
+    .form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:14px; }
+    .form-group:last-child { margin-bottom:0; }
+    .form-label { font-size:.8125rem; font-weight:600; color:#444; }
+    .required { color:#e53935; margin-left:2px; }
+    .form-row { display:flex; gap:14px; margin-bottom:14px; }
+    .form-row .form-group { flex:1; min-width:0; margin-bottom:0; }
+    .form-col { flex:1; min-width:0; }
+
+    /* Toggle btn group */
+    .toggle-btn-group { display:inline-flex; border-radius:8px; overflow:hidden; border:1.5px solid #D0D0D0; }
+    .toggle-btn { padding:8px 16px; font-size:.8125rem; font-weight:500; color:#666; background:#fff; border:none; cursor:pointer; transition:background .15s,color .15s; display:inline-flex; align-items:center; gap:5px; }
+    .toggle-btn:not(:last-child) { border-right:1.5px solid #D0D0D0; }
+    .toggle-btn:hover { background:#F5F5F5; }
+    .toggle-btn.active { background:#1B7D3D; color:#fff; font-weight:600; }
+
+    /* KPI modal chips */
+    .chip-group { display:flex; flex-wrap:wrap; gap:6px; }
+    .chip { display:inline-flex; align-items:center; padding:5px 14px; border-radius:20px; font-size:.8125rem; font-weight:500; border:1.5px solid #D0D0D0; background:#fff; color:#555; cursor:pointer; transition:border-color .15s,background .15s,color .15s; }
+    .chip:hover { border-color:#1B7D3D; color:#1B7D3D; }
+    .chip.active { border-color:#1B7D3D; background:#1B7D3D; color:#fff; font-weight:600; }
+
+    /* Role widget */
+    #role-widget { position:fixed; bottom:20px; right:20px; z-index:2000; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+    #role-widget-btn { display:flex; align-items:center; gap:8px; padding:8px 14px; background:#1B7D3D; color:#fff; border:none; border-radius:24px; cursor:pointer; font-size:.8125rem; font-weight:600; box-shadow:0 4px 14px rgba(27,125,61,.35); transition:background .15s; }
+    #role-widget-btn:hover { background:#155f2e; }
+    #role-widget-dropdown { background:#fff; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,.15); padding:8px 0; min-width:180px; display:none; flex-direction:column; }
+    .role-widget-header { font-size:.7rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:.08em; padding:6px 16px 4px; }
+    .role-widget-option { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:.875rem; font-weight:500; color:#333; cursor:pointer; transition:background .12s; border:none; background:none; width:100%; text-align:left; }
+    .role-widget-option:hover { background:#F5F5F5; }
+
+    /* Access denied */
+    .access-denied { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; text-align:center; gap:12px; }
+    .access-denied h3 { font-size:1rem; font-weight:700; color:#555; }
+    .access-denied p { font-size:.8125rem; color:#999; }
+    .access-denied i { color:#ccc; }
+
+    /* Summary cards */
+    .summary-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .summary-card { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.08); overflow:hidden; }
+    .summary-card-header { display:flex; align-items:center; gap:10px; padding:14px 18px; background:#1B7D3D; color:#fff; }
+    .summary-card-body { padding:14px 18px; display:flex; flex-direction:column; gap:8px; }
+    .summary-row { display:flex; justify-content:space-between; font-size:.8125rem; padding:5px 0; border-bottom:1px solid #F0F0F0; }
+    .summary-row:last-child { border-bottom:none; }
+    .badge-unit { background:#E8F5E9; color:#1B7D3D; border-radius:12px; padding:2px 10px; font-size:.75rem; font-weight:600; }
+    .badge-dollar { background:#FFF3E0; color:#E65100; border-radius:12px; padding:2px 10px; font-size:.75rem; font-weight:600; }
+
+    /* Input with icon */
+    .input-with-icon { position:relative; display:flex; align-items:center; }
+    .input-with-icon .form-input { padding-right:40px; width:100%; }
+    .input-icon-btn { position:absolute; right:8px; background:none; border:none; cursor:pointer; color:#999; font-size:.9rem; padding:4px; transition:color .15s; }
+    .input-icon-btn:hover { color:#555; }
+
+    /* Responsive */
+    @media(max-width:1100px) { .kpi-grid{grid-template-columns:repeat(2,1fr)} .chart-row{grid-template-columns:1fr} }
+    @media(max-width:768px) { .kpi-grid{grid-template-columns:repeat(2,1fr)} .sale-items-grid{grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:520px) { .kpi-grid{grid-template-columns:1fr 1fr} .form-row{flex-direction:column;gap:0} .modal-overlay{padding:0;align-items:flex-end} .modal{border-radius:18px 18px 0 0;max-height:92vh} }
+  </style>
 </head>
 <body>
 
   <!-- ===================== SIDEBAR ===================== -->
   <nav id="sidebar">
     <div class="sidebar-logo">
-      <div class="sidebar-logo-icon"><i class="fas fa-signal"></i></div>
+      <div class="sidebar-logo-icon"><i class="fas fa-tower-broadcast"></i></div>
       <span class="sidebar-logo-text">Smart 5G</span>
     </div>
 
     <ul class="sidebar-nav">
 
       <!-- Dashboard -->
-      <li class="nav-item" id="nav-dashboard" onclick="navigateTo('dashboard')">
+      <li class="nav-item active" id="nav-dashboard" onclick="navigateTo('dashboard', this)">
         <span class="nav-active-bar"></span>
-        <i class="fas fa-tachometer-alt nav-icon"></i>
+        <i class="fas fa-gauge-high nav-icon"></i>
         <span class="nav-label">Dashboard</span>
       </li>
 
       <!-- Promotion -->
-      <li class="nav-item" id="nav-promotion" onclick="navigateTo('promotionPage')">
+      <li class="nav-item" id="nav-promotion" onclick="navigateTo('promotionPage', this)">
         <span class="nav-active-bar"></span>
-        <i class="fas fa-tag nav-icon"></i>
+        <i class="fas fa-tags nav-icon"></i>
         <span class="nav-label">Promotion</span>
       </li>
 
       <!-- Sale (with submenu) -->
-      <li class="nav-item has-submenu" id="nav-sale" onclick="toggleSubmenu('submenu-sale', 'nav-sale')">
+      <li class="nav-item has-submenu" id="nav-sale" onclick="toggleSubmenu('submenu-sale', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-receipt nav-icon"></i>
         <span class="nav-label">Sale</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-sale">
-        <li class="submenu-item" id="nav-daily-sale" onclick="navigateTo('sale')">
-          <i class="fas fa-calendar-day submenu-icon"></i>
+        <li class="submenu-item" id="nav-daily-sale" onclick="navigateTo('sale', null)">
+          <i class="fas fa-calendar-check submenu-icon"></i>
           <span>Daily Sale</span>
         </li>
       </ul>
 
       <!-- Deposit -->
-      <li class="nav-item" id="nav-deposit" onclick="navigateTo('deposit')">
+      <li class="nav-item" id="nav-deposit" onclick="navigateTo('deposit', this)">
         <span class="nav-active-bar"></span>
-        <i class="fas fa-piggy-bank nav-icon"></i>
+        <i class="fas fa-vault nav-icon"></i>
         <span class="nav-label">Deposit</span>
       </li>
 
       <!-- Customer (with submenu) -->
-      <li class="nav-item has-submenu" id="nav-customer" onclick="toggleSubmenu('submenu-customer', 'nav-customer')">
+      <li class="nav-item has-submenu" id="nav-customer" onclick="toggleSubmenu('submenu-customer', this)">
         <span class="nav-active-bar"></span>
         <i class="fas fa-users nav-icon"></i>
         <span class="nav-label">Customer</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-customer">
-        <li class="submenu-item" id="nav-new-customer" onclick="navigateTo('customer'); switchCustomerTab('new-customer')">
+        <li class="submenu-item" id="nav-new-customer" onclick="navigateTo('customer', null); switchCustomerTab('new-customer')">
           <i class="fas fa-user-plus submenu-icon"></i>
           <span>New Customer</span>
         </li>
-        <li class="submenu-item" id="nav-topup" onclick="navigateTo('customer'); switchCustomerTab('topup')">
-          <i class="fas fa-wallet submenu-icon"></i>
+        <li class="submenu-item" id="nav-topup" onclick="navigateTo('customer', null); switchCustomerTab('topup')">
+          <i class="fas fa-money-bill-trend-up submenu-icon"></i>
           <span>Top Up</span>
         </li>
-        <li class="submenu-item" id="nav-termination" onclick="navigateTo('customer'); switchCustomerTab('termination')">
-          <i class="fas fa-user-times submenu-icon"></i>
+        <li class="submenu-item" id="nav-termination" onclick="navigateTo('customer', null); switchCustomerTab('termination')">
+          <i class="fas fa-user-xmark submenu-icon"></i>
           <span>Termination</span>
         </li>
       </ul>
 
       <!-- Settings (with submenu) -->
-      <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', 'nav-settings')">
+      <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', this)">
         <span class="nav-active-bar"></span>
-        <i class="fas fa-cog nav-icon"></i>
+        <i class="fas fa-sliders nav-icon"></i>
         <span class="nav-label">Settings</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-settings">
-        <li class="submenu-item" id="nav-permission" onclick="navigateTo('settings'); switchSettingsTab('permission')">
-          <i class="fas fa-shield-alt submenu-icon"></i>
+        <li class="submenu-item" id="nav-permission" onclick="navigateTo('settings', null); switchSettingsTab('permission')">
+          <i class="fas fa-shield-halved submenu-icon"></i>
           <span>Permission</span>
         </li>
-        <li class="submenu-item" id="nav-kpi" onclick="navigateTo('settings'); switchSettingsTab('kpi')">
-          <i class="fas fa-bullseye submenu-icon"></i>
+        <li class="submenu-item" id="nav-kpi" onclick="navigateTo('settings', null); switchSettingsTab('kpi')">
+          <i class="fas fa-crosshairs submenu-icon"></i>
           <span>KPI Setting</span>
         </li>
-        <li class="submenu-item" id="nav-promo-setting" onclick="navigateTo('settings'); switchSettingsTab('promo')">
+        <li class="submenu-item" id="nav-promo-setting" onclick="navigateTo('settings', null); switchSettingsTab('promo')">
           <i class="fas fa-percent submenu-icon"></i>
           <span>Promotion</span>
         </li>
@@ -119,7 +394,7 @@
       <div class="topbar-right">
         <button class="topbar-icon-btn" title="Notifications">
           <i class="fas fa-bell"></i>
-          <span class="topbar-badge">3</span>
+          <span class="topbar-badge"></span>
         </button>
         <div class="topbar-user-pill">
           <div class="topbar-avatar" id="topbar-avatar">A</div>
@@ -138,46 +413,46 @@
 
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <label class="toolbar-label" for="dash-branch-filter">Branch</label>
+            <label class="toolbar-label" for="dash-branch-filter"><i class="fas fa-location-dot"></i> Branch</label>
             <select class="form-select toolbar-select" id="dash-branch-filter" onchange="loadDashboard()">
-              <option value="all">All Branches</option>
+              <option value="">All Branches</option>
             </select>
           </div>
           <div class="toolbar-right">
             <button class="btn btn-outline" onclick="loadDashboard()">
-              <i class="fas fa-sync-alt"></i> Refresh
+              <i class="fas fa-arrows-rotate"></i> Refresh
             </button>
           </div>
         </div>
 
         <!-- KPI Cards -->
         <div class="kpi-grid">
-          <div class="kpi-card" id="kpi-sales">
-            <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-shopping-cart"></i></div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-cart-shopping"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Sales</p>
               <p class="kpi-value" id="kv-sales">0</p>
             </div>
             <span class="trend-badge trend-flat" id="tr-sales"><i class="fas fa-minus"></i> 0%</span>
           </div>
-          <div class="kpi-card" id="kpi-units">
-            <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-box"></i></div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-boxes-stacked"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Units</p>
               <p class="kpi-value" id="kv-units">0</p>
             </div>
             <span class="trend-badge trend-flat" id="tr-units"><i class="fas fa-minus"></i> 0%</span>
           </div>
-          <div class="kpi-card" id="kpi-revenue">
-            <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-dollar-sign"></i></div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-sack-dollar"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Revenue</p>
               <p class="kpi-value" id="kv-revenue">$0</p>
             </div>
             <span class="trend-badge trend-flat" id="tr-revenue"><i class="fas fa-minus"></i> 0%</span>
           </div>
-          <div class="kpi-card" id="kpi-agents">
-            <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-user-tie"></i></div>
+          <div class="kpi-card">
+            <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-users-between-lines"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Active Agents</p>
               <p class="kpi-value" id="kv-agents">0</p>
@@ -188,17 +463,17 @@
 
         <!-- Chart Row 1 -->
         <div class="chart-row">
-          <div class="chart-card" id="chart-trend">
+          <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-card-title">Monthly Trend</span>
+              <span class="chart-card-title"><i class="fas fa-chart-line" style="color:#1B7D3D;margin-right:6px"></i>Monthly Trend</span>
             </div>
             <div class="chart-card-body">
               <canvas id="cTrend"></canvas>
             </div>
           </div>
-          <div class="chart-card" id="chart-mix">
+          <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-card-title">Item Mix</span>
+              <span class="chart-card-title"><i class="fas fa-chart-pie" style="color:#9C27B0;margin-right:6px"></i>Item Mix</span>
             </div>
             <div class="chart-card-body">
               <canvas id="cMix"></canvas>
@@ -210,7 +485,7 @@
         <div class="chart-row">
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-card-title">Agent Performance</span>
+              <span class="chart-card-title"><i class="fas fa-ranking-star" style="color:#FF9800;margin-right:6px"></i>Agent Performance</span>
             </div>
             <div class="chart-card-body">
               <canvas id="cAgent"></canvas>
@@ -218,7 +493,7 @@
           </div>
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-card-title">Growth vs Last Month</span>
+              <span class="chart-card-title"><i class="fas fa-arrow-trend-up" style="color:#1565C0;margin-right:6px"></i>Growth vs Last Month</span>
             </div>
             <div class="chart-card-body">
               <canvas id="cGrowth"></canvas>
@@ -229,7 +504,7 @@
         <!-- Branch Summary Table -->
         <div class="table-card">
           <div class="table-card-header">
-            <span class="table-card-title">Branch Summary</span>
+            <span class="table-card-title"><i class="fas fa-building" style="color:#1B7D3D;margin-right:6px"></i>Branch Summary</span>
           </div>
           <div class="table-responsive">
             <table class="data-table">
@@ -252,9 +527,9 @@
       <!-- ========== PROMOTION PAGE ========== -->
       <section class="page" id="page-promotionPage">
         <div class="page-header">
-          <h2 class="page-header-title">Promotion</h2>
+          <h2 class="page-header-title"><i class="fas fa-tags" style="color:#1B7D3D;margin-right:8px"></i>Promotion</h2>
           <button class="btn btn-primary" onclick="openModal('modal-addPromotion')">
-            <i class="fas fa-plus"></i> Add Promotion
+            <i class="fas fa-circle-plus"></i> Add Promotion
           </button>
         </div>
         <div class="table-card">
@@ -262,28 +537,21 @@
             <table class="data-table" id="promotion-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Discount</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>#</th><th>Name</th><th>Discount</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Actions</th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody><tr><td colspan="7" class="empty-state"><i class="fas fa-tags fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No promotions yet</td></tr></tbody>
             </table>
           </div>
         </div>
       </section>
-      <!-- END PROMOTION PAGE -->
 
       <!-- ========== DEPOSIT PAGE ========== -->
       <section class="page" id="page-deposit">
         <div class="page-header">
-          <h2 class="page-header-title">Deposit</h2>
+          <h2 class="page-header-title"><i class="fas fa-vault" style="color:#1B7D3D;margin-right:8px"></i>Deposit</h2>
           <button class="btn btn-primary" onclick="openModal('modal-addDeposit')">
-            <i class="fas fa-plus"></i> Add Deposit
+            <i class="fas fa-circle-plus"></i> Add Deposit
           </button>
         </div>
         <div class="table-card">
@@ -291,44 +559,34 @@
             <table class="data-table" id="deposit-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Agent</th>
-                  <th>Branch</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th>Note</th>
-                  <th>Actions</th>
+                  <th>#</th><th>Agent</th><th>Branch</th><th>Amount</th><th>Date</th><th>Note</th><th>Actions</th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody><tr><td colspan="7" class="empty-state"><i class="fas fa-vault fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No deposit records yet</td></tr></tbody>
             </table>
           </div>
         </div>
       </section>
-      <!-- END DEPOSIT PAGE -->
 
       <!-- ========== SALE PAGE ========== -->
       <section class="page" id="page-sale">
 
-        <!-- Sale Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="tab-sale-report" onclick="switchSaleTab('report')">
+          <button class="tab-btn active" id="tab-sale-report" onclick="openSaleTab('report', this)">
             <i class="fas fa-chart-bar"></i> Report
           </button>
-          <button class="tab-btn" id="tab-daily-sale" onclick="switchSaleTab('daily-sale')">
-            <i class="fas fa-calendar-day"></i> Daily Sale
+          <button class="tab-btn" id="tab-daily-sale" onclick="openSaleTab('daily-sale', this)">
+            <i class="fas fa-calendar-check"></i> Daily Sale
           </button>
         </div>
 
-        <!-- Items Strip -->
         <div class="items-strip-wrapper">
           <div class="items-strip" id="items-strip"></div>
         </div>
 
-        <!-- Filter Bar -->
         <div class="filter-bar">
           <div class="filter-group">
-            <label class="filter-label">From</label>
+            <label class="filter-label"><i class="fas fa-calendar"></i> From</label>
             <input type="date" class="form-input" id="sale-date-from" onchange="applySaleFilters()" />
           </div>
           <div class="filter-group">
@@ -336,82 +594,62 @@
             <input type="date" class="form-input" id="sale-date-to" onchange="applySaleFilters()" />
           </div>
           <div class="filter-group">
-            <label class="filter-label">Agent</label>
+            <label class="filter-label"><i class="fas fa-user"></i> Agent</label>
             <select class="form-select" id="sale-filter-agent" onchange="applySaleFilters()">
               <option value="">All Agents</option>
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">Branch</label>
+            <label class="filter-label"><i class="fas fa-location-dot"></i> Branch</label>
             <select class="form-select" id="sale-filter-branch" onchange="applySaleFilters()">
               <option value="">All Branches</option>
             </select>
           </div>
           <button class="btn btn-outline" onclick="clearSaleFilters()">
-            <i class="fas fa-times"></i> Clear
+            <i class="fas fa-xmark"></i> Clear
           </button>
         </div>
 
         <!-- Sale KPI Cards -->
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-shopping-cart"></i></div>
-            <div class="kpi-card-body">
-              <p class="kpi-label">Total Sales</p>
-              <p class="kpi-value" id="sale-kpi-sales">0</p>
-            </div>
+            <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-cart-shopping"></i></div>
+            <div class="kpi-card-body"><p class="kpi-label">Total Sales</p><p class="kpi-value" id="sale-kpi-sales">0</p></div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-box"></i></div>
-            <div class="kpi-card-body">
-              <p class="kpi-label">Total Units</p>
-              <p class="kpi-value" id="sale-kpi-units">0</p>
-            </div>
+            <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-boxes-stacked"></i></div>
+            <div class="kpi-card-body"><p class="kpi-label">Total Units</p><p class="kpi-value" id="sale-kpi-units">0</p></div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-dollar-sign"></i></div>
-            <div class="kpi-card-body">
-              <p class="kpi-label">Total Revenue</p>
-              <p class="kpi-value" id="sale-kpi-revenue">$0</p>
-            </div>
+            <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-sack-dollar"></i></div>
+            <div class="kpi-card-body"><p class="kpi-label">Total Revenue</p><p class="kpi-value" id="sale-kpi-revenue">$0</p></div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-user-tie"></i></div>
-            <div class="kpi-card-body">
-              <p class="kpi-label">Active Agents</p>
-              <p class="kpi-value" id="sale-kpi-agents">0</p>
-            </div>
+            <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-users-between-lines"></i></div>
+            <div class="kpi-card-body"><p class="kpi-label">Active Agents</p><p class="kpi-value" id="sale-kpi-agents">0</p></div>
           </div>
         </div>
 
-        <!-- View Toggle Bar -->
         <div class="view-toggle-bar">
           <button class="view-toggle-btn active" id="view-btn-table" onclick="setReportView('table')">
-            <i class="fas fa-table"></i> Table View
+            <i class="fas fa-table-list"></i> Table View
           </button>
           <button class="view-toggle-btn" id="view-btn-summary" onclick="setReportView('summary')">
             <i class="fas fa-chart-pie"></i> Summary View
           </button>
           <div class="view-toggle-spacer"></div>
           <button class="btn btn-primary" onclick="openNewSaleModal()">
-            <i class="fas fa-plus"></i> New Sale
+            <i class="fas fa-circle-plus"></i> New Sale
           </button>
         </div>
 
-        <!-- Table View -->
         <div class="table-card" id="sale-table-card">
           <div class="table-responsive">
-            <table class="data-table">
-              <thead id="sale-table-head"></thead>
-              <tbody id="sale-table"></tbody>
-            </table>
+            <table class="data-table" id="sale-table"></table>
           </div>
         </div>
 
-        <!-- Summary View -->
         <div id="sale-summary-view" style="display:none;"></div>
-
-        <!-- Total Bar -->
         <div id="sale-total-bar"></div>
 
       </section>
@@ -420,101 +658,63 @@
       <!-- ========== CUSTOMER PAGE ========== -->
       <section class="page" id="page-customer">
 
-        <!-- Customer Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="tab-new-customer" onclick="switchCustomerTab('new-customer')">
+          <button class="tab-btn active" id="tab-new-customer" onclick="openCustomerTab('new-customer', this)">
             <i class="fas fa-user-plus"></i> New Customer
           </button>
-          <button class="tab-btn" id="tab-topup" onclick="switchCustomerTab('topup')">
-            <i class="fas fa-wallet"></i> Top Up
+          <button class="tab-btn" id="tab-topup" onclick="openCustomerTab('topup', this)">
+            <i class="fas fa-money-bill-trend-up"></i> Top Up
           </button>
-          <button class="tab-btn" id="tab-termination" onclick="switchCustomerTab('termination')">
-            <i class="fas fa-user-times"></i> Termination
+          <button class="tab-btn" id="tab-termination" onclick="openCustomerTab('termination', this)">
+            <i class="fas fa-user-xmark"></i> Termination
           </button>
         </div>
 
-        <!-- New Customer Tab Content -->
         <div class="tab-content active" id="tab-content-new-customer">
           <div class="page-header">
-            <h2 class="page-header-title">New Customer</h2>
+            <h2 class="page-header-title">New Customers</h2>
             <button class="btn btn-primary" onclick="openAddModal('new-customer')">
-              <i class="fas fa-plus"></i> Add New Customer
+              <i class="fas fa-circle-plus"></i> Add New Customer
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>ID/Passport</th>
-                    <th>Package</th>
-                    <th>Agent</th>
-                    <th>Branch</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>ID/Passport</th><th>Package</th><th>Agent</th><th>Branch</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody id="new-customer-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- Top Up Tab Content -->
         <div class="tab-content" id="tab-content-topup">
           <div class="page-header">
             <h2 class="page-header-title">Top Up</h2>
             <button class="btn btn-primary" onclick="openAddModal('topup')">
-              <i class="fas fa-plus"></i> Add Top Up
+              <i class="fas fa-circle-plus"></i> Add Top Up
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Customer Name</th>
-                    <th>Phone</th>
-                    <th>Amount</th>
-                    <th>Agent</th>
-                    <th>Branch</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Customer Name</th><th>Phone</th><th>Amount</th><th>Agent</th><th>Branch</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody id="topup-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- Termination Tab Content -->
         <div class="tab-content" id="tab-content-termination">
           <div class="page-header">
             <h2 class="page-header-title">Termination</h2>
             <button class="btn btn-primary" onclick="openAddModal('termination')">
-              <i class="fas fa-plus"></i> Add Termination
+              <i class="fas fa-circle-plus"></i> Add Termination
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Customer Name</th>
-                    <th>Phone</th>
-                    <th>Reason</th>
-                    <th>Agent</th>
-                    <th>Branch</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Customer Name</th><th>Phone</th><th>Reason</th><th>Agent</th><th>Branch</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody id="termination-table"></tbody>
               </table>
             </div>
@@ -522,100 +722,67 @@
         </div>
 
       </section>
-      <!-- END CUSTOMER PAGE -->
 
       <!-- ========== SETTINGS PAGE ========== -->
       <section class="page" id="page-settings">
 
-        <!-- Settings Tabs -->
         <div class="tab-header">
           <button class="tab-btn active" id="stab-permission" onclick="openSettingsTab('permission', this)">
-            <i class="fas fa-shield-alt"></i> Permission
+            <i class="fas fa-shield-halved"></i> Permission
           </button>
           <button class="tab-btn" id="stab-kpi" onclick="openSettingsTab('kpi', this)">
-            <i class="fas fa-bullseye"></i> KPI Setting
+            <i class="fas fa-crosshairs"></i> KPI Setting
           </button>
           <button class="tab-btn" id="stab-promo" onclick="openSettingsTab('promo', this)">
             <i class="fas fa-percent"></i> Promotion
           </button>
         </div>
 
-        <!-- Permission Tab Content -->
         <div class="tab-content active" id="stab-content-permission">
           <div class="page-header">
             <h2 class="page-header-title">User Permissions</h2>
             <button class="btn btn-primary" onclick="openAddModal('user')">
-              <i class="fas fa-plus"></i> Add User
+              <i class="fas fa-circle-plus"></i> Add User
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Full Name</th>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Branch</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="staff-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- KPI Setting Tab Content -->
         <div class="tab-content" id="stab-content-kpi">
           <div class="page-header">
             <h2 class="page-header-title">KPI Settings</h2>
             <button class="btn btn-primary" onclick="openAddModal('kpi')">
-              <i class="fas fa-plus"></i> Add KPI
+              <i class="fas fa-circle-plus"></i> Add KPI
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>KPI Name</th>
-                    <th>Type</th>
-                    <th>Target</th>
-                    <th>Period</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>KPI Name</th><th>Type</th><th>Target</th><th>Period</th><th>Actions</th></tr></thead>
                 <tbody id="kpi-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- Promotion Setting Tab Content -->
         <div class="tab-content" id="stab-content-promo">
           <div class="page-header">
             <h2 class="page-header-title">Promotion Settings</h2>
             <button class="btn btn-primary" onclick="openAddModal('item')">
-              <i class="fas fa-plus"></i> Add Item
+              <i class="fas fa-circle-plus"></i> Add Item
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table" id="promo-setting-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Group</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Name</th><th>Category</th><th>Group</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -623,54 +790,36 @@
         </div>
 
       </section>
-      <!-- END SETTINGS PAGE -->
 
     </main>
-    <!-- END MAIN CONTENT -->
-
   </div>
-  <!-- END MAIN WRAPPER -->
 
   <!-- ===================== MODALS ===================== -->
 
-  <!-- ---- modal-addItem (Add/Edit Item) ---- -->
+  <!-- Add/Edit Item -->
   <div class="modal-overlay" id="modal-addItem">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-addItem-title">Add Item</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-addItem')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-addItem')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-addItem" onsubmit="submitItem(event)">
         <div class="modal-body">
-
-          <!-- Group Toggle -->
           <div class="form-group">
             <label class="form-label">Item Group</label>
             <div class="toggle-btn-group">
-              <button type="button" class="toggle-btn active" id="grp-btn-unit" onclick="selectItemGroup('unit')">
-                <i class="fas fa-box"></i> Unit Group
-              </button>
-              <button type="button" class="toggle-btn" id="grp-btn-dollar" onclick="selectItemGroup('dollar')">
-                <i class="fas fa-dollar-sign"></i> Dollar Group
-              </button>
+              <button type="button" class="toggle-btn active" id="grp-btn-unit" onclick="selectItemGroup('unit')"><i class="fas fa-boxes-stacked"></i> Unit Group</button>
+              <button type="button" class="toggle-btn" id="grp-btn-dollar" onclick="selectItemGroup('dollar')"><i class="fas fa-dollar-sign"></i> Dollar Group</button>
             </div>
           </div>
-
-          <!-- Item Name -->
           <div class="form-group">
             <label class="form-label" for="item-name">Item Name <span class="required">*</span></label>
             <input type="text" class="form-input" id="item-name" placeholder="Enter item name" required />
           </div>
-
-          <!-- Shortcut -->
           <div class="form-group">
             <label class="form-label" for="item-shortcut">Shortcut</label>
             <input type="text" class="form-input" id="item-shortcut" placeholder="e.g. PP50" />
           </div>
-
-          <!-- Category -->
           <div class="form-group">
             <label class="form-label" for="item-category">Category <span class="required">*</span></label>
             <select class="form-select" id="item-category" required>
@@ -682,8 +831,6 @@
               <option value="Other">Other</option>
             </select>
           </div>
-
-          <!-- Unit Group Fields -->
           <div id="item-unit-fields">
             <div class="form-group">
               <label class="form-label" for="item-unit">Unit</label>
@@ -695,13 +842,11 @@
                 <option value="custom">+ Custom Unit</option>
               </select>
             </div>
-            <div class="form-group" id="item-custom-unit-group" style="display:none;">
+            <div class="form-group" style="display:none;" id="item-custom-unit-group">
               <label class="form-label" for="item-custom-unit">Custom Unit</label>
               <input type="text" class="form-input" id="item-custom-unit" placeholder="Enter custom unit" style="display:none;" />
             </div>
           </div>
-
-          <!-- Dollar Group Fields -->
           <div id="item-dollar-fields" style="display:none;">
             <div class="form-row">
               <div class="form-group form-col">
@@ -717,13 +862,11 @@
                 <input type="number" class="form-input" id="item-price" placeholder="0.00" min="0" step="0.01" />
               </div>
             </div>
-            <div class="form-group" id="item-custom-currency-group" style="display:none;">
+            <div class="form-group" style="display:none;" id="item-custom-currency-group">
               <label class="form-label" for="item-custom-currency">Custom Currency</label>
               <input type="text" class="form-input" id="item-custom-currency" placeholder="Enter currency code" style="display:none;" />
             </div>
           </div>
-
-          <!-- Status -->
           <div class="form-group">
             <label class="form-label" for="item-status">Status</label>
             <select class="form-select" id="item-status">
@@ -731,13 +874,10 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
-
-          <!-- Description -->
           <div class="form-group">
             <label class="form-label" for="item-desc">Description</label>
             <textarea class="form-textarea" id="item-desc" placeholder="Optional description" rows="3"></textarea>
           </div>
-
           <input type="hidden" id="item-edit-id" />
         </div>
         <div class="modal-footer">
@@ -748,18 +888,15 @@
     </div>
   </div>
 
-  <!-- ---- modal-newSale (New/Edit Sale) ---- -->
+  <!-- New/Edit Sale -->
   <div class="modal-overlay" id="modal-newSale">
     <div class="modal modal-lg">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-newSale-title">New Sale</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-newSale')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-newSale')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-newSale" onsubmit="submitSale(event)">
         <div class="modal-body">
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="sale-agent-name">Agent Name <span class="required">*</span></label>
@@ -775,7 +912,6 @@
               </select>
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="sale-date">Date <span class="required">*</span></label>
@@ -786,23 +922,16 @@
               <input type="text" class="form-input" id="sale-note" placeholder="Optional note" />
             </div>
           </div>
-
-          <!-- Unit Group Items -->
           <div class="sale-items-section">
-            <h4 class="sale-section-title"><i class="fas fa-box"></i> Unit Group Items</h4>
+            <h4 class="sale-section-title"><i class="fas fa-boxes-stacked"></i> Unit Group Items</h4>
             <div id="sale-unit-items"></div>
           </div>
-
-          <!-- Dollar Group Items -->
           <div class="sale-items-section">
             <h4 class="sale-section-title"><i class="fas fa-dollar-sign"></i> Dollar Group Items</h4>
             <div id="sale-dollar-items"></div>
           </div>
-
           <input type="hidden" id="sale-edit-id" />
         </div>
-
-        <!-- Live Totals Footer -->
         <div class="sale-totals-footer">
           <div class="sale-total-item">
             <span class="sale-total-label">Total Units</span>
@@ -813,7 +942,6 @@
             <span class="sale-total-value" id="sale-total-rev">$0.00</span>
           </div>
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-newSale')">Cancel</button>
           <button type="submit" class="btn btn-primary" id="modal-newSale-submit">Save Sale</button>
@@ -822,18 +950,15 @@
     </div>
   </div>
 
-  <!-- ---- modal-newCustomer (Add/Edit New Customer) ---- -->
+  <!-- New Customer -->
   <div class="modal-overlay" id="modal-newCustomer">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-newCustomer-title">Add New Customer</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-newCustomer')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-newCustomer')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-newCustomer" onsubmit="submitNewCustomer(event)">
         <div class="modal-body">
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="nc-name">Customer Name <span class="required">*</span></label>
@@ -844,7 +969,6 @@
               <input type="tel" class="form-input" id="nc-phone" placeholder="Phone number" required />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="nc-id">ID / Passport</label>
@@ -855,7 +979,6 @@
               <input type="text" class="form-input" id="nc-package" placeholder="Package name" />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="nc-agent">Agent <span class="required">*</span></label>
@@ -871,12 +994,10 @@
               </select>
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="nc-date">Date <span class="required">*</span></label>
             <input type="date" class="form-input" id="nc-date" required />
           </div>
-
           <input type="hidden" id="nc-edit-id" />
         </div>
         <div class="modal-footer">
@@ -887,18 +1008,15 @@
     </div>
   </div>
 
-  <!-- ---- modal-topUp (Add/Edit Top Up) ---- -->
+  <!-- Top Up -->
   <div class="modal-overlay" id="modal-topUp">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-topUp-title">Add Top Up</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-topUp')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-topUp')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-topUp" onsubmit="submitTopUp(event)">
         <div class="modal-body">
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="tu-name">Customer Name <span class="required">*</span></label>
@@ -909,12 +1027,10 @@
               <input type="tel" class="form-input" id="tu-phone" placeholder="Phone number" required />
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="tu-amount">Amount <span class="required">*</span></label>
             <input type="number" class="form-input" id="tu-amount" placeholder="0.00" min="0" step="0.01" required />
           </div>
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="tu-agent">Agent <span class="required">*</span></label>
@@ -930,12 +1046,10 @@
               </select>
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="tu-date">Date <span class="required">*</span></label>
             <input type="date" class="form-input" id="tu-date" required />
           </div>
-
           <input type="hidden" id="tu-edit-id" />
         </div>
         <div class="modal-footer">
@@ -946,18 +1060,15 @@
     </div>
   </div>
 
-  <!-- ---- modal-termination (Add/Edit Termination) ---- -->
+  <!-- Termination -->
   <div class="modal-overlay" id="modal-termination">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-termination-title">Add Termination</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-termination')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-termination')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-termination" onsubmit="submitTermination(event)">
         <div class="modal-body">
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="term-name">Customer Name <span class="required">*</span></label>
@@ -968,12 +1079,10 @@
               <input type="tel" class="form-input" id="term-phone" placeholder="Phone number" required />
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="term-reason">Reason <span class="required">*</span></label>
             <textarea class="form-textarea" id="term-reason" placeholder="Reason for termination" rows="3" required></textarea>
           </div>
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="term-agent">Agent <span class="required">*</span></label>
@@ -989,12 +1098,10 @@
               </select>
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="term-date">Date <span class="required">*</span></label>
             <input type="date" class="form-input" id="term-date" required />
           </div>
-
           <input type="hidden" id="term-edit-id" />
         </div>
         <div class="modal-footer">
@@ -1005,67 +1112,50 @@
     </div>
   </div>
 
-  <!-- ---- modal-kpi (Add/Edit KPI) ---- -->
+  <!-- KPI Modal -->
   <div class="modal-overlay" id="modal-kpi">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-kpi-title">Add KPI</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-kpi')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-kpi')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-kpi" onsubmit="submitKPI(event)">
         <div class="modal-body">
-
           <div class="form-group">
             <label class="form-label" for="kpi-name">KPI Name <span class="required">*</span></label>
             <input type="text" class="form-input" id="kpi-name" placeholder="Enter KPI name" required />
           </div>
-
           <div class="form-group">
             <label class="form-label">KPI Type <span class="required">*</span></label>
-            <div class="chip-group" id="kpi-type-chips">
+            <div class="chip-group">
               <button type="button" class="chip active" id="kpi-chip-Sales" data-value="Sales" onclick="selectKpiType(this)">Sales</button>
               <button type="button" class="chip" id="kpi-chip-Units" data-value="Units" onclick="selectKpiType(this)">Units</button>
               <button type="button" class="chip" id="kpi-chip-Revenue" data-value="Revenue" onclick="selectKpiType(this)">Revenue</button>
               <button type="button" class="chip" id="kpi-chip-Customers" data-value="Customers" onclick="selectKpiType(this)">Customers</button>
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="kpi-target">Target Value <span class="required">*</span></label>
             <input type="number" class="form-input" id="kpi-target" placeholder="0" min="0" required />
           </div>
-
           <div class="form-group">
             <label class="form-label">Value Mode</label>
             <div class="toggle-btn-group">
-              <button type="button" class="toggle-btn active" id="kpi-unit-toggle" onclick="selectKpiMode('unit')">
-                <i class="fas fa-box"></i> Unit
-              </button>
-              <button type="button" class="toggle-btn" id="kpi-currency-toggle" onclick="selectKpiMode('currency')">
-                <i class="fas fa-dollar-sign"></i> Currency
-              </button>
+              <button type="button" class="toggle-btn active" id="kpi-unit-toggle" onclick="selectKpiMode('unit')"><i class="fas fa-boxes-stacked"></i> Unit</button>
+              <button type="button" class="toggle-btn" id="kpi-currency-toggle" onclick="selectKpiMode('currency')"><i class="fas fa-dollar-sign"></i> Currency</button>
             </div>
           </div>
-
           <div class="form-group" id="kpi-unit-field">
             <label class="form-label" for="kpi-unit-val">Unit Label</label>
             <input type="text" class="form-input" id="kpi-unit-val" placeholder="e.g. SIM, Card, Package" />
           </div>
-
           <div class="form-group" id="kpi-currency-field" style="display:none;">
             <label class="form-label">Currency</label>
-            <div class="form-row">
-              <div class="form-col">
-                <select class="form-select" id="kpi-currency-sel">
-                  <option value="USD">USD ($)</option>
-                  <option value="KHR">KHR (៛)</option>
-                </select>
-              </div>
-            </div>
+            <select class="form-select" id="kpi-currency-sel">
+              <option value="USD">USD ($)</option>
+              <option value="KHR">KHR (៛)</option>
+            </select>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="kpi-period">Period <span class="required">*</span></label>
             <select class="form-select" id="kpi-period" required>
@@ -1074,7 +1164,6 @@
               <option value="Daily">Daily</option>
             </select>
           </div>
-
           <input type="hidden" id="kpi-edit-id" />
         </div>
         <div class="modal-footer">
@@ -1085,18 +1174,15 @@
     </div>
   </div>
 
-  <!-- ---- modal-addUser (Add/Edit User) ---- -->
+  <!-- Add/Edit User -->
   <div class="modal-overlay" id="modal-addUser">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-addUser-title">Add User</h3>
-        <button class="modal-close-btn" onclick="closeModal('modal-addUser')">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close-btn" onclick="closeModal('modal-addUser')"><i class="fas fa-xmark"></i></button>
       </div>
       <form id="form-addUser" onsubmit="submitUser(event)">
         <div class="modal-body">
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="user-name">Full Name <span class="required">*</span></label>
@@ -1107,17 +1193,15 @@
               <input type="text" class="form-input" id="user-username" placeholder="Username" required autocomplete="off" />
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="user-password">Password <span class="required">*</span></label>
             <div class="input-with-icon">
               <input type="password" class="form-input" id="user-password" placeholder="Password" required autocomplete="new-password" />
-              <button type="button" class="input-icon-btn" id="user-pwd-eye" onclick="togglePasswordVisibility('user-password', 'user-pwd-eye')">
+              <button type="button" class="input-icon-btn" id="user-pwd-eye" onclick="togglePasswordVisibility('user-password','user-pwd-eye')">
                 <i class="fas fa-eye"></i>
               </button>
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="user-role">Role <span class="required">*</span></label>
@@ -1138,7 +1222,6 @@
               </select>
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="user-status">Status</label>
             <select class="form-select" id="user-status">
@@ -1146,7 +1229,6 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
-
           <input type="hidden" id="user-edit-id" />
         </div>
         <div class="modal-footer">
@@ -1157,25 +1239,17 @@
     </div>
   </div>
 
-  <!-- ===================== ROLE SELECTOR WIDGET ===================== -->
+  <!-- ===================== ROLE WIDGET ===================== -->
   <div id="role-widget">
-    <button class="role-widget-btn" id="role-widget-btn" onclick="toggleRoleWidget()">
-      <i class="fas fa-user-shield"></i>
-      <span id="role-widget-label">Admin</span>
-      <i class="fas fa-chevron-up role-widget-chevron"></i>
-    </button>
-    <div class="role-widget-dropdown" id="role-widget-dropdown" style="display:none;">
+    <div id="role-widget-dropdown">
       <div class="role-widget-header">Switch Role</div>
-      <button class="role-widget-option" onclick="switchRole('admin')">
-        <i class="fas fa-user-shield"></i> Admin
-      </button>
-      <button class="role-widget-option" onclick="switchRole('supervisor')">
-        <i class="fas fa-user-tie"></i> Supervisor
-      </button>
-      <button class="role-widget-option" onclick="switchRole('user')">
-        <i class="fas fa-user"></i> User
-      </button>
+      <button class="role-widget-option" onclick="switchRole('admin')"><i class="fas fa-user-shield"></i> Admin</button>
+      <button class="role-widget-option" onclick="switchRole('supervisor')"><i class="fas fa-user-tie"></i> Supervisor</button>
+      <button class="role-widget-option" onclick="switchRole('user')"><i class="fas fa-user"></i> User</button>
     </div>
+    <button id="role-widget-btn" onclick="toggleRoleWidget()">
+      <i class="fas fa-user-shield"></i> Admin
+    </button>
   </div>
 
   <script src="app.js"></script>
