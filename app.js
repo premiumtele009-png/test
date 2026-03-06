@@ -67,6 +67,9 @@ let kpiList = [
   { id: 'k2', name: 'Revenue Goal', type: 'Revenue', target: 5000, valueMode: 'currency', currency: 'USD', period: 'Monthly' },
 ];
 
+let promotionList = [];
+let depositList = [];
+
 // ------------------------------------------------------------
 // Helper Functions
 // ------------------------------------------------------------
@@ -84,6 +87,20 @@ function esc(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// Toast notification
+function showToast(message, type) {
+  type = type || 'info';
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + type;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.classList.add('toast-show'); }, 10);
+  setTimeout(function() {
+    toast.classList.remove('toast-show');
+    setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }, 3000);
 }
 
 // ------------------------------------------------------------
@@ -137,6 +154,49 @@ function clearCanvas(id) {
 }
 
 // ------------------------------------------------------------
+// Branch Helpers
+// ------------------------------------------------------------
+function getBranches() {
+  const defaults = ['Phnom Penh', 'Siem Reap', 'Battambang'];
+  const fromRecords = saleRecords.map(function(s) { return s.branch; }).filter(Boolean);
+  const all = defaults.concat(fromRecords);
+  return all.filter(function(b, i) { return all.indexOf(b) === i; });
+}
+
+function populateBranchDropdowns() {
+  const branches = getBranches();
+  const ids = ['sale-branch', 'nc-branch', 'tu-branch', 'term-branch', 'user-branch', 'deposit-branch'];
+  ids.forEach(function(id) {
+    const sel = g(id);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Select branch</option>' +
+      branches.map(function(b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+    sel.value = current;
+  });
+}
+
+function populateSaleFilterDropdowns() {
+  const agentSel = g('sale-filter-agent');
+  const branchSel = g('sale-filter-branch');
+  if (agentSel) {
+    const agents = [];
+    saleRecords.forEach(function(s) { if (s.agent && agents.indexOf(s.agent) < 0) agents.push(s.agent); });
+    const current = agentSel.value;
+    agentSel.innerHTML = '<option value="">All Agents</option>' +
+      agents.map(function(a) { return '<option value="' + esc(a) + '">' + esc(a) + '</option>'; }).join('');
+    agentSel.value = current;
+  }
+  if (branchSel) {
+    const branches = getBranches();
+    const current = branchSel.value;
+    branchSel.innerHTML = '<option value="">All Branches</option>' +
+      branches.map(function(b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+    branchSel.value = current;
+  }
+}
+
+// ------------------------------------------------------------
 // Navigation
 // ------------------------------------------------------------
 function navigateTo(page, btn) {
@@ -147,8 +207,11 @@ function navigateTo(page, btn) {
 
   $$('.nav-item').forEach(function(li) { li.classList.remove('active'); });
   if (btn) {
-    const li = btn.closest('.nav-item');
+    const li = btn.closest ? btn.closest('.nav-item') : null;
     if (li) li.classList.add('active');
+  } else if (page === 'dashboard') {
+    const navDash = g('nav-dashboard');
+    if (navDash) navDash.classList.add('active');
   }
 
   const titles = {
@@ -184,7 +247,8 @@ function toggleSubmenu(id, btn) {
   $$('.has-submenu').forEach(function(li) { li.classList.remove('submenu-open'); });
   if (!isOpen) {
     sub.classList.add('open');
-    if (btn) btn.closest('.has-submenu').classList.add('submenu-open');
+    const li = btn && btn.closest ? btn.closest('.has-submenu') : null;
+    if (li) li.classList.add('submenu-open');
   }
 }
 
@@ -345,7 +409,7 @@ function openItemModal(item) {
       } else {
         unitSel.value = 'custom';
         g('item-custom-unit').value = item.unit || '';
-        g('item-custom-unit').style.display = '';
+        g('item-custom-unit-group').style.display = '';
       }
     } else {
       const curSel = g('item-currency');
@@ -354,7 +418,7 @@ function openItemModal(item) {
       } else {
         curSel.value = 'custom';
         g('item-custom-currency').value = item.currency || '';
-        g('item-custom-currency').style.display = '';
+        g('item-custom-currency-group').style.display = '';
       }
       g('item-price').value = item.price || '';
     }
@@ -388,16 +452,16 @@ function selectItemGroup(grp) {
 
 function handleCurrencySelectChange() {
   const sel = g('item-currency');
-  const inp = g('item-custom-currency');
-  if (!inp) return;
-  inp.style.display = sel && sel.value === 'custom' ? '' : 'none';
+  const grp = g('item-custom-currency-group');
+  if (!grp) return;
+  grp.style.display = sel && sel.value === 'custom' ? '' : 'none';
 }
 
 function handleUnitSelectChange() {
   const sel = g('item-unit');
-  const inp = g('item-custom-unit');
-  if (!inp) return;
-  inp.style.display = sel && sel.value === 'custom' ? '' : 'none';
+  const grp = g('item-custom-unit-group');
+  if (!grp) return;
+  grp.style.display = sel && sel.value === 'custom' ? '' : 'none';
 }
 
 function submitItem(e) {
@@ -410,7 +474,7 @@ function submitItem(e) {
   const desc = rv('item-desc');
   const grp = itemGroupSelected;
 
-  if (!name) return alert('Please enter item name');
+  if (!name) return showToast('Please enter item name', 'error');
 
   let unit = '', currency = '', price = 0;
   if (grp === 'unit') {
@@ -448,8 +512,6 @@ function deleteItem(id) {
   renderDashboard();
 }
 
-// openItemModal in openItemModal() already uses `item` object directly for editing;
-// renderItemChips uses ID-based onclick to avoid XSS from JSON-in-attribute
 function renderItemChips() {
   const strip = g('items-strip');
   if (!strip) return;
@@ -570,8 +632,8 @@ function submitSale(e) {
   const date = rv('sale-date');
   const note = rv('sale-note');
 
-  if (!agent) return alert('Please enter agent name');
-  if (!date) return alert('Please select date');
+  if (!agent) return showToast('Please enter agent name', 'error');
+  if (!date) return showToast('Please select date', 'error');
 
   const items = {}, dollarItems = {};
   itemCatalogue.forEach(function(item) {
@@ -594,6 +656,7 @@ function submitSale(e) {
   }
 
   closeModal('modal-newSale');
+  populateBranchDropdowns();
   applyReportFilters();
   if (currentPage === 'dashboard') renderDashboard();
 }
@@ -685,6 +748,8 @@ function updateSaleKpis() {
 function renderSaleTable() {
   const table = g('sale-table');
   if (!table) return;
+
+  populateSaleFilterDropdowns();
 
   const actualData = filteredSales;
   const unitItems = itemCatalogue.filter(function(x) { return x.group === 'unit' && x.status === 'active'; });
@@ -803,8 +868,11 @@ function renderDashboard() {
   const ym = ymNow();
   const ymP = ymPrev();
 
-  const currSales = saleRecords.filter(function(s) { return ymOf(s.date) === ym; });
-  const prevSales = saleRecords.filter(function(s) { return ymOf(s.date) === ymP; });
+  const branchFilter = rv('dash-branch-filter');
+  const filteredRecords = branchFilter ? saleRecords.filter(function(s) { return s.branch === branchFilter; }) : saleRecords;
+
+  const currSales = filteredRecords.filter(function(s) { return ymOf(s.date) === ym; });
+  const prevSales = filteredRecords.filter(function(s) { return ymOf(s.date) === ymP; });
 
   let currUnits = 0, prevUnits = 0, currRev = 0, prevRev = 0;
   const currAgents = new Set(), prevAgents = new Set();
@@ -844,14 +912,14 @@ function renderDashboard() {
   const monthLabels = months.map(ymLabel);
   const unitsPerMonth = months.map(function(m) {
     let u = 0;
-    saleRecords.filter(function(s) { return ymOf(s.date) === m; }).forEach(function(s) {
+    filteredRecords.filter(function(s) { return ymOf(s.date) === m; }).forEach(function(s) {
       Object.values(s.items || {}).forEach(function(v) { u += v; });
     });
     return u;
   });
   const revPerMonth = months.map(function(m) {
     let r = 0;
-    saleRecords.filter(function(s) { return ymOf(s.date) === m; }).forEach(function(s) {
+    filteredRecords.filter(function(s) { return ymOf(s.date) === m; }).forEach(function(s) {
       Object.keys(s.dollarItems || {}).forEach(function(iid) {
         const item = itemCatalogue.find(function(x) { return x.id === iid; });
         r += s.dollarItems[iid] * (item ? item.price : 1);
@@ -953,7 +1021,7 @@ function renderDashboard() {
   const branchTable = g('branch-table');
   if (branchTable) {
     const branches = [];
-    saleRecords.forEach(function(s) { if (branches.indexOf(s.branch) < 0) branches.push(s.branch); });
+    filteredRecords.forEach(function(s) { if (branches.indexOf(s.branch) < 0) branches.push(s.branch); });
     if (!branches.length) {
       branchTable.innerHTML = '<tr><td colspan="4" class="empty-state">No data</td></tr>';
     } else {
@@ -974,13 +1042,14 @@ function renderDashboard() {
     }
   }
 
-  // Branch filter dropdown
-  const branchFilter = g('dash-branch-filter');
-  if (branchFilter) {
-    const branches = [];
-    saleRecords.forEach(function(s) { if (branches.indexOf(s.branch) < 0) branches.push(s.branch); });
-    branchFilter.innerHTML = '<option value="">All Branches</option>' +
-      branches.map(function(b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+  // Branch filter dropdown (preserve current selection)
+  const dashBranchFilter = g('dash-branch-filter');
+  if (dashBranchFilter) {
+    const currentVal = dashBranchFilter.value;
+    const allBranches = getBranches();
+    dashBranchFilter.innerHTML = '<option value="">All Branches</option>' +
+      allBranches.map(function(b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+    dashBranchFilter.value = currentVal;
   }
 }
 
@@ -1059,7 +1128,7 @@ function submitNewCustomer(e) {
     name: rv('nc-name'), phone: rv('nc-phone'), idNum: rv('nc-id'),
     pkg: rv('nc-package'), agent: rv('nc-agent'), branch: rv('nc-branch'), date: rv('nc-date')
   };
-  if (!obj.name) return alert('Please enter customer name');
+  if (!obj.name) return showToast('Please enter customer name', 'error');
   if (editId) {
     const idx = newCustomers.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) newCustomers[idx] = obj;
@@ -1113,7 +1182,7 @@ function submitTopUp(e) {
     name: rv('tu-name'), phone: rv('tu-phone'), amount: parseFloat(rv('tu-amount')) || 0,
     agent: rv('tu-agent'), branch: rv('tu-branch'), date: rv('tu-date')
   };
-  if (!obj.name) return alert('Please enter customer name');
+  if (!obj.name) return showToast('Please enter customer name', 'error');
   if (editId) {
     const idx = topUpList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) topUpList[idx] = obj;
@@ -1166,7 +1235,7 @@ function submitTermination(e) {
     name: rv('term-name'), phone: rv('term-phone'), reason: rv('term-reason'),
     agent: rv('term-agent'), branch: rv('term-branch'), date: rv('term-date')
   };
-  if (!obj.name) return alert('Please enter customer name');
+  if (!obj.name) return showToast('Please enter customer name', 'error');
   if (editId) {
     const idx = terminationList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) terminationList[idx] = obj;
@@ -1246,8 +1315,8 @@ function submitUser(e) {
     name: rv('user-name'), username: rv('user-username'), password: rv('user-password'),
     role: rv('user-role'), branch: rv('user-branch'), status: rv('user-status')
   };
-  if (!obj.name) return alert('Please enter user name');
-  if (!obj.username) return alert('Please enter username');
+  if (!obj.name) return showToast('Please enter user name', 'error');
+  if (!obj.username) return showToast('Please enter username', 'error');
   if (editId) {
     const idx = staffList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) staffList[idx] = obj;
@@ -1377,7 +1446,7 @@ function submitKpi(e) {
     currency: kpiValueMode === 'currency' ? rv('kpi-currency-sel') : '',
     period: rv('kpi-period')
   };
-  if (!obj.name) return alert('Please enter KPI name');
+  if (!obj.name) return showToast('Please enter KPI name', 'error');
   if (editId) {
     const idx = kpiList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) kpiList[idx] = obj;
@@ -1426,8 +1495,101 @@ function renderKpiTable() {
 }
 
 // ------------------------------------------------------------
-// Init
+// Promotion Functions (Stub)
 // ------------------------------------------------------------
+function renderPromotionTable() {
+  const tbody = g('promotion-table');
+  if (!tbody) return;
+  if (!promotionList.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-tag"></i><br>No promotions yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = promotionList.map(function(p, i) {
+    const statusPill = p.status === 'Active' ? 'pill-green' : 'pill-gray';
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td>' + esc(p.name) + '</td>' +
+      '<td>—</td>' +
+      '<td>' + esc(p.start || '') + '</td>' +
+      '<td>' + esc(p.end || '') + '</td>' +
+      '<td><span class="' + statusPill + ' pill">' + esc(p.status) + '</span></td>' +
+      '<td>' +
+        '<button class="btn-delete" onclick="deletePromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
+      '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function submitPromotion(e) {
+  e.preventDefault();
+  const obj = {
+    id: uid(),
+    name: rv('promo-name'),
+    start: rv('promo-start'),
+    end: rv('promo-end'),
+    status: rv('promo-status')
+  };
+  if (!obj.name) return showToast('Please enter promotion name', 'error');
+  promotionList.push(obj);
+  closeModal('modal-addPromotion');
+  renderPromotionTable();
+  showToast('Promotion added', 'success');
+}
+
+function deletePromotion(id) {
+  if (!confirm('Delete this promotion?')) return;
+  promotionList = promotionList.filter(function(x) { return x.id !== id; });
+  renderPromotionTable();
+}
+
+// ------------------------------------------------------------
+// Deposit Functions (Stub)
+// ------------------------------------------------------------
+function renderDepositTable() {
+  const tbody = g('deposit-table');
+  if (!tbody) return;
+  if (!depositList.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-piggy-bank"></i><br>No deposits yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = depositList.map(function(d, i) {
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td>' + esc(d.agent || '') + '</td>' +
+      '<td>' + esc(d.branch || '') + '</td>' +
+      '<td>' + fmtMoney(d.amount || 0) + '</td>' +
+      '<td>' + esc(d.date || '') + '</td>' +
+      '<td>' + esc(d.note || '') + '</td>' +
+      '<td>' +
+        '<button class="btn-delete" onclick="deleteDeposit(\'' + esc(d.id) + '\')"><i class="fas fa-trash"></i></button>' +
+      '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function submitDeposit(e) {
+  e.preventDefault();
+  const obj = {
+    id: uid(),
+    agent: rv('deposit-agent'),
+    branch: rv('deposit-branch'),
+    amount: parseFloat(rv('deposit-amount')) || 0,
+    date: rv('deposit-date'),
+    note: rv('deposit-note')
+  };
+  if (!obj.agent) return showToast('Please enter agent name', 'error');
+  depositList.push(obj);
+  closeModal('modal-addDeposit');
+  renderDepositTable();
+  showToast('Deposit added', 'success');
+}
+
+function deleteDeposit(id) {
+  if (!confirm('Delete this deposit?')) return;
+  depositList = depositList.filter(function(x) { return x.id !== id; });
+  renderDepositTable();
+}
+
 // ------------------------------------------------------------
 // Compatibility aliases (HTML uses these names)
 // ------------------------------------------------------------
@@ -1446,6 +1608,9 @@ function toggleSidebar() {
 document.addEventListener('DOMContentLoaded', function() {
   filteredSales = saleRecords.slice();
 
+  populateBranchDropdowns();
+  populateSaleFilterDropdowns();
+
   navigateTo('dashboard', null);
 
   renderItemChips();
@@ -1454,6 +1619,8 @@ document.addEventListener('DOMContentLoaded', function() {
   renderTerminationTable();
   renderStaffTable();
   renderKpiTable();
+  renderPromotionTable();
+  renderDepositTable();
 
   renderSaleTable();
   updateSaleKpis();
