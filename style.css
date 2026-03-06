@@ -510,7 +510,8 @@ input, select, textarea, button {
 }
 
 /* Content area */
-#content {
+#content,
+#main-content {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
@@ -518,15 +519,18 @@ input, select, textarea, button {
   scrollbar-color: #ccc transparent;
 }
 
-#content::-webkit-scrollbar {
+#content::-webkit-scrollbar,
+#main-content::-webkit-scrollbar {
   width: 6px;
 }
 
-#content::-webkit-scrollbar-track {
+#content::-webkit-scrollbar-track,
+#main-content::-webkit-scrollbar-track {
   background: transparent;
 }
 
-#content::-webkit-scrollbar-thumb {
+#content::-webkit-scrollbar-thumb,
+#main-content::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
@@ -703,6 +707,7 @@ input, select, textarea, button {
 .chart-card canvas {
   width: 100% !important;
   max-width: 100%;
+  min-height: 260px;
 }
 
 .chart-card-full {
@@ -825,6 +830,20 @@ input, select, textarea, button {
 }
 
 /* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
 .btn-primary {
   background: #1B7D3D;
   color: #ffffff;
@@ -1720,7 +1739,8 @@ input, select, textarea, button {
   margin-top: 2px;
 }
 
-.modal-close {
+.modal-close,
+.modal-close-btn {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -1736,7 +1756,8 @@ input, select, textarea, button {
   flex-shrink: 0;
 }
 
-.modal-close:hover {
+.modal-close:hover,
+.modal-close-btn:hover {
   background: #F0F2F5;
   color: #1A1A2E;
 }
@@ -2583,7 +2604,8 @@ select {
     min-height: 0;
   }
 
-  #content {
+  #content,
+  #main-content {
     padding: 14px;
   }
 
@@ -2772,5 +2794,46 @@ select {
   #role-widget {
     bottom: 12px;
     right: 12px;
+  }
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  min-width: 220px;
+  max-width: 360px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+
+.toast.toast-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success { background: #1B7D3D; }
+.toast-error   { background: #C62828; }
+.toast-info    { background: #1565C0; }
+
+/* Responsive toast */
+@media (max-width: 520px) {
+  .toast {
+    left: 12px;
+    right: 12px;
+    min-width: 0;
+    max-width: calc(100vw - 24px);
   }
 }
