@@ -134,7 +134,7 @@
     <main id="main-content">
 
       <!-- ========== DASHBOARD PAGE ========== -->
-      <section class="page" id="page-dashboard">
+      <section class="page active" id="page-dashboard">
 
         <div class="page-toolbar">
           <div class="toolbar-left">
@@ -232,7 +232,7 @@
             <span class="table-card-title">Branch Summary</span>
           </div>
           <div class="table-responsive">
-            <table class="data-table" id="branch-table">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Branch</th>
@@ -241,7 +241,7 @@
                   <th>Change</th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody id="branch-table"></tbody>
             </table>
           </div>
         </div>
@@ -250,7 +250,7 @@
       <!-- END DASHBOARD PAGE -->
 
       <!-- ========== PROMOTION PAGE ========== -->
-      <section class="page" id="page-promotionPage" style="display:none;">
+      <section class="page" id="page-promotionPage">
         <div class="page-header">
           <h2 class="page-header-title">Promotion</h2>
           <button class="btn btn-primary" onclick="openModal('modal-addPromotion')">
@@ -279,7 +279,7 @@
       <!-- END PROMOTION PAGE -->
 
       <!-- ========== DEPOSIT PAGE ========== -->
-      <section class="page" id="page-deposit" style="display:none;">
+      <section class="page" id="page-deposit">
         <div class="page-header">
           <h2 class="page-header-title">Deposit</h2>
           <button class="btn btn-primary" onclick="openModal('modal-addDeposit')">
@@ -308,14 +308,14 @@
       <!-- END DEPOSIT PAGE -->
 
       <!-- ========== SALE PAGE ========== -->
-      <section class="page" id="page-sale" style="display:none;">
+      <section class="page" id="page-sale">
 
         <!-- Sale Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="tab-sale-report" data-tab="sale-report" onclick="switchSaleTab('sale-report')">
+          <button class="tab-btn active" id="tab-sale-report" onclick="switchSaleTab('report')">
             <i class="fas fa-chart-bar"></i> Report
           </button>
-          <button class="tab-btn" id="tab-daily-sale" data-tab="daily-sale" onclick="switchSaleTab('daily-sale')">
+          <button class="tab-btn" id="tab-daily-sale" onclick="switchSaleTab('daily-sale')">
             <i class="fas fa-calendar-day"></i> Daily Sale
           </button>
         </div>
@@ -358,42 +358,42 @@
             <div class="kpi-card-icon kpi-icon-blue"><i class="fas fa-shopping-cart"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Sales</p>
-              <p class="kpi-value" id="sale-kv-sales">0</p>
+              <p class="kpi-value" id="sale-kpi-sales">0</p>
             </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card-icon kpi-icon-green"><i class="fas fa-box"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Units</p>
-              <p class="kpi-value" id="sale-kv-units">0</p>
+              <p class="kpi-value" id="sale-kpi-units">0</p>
             </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card-icon kpi-icon-purple"><i class="fas fa-dollar-sign"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Total Revenue</p>
-              <p class="kpi-value" id="sale-kv-revenue">$0</p>
+              <p class="kpi-value" id="sale-kpi-revenue">$0</p>
             </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-card-icon kpi-icon-orange"><i class="fas fa-user-tie"></i></div>
             <div class="kpi-card-body">
               <p class="kpi-label">Active Agents</p>
-              <p class="kpi-value" id="sale-kv-agents">0</p>
+              <p class="kpi-value" id="sale-kpi-agents">0</p>
             </div>
           </div>
         </div>
 
-        <!-- View Toggle -->
+        <!-- View Toggle Bar -->
         <div class="view-toggle-bar">
-          <button class="view-toggle-btn active" id="btn-view-table" onclick="switchSaleView('table')">
+          <button class="view-toggle-btn active" id="view-btn-table" onclick="setReportView('table')">
             <i class="fas fa-table"></i> Table View
           </button>
-          <button class="view-toggle-btn" id="btn-view-summary" onclick="switchSaleView('summary')">
+          <button class="view-toggle-btn" id="view-btn-summary" onclick="setReportView('summary')">
             <i class="fas fa-chart-pie"></i> Summary View
           </button>
           <div class="view-toggle-spacer"></div>
-          <button class="btn btn-primary" id="btn-new-sale" onclick="openNewSaleModal()">
+          <button class="btn btn-primary" onclick="openNewSaleModal()">
             <i class="fas fa-plus"></i> New Sale
           </button>
         </div>
@@ -401,61 +401,34 @@
         <!-- Table View -->
         <div class="table-card" id="sale-table-card">
           <div class="table-responsive">
-            <table class="data-table" id="sale-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Date</th>
-                  <th>Agent</th>
-                  <th>Branch</th>
-                  <th>Items</th>
-                  <th>Units</th>
-                  <th>Revenue</th>
-                  <th>Note</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
+            <table class="data-table">
+              <thead id="sale-table-head"></thead>
+              <tbody id="sale-table"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Summary View (hidden by default) -->
-        <div id="sale-summary-view" style="display:none;">
-          <div class="chart-row">
-            <div class="chart-card">
-              <div class="chart-card-header"><span class="chart-card-title">Sales by Item</span></div>
-              <div class="chart-card-body"><canvas id="cSaleMix"></canvas></div>
-            </div>
-            <div class="chart-card">
-              <div class="chart-card-header"><span class="chart-card-title">Sales by Agent</span></div>
-              <div class="chart-card-body"><canvas id="cSaleAgent"></canvas></div>
-            </div>
-          </div>
-        </div>
+        <!-- Summary View -->
+        <div id="sale-summary-view" style="display:none;"></div>
 
         <!-- Total Bar -->
-        <div class="total-bar" id="sale-total-bar">
-          <span class="total-bar-item"><strong>Total Records:</strong> <span id="sale-total-records">0</span></span>
-          <span class="total-bar-item"><strong>Total Units:</strong> <span id="sale-bar-units">0</span></span>
-          <span class="total-bar-item"><strong>Total Revenue:</strong> <span id="sale-bar-revenue">$0</span></span>
-        </div>
+        <div id="sale-total-bar"></div>
 
       </section>
       <!-- END SALE PAGE -->
 
       <!-- ========== CUSTOMER PAGE ========== -->
-      <section class="page" id="page-customer" style="display:none;">
+      <section class="page" id="page-customer">
 
         <!-- Customer Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="tab-new-customer" data-tab="new-customer" onclick="switchCustomerTab('new-customer')">
+          <button class="tab-btn active" id="tab-new-customer" onclick="switchCustomerTab('new-customer')">
             <i class="fas fa-user-plus"></i> New Customer
           </button>
-          <button class="tab-btn" id="tab-topup" data-tab="topup" onclick="switchCustomerTab('topup')">
+          <button class="tab-btn" id="tab-topup" onclick="switchCustomerTab('topup')">
             <i class="fas fa-wallet"></i> Top Up
           </button>
-          <button class="tab-btn" id="tab-termination" data-tab="termination" onclick="switchCustomerTab('termination')">
+          <button class="tab-btn" id="tab-termination" onclick="switchCustomerTab('termination')">
             <i class="fas fa-user-times"></i> Termination
           </button>
         </div>
@@ -464,13 +437,13 @@
         <div class="tab-content active" id="tab-content-new-customer">
           <div class="page-header">
             <h2 class="page-header-title">New Customer</h2>
-            <button class="btn btn-primary" onclick="openModal('modal-newCustomer')">
+            <button class="btn btn-primary" onclick="openAddModal('new-customer')">
               <i class="fas fa-plus"></i> Add New Customer
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
-              <table class="data-table" id="new-customer-table">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -484,23 +457,23 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="new-customer-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
         <!-- Top Up Tab Content -->
-        <div class="tab-content" id="tab-content-topup" style="display:none;">
+        <div class="tab-content" id="tab-content-topup">
           <div class="page-header">
             <h2 class="page-header-title">Top Up</h2>
-            <button class="btn btn-primary" onclick="openModal('modal-topUp')">
+            <button class="btn btn-primary" onclick="openAddModal('topup')">
               <i class="fas fa-plus"></i> Add Top Up
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
-              <table class="data-table" id="topup-table">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -513,23 +486,23 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="topup-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
         <!-- Termination Tab Content -->
-        <div class="tab-content" id="tab-content-termination" style="display:none;">
+        <div class="tab-content" id="tab-content-termination">
           <div class="page-header">
             <h2 class="page-header-title">Termination</h2>
-            <button class="btn btn-primary" onclick="openModal('modal-termination')">
+            <button class="btn btn-primary" onclick="openAddModal('termination')">
               <i class="fas fa-plus"></i> Add Termination
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
-              <table class="data-table" id="termination-table">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -542,7 +515,7 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="termination-table"></tbody>
               </table>
             </div>
           </div>
@@ -552,17 +525,17 @@
       <!-- END CUSTOMER PAGE -->
 
       <!-- ========== SETTINGS PAGE ========== -->
-      <section class="page" id="page-settings" style="display:none;">
+      <section class="page" id="page-settings">
 
         <!-- Settings Tabs -->
         <div class="tab-header">
-          <button class="tab-btn active" id="stab-permission" data-tab="permission" onclick="switchSettingsTab('permission')">
+          <button class="tab-btn active" id="stab-permission" onclick="openSettingsTab('permission', this)">
             <i class="fas fa-shield-alt"></i> Permission
           </button>
-          <button class="tab-btn" id="stab-kpi" data-tab="kpi" onclick="switchSettingsTab('kpi')">
+          <button class="tab-btn" id="stab-kpi" onclick="openSettingsTab('kpi', this)">
             <i class="fas fa-bullseye"></i> KPI Setting
           </button>
-          <button class="tab-btn" id="stab-promo" data-tab="promo" onclick="switchSettingsTab('promo')">
+          <button class="tab-btn" id="stab-promo" onclick="openSettingsTab('promo', this)">
             <i class="fas fa-percent"></i> Promotion
           </button>
         </div>
@@ -571,13 +544,13 @@
         <div class="tab-content active" id="stab-content-permission">
           <div class="page-header">
             <h2 class="page-header-title">User Permissions</h2>
-            <button class="btn btn-primary" onclick="openModal('modal-addUser')">
+            <button class="btn btn-primary" onclick="openAddModal('user')">
               <i class="fas fa-plus"></i> Add User
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
-              <table class="data-table" id="staff-table">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -589,23 +562,23 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="staff-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
         <!-- KPI Setting Tab Content -->
-        <div class="tab-content" id="stab-content-kpi" style="display:none;">
+        <div class="tab-content" id="stab-content-kpi">
           <div class="page-header">
             <h2 class="page-header-title">KPI Settings</h2>
-            <button class="btn btn-primary" onclick="openModal('modal-kpi')">
+            <button class="btn btn-primary" onclick="openAddModal('kpi')">
               <i class="fas fa-plus"></i> Add KPI
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
-              <table class="data-table" id="kpi-table">
+              <table class="data-table">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -616,18 +589,18 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="kpi-table"></tbody>
               </table>
             </div>
           </div>
         </div>
 
         <!-- Promotion Setting Tab Content -->
-        <div class="tab-content" id="stab-content-promo" style="display:none;">
+        <div class="tab-content" id="stab-content-promo">
           <div class="page-header">
             <h2 class="page-header-title">Promotion Settings</h2>
-            <button class="btn btn-primary" onclick="openModal('modal-addItem')">
-              <i class="fas fa-plus"></i> Add Promotion
+            <button class="btn btn-primary" onclick="openAddModal('item')">
+              <i class="fas fa-plus"></i> Add Item
             </button>
           </div>
           <div class="table-card">
@@ -661,7 +634,7 @@
   <!-- ===================== MODALS ===================== -->
 
   <!-- ---- modal-addItem (Add/Edit Item) ---- -->
-  <div class="modal-overlay" id="modal-addItem" style="display:none;">
+  <div class="modal-overlay" id="modal-addItem">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-addItem-title">Add Item</h3>
@@ -724,7 +697,7 @@
             </div>
             <div class="form-group" id="item-custom-unit-group" style="display:none;">
               <label class="form-label" for="item-custom-unit">Custom Unit</label>
-              <input type="text" class="form-input" id="item-custom-unit" placeholder="Enter custom unit" />
+              <input type="text" class="form-input" id="item-custom-unit" placeholder="Enter custom unit" style="display:none;" />
             </div>
           </div>
 
@@ -746,7 +719,7 @@
             </div>
             <div class="form-group" id="item-custom-currency-group" style="display:none;">
               <label class="form-label" for="item-custom-currency">Custom Currency</label>
-              <input type="text" class="form-input" id="item-custom-currency" placeholder="Enter currency code" />
+              <input type="text" class="form-input" id="item-custom-currency" placeholder="Enter currency code" style="display:none;" />
             </div>
           </div>
 
@@ -754,8 +727,8 @@
           <div class="form-group">
             <label class="form-label" for="item-status">Status</label>
             <select class="form-select" id="item-status">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
 
@@ -769,14 +742,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-addItem')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="item-submit-btn">Add Item</button>
+          <button type="submit" class="btn btn-primary" id="modal-addItem-submit">Add Item</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ---- modal-newSale (New/Edit Sale) ---- -->
-  <div class="modal-overlay" id="modal-newSale" style="display:none;">
+  <div class="modal-overlay" id="modal-newSale">
     <div class="modal modal-lg">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-newSale-title">New Sale</h3>
@@ -796,6 +769,9 @@
               <label class="form-label" for="sale-branch">Branch <span class="required">*</span></label>
               <select class="form-select" id="sale-branch" required>
                 <option value="">Select branch</option>
+                <option value="Phnom Penh">Phnom Penh</option>
+                <option value="Siem Reap">Siem Reap</option>
+                <option value="Battambang">Battambang</option>
               </select>
             </div>
           </div>
@@ -814,13 +790,13 @@
           <!-- Unit Group Items -->
           <div class="sale-items-section">
             <h4 class="sale-section-title"><i class="fas fa-box"></i> Unit Group Items</h4>
-            <div class="sale-items-grid" id="sale-unit-items"></div>
+            <div id="sale-unit-items"></div>
           </div>
 
           <!-- Dollar Group Items -->
           <div class="sale-items-section">
             <h4 class="sale-section-title"><i class="fas fa-dollar-sign"></i> Dollar Group Items</h4>
-            <div class="sale-items-grid" id="sale-dollar-items"></div>
+            <div id="sale-dollar-items"></div>
           </div>
 
           <input type="hidden" id="sale-edit-id" />
@@ -840,14 +816,14 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-newSale')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="sale-submit-btn">Save Sale</button>
+          <button type="submit" class="btn btn-primary" id="modal-newSale-submit">Save Sale</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ---- modal-newCustomer (Add/Edit New Customer) ---- -->
-  <div class="modal-overlay" id="modal-newCustomer" style="display:none;">
+  <div class="modal-overlay" id="modal-newCustomer">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-newCustomer-title">Add New Customer</h3>
@@ -889,6 +865,9 @@
               <label class="form-label" for="nc-branch">Branch <span class="required">*</span></label>
               <select class="form-select" id="nc-branch" required>
                 <option value="">Select branch</option>
+                <option value="Phnom Penh">Phnom Penh</option>
+                <option value="Siem Reap">Siem Reap</option>
+                <option value="Battambang">Battambang</option>
               </select>
             </div>
           </div>
@@ -902,14 +881,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-newCustomer')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="nc-submit-btn">Add Customer</button>
+          <button type="submit" class="btn btn-primary">Add Customer</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ---- modal-topUp (Add/Edit Top Up) ---- -->
-  <div class="modal-overlay" id="modal-topUp" style="display:none;">
+  <div class="modal-overlay" id="modal-topUp">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-topUp-title">Add Top Up</h3>
@@ -945,6 +924,9 @@
               <label class="form-label" for="tu-branch">Branch <span class="required">*</span></label>
               <select class="form-select" id="tu-branch" required>
                 <option value="">Select branch</option>
+                <option value="Phnom Penh">Phnom Penh</option>
+                <option value="Siem Reap">Siem Reap</option>
+                <option value="Battambang">Battambang</option>
               </select>
             </div>
           </div>
@@ -958,14 +940,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-topUp')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="tu-submit-btn">Add Top Up</button>
+          <button type="submit" class="btn btn-primary">Add Top Up</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ---- modal-termination (Add/Edit Termination) ---- -->
-  <div class="modal-overlay" id="modal-termination" style="display:none;">
+  <div class="modal-overlay" id="modal-termination">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-termination-title">Add Termination</h3>
@@ -1001,6 +983,9 @@
               <label class="form-label" for="term-branch">Branch <span class="required">*</span></label>
               <select class="form-select" id="term-branch" required>
                 <option value="">Select branch</option>
+                <option value="Phnom Penh">Phnom Penh</option>
+                <option value="Siem Reap">Siem Reap</option>
+                <option value="Battambang">Battambang</option>
               </select>
             </div>
           </div>
@@ -1014,14 +999,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-termination')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="term-submit-btn">Add Termination</button>
+          <button type="submit" class="btn btn-primary">Add Termination</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ---- modal-kpi (Add/Edit KPI) ---- -->
-  <div class="modal-overlay" id="modal-kpi" style="display:none;">
+  <div class="modal-overlay" id="modal-kpi">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-kpi-title">Add KPI</h3>
@@ -1032,30 +1017,26 @@
       <form id="form-kpi" onsubmit="submitKPI(event)">
         <div class="modal-body">
 
-          <!-- KPI Name -->
           <div class="form-group">
             <label class="form-label" for="kpi-name">KPI Name <span class="required">*</span></label>
             <input type="text" class="form-input" id="kpi-name" placeholder="Enter KPI name" required />
           </div>
 
-          <!-- KPI Type Chips -->
           <div class="form-group">
             <label class="form-label">KPI Type <span class="required">*</span></label>
             <div class="chip-group" id="kpi-type-chips">
-              <button type="button" class="chip" data-value="Sales" onclick="selectKpiType(this)">Sales</button>
-              <button type="button" class="chip" data-value="Units" onclick="selectKpiType(this)">Units</button>
-              <button type="button" class="chip" data-value="Revenue" onclick="selectKpiType(this)">Revenue</button>
-              <button type="button" class="chip" data-value="Customers" onclick="selectKpiType(this)">Customers</button>
+              <button type="button" class="chip active" id="kpi-chip-Sales" data-value="Sales" onclick="selectKpiType(this)">Sales</button>
+              <button type="button" class="chip" id="kpi-chip-Units" data-value="Units" onclick="selectKpiType(this)">Units</button>
+              <button type="button" class="chip" id="kpi-chip-Revenue" data-value="Revenue" onclick="selectKpiType(this)">Revenue</button>
+              <button type="button" class="chip" id="kpi-chip-Customers" data-value="Customers" onclick="selectKpiType(this)">Customers</button>
             </div>
           </div>
 
-          <!-- Target -->
           <div class="form-group">
             <label class="form-label" for="kpi-target">Target Value <span class="required">*</span></label>
             <input type="number" class="form-input" id="kpi-target" placeholder="0" min="0" required />
           </div>
 
-          <!-- Value Mode Toggle -->
           <div class="form-group">
             <label class="form-label">Value Mode</label>
             <div class="toggle-btn-group">
@@ -1068,15 +1049,13 @@
             </div>
           </div>
 
-          <!-- Unit Field -->
           <div class="form-group" id="kpi-unit-field">
             <label class="form-label" for="kpi-unit-val">Unit Label</label>
             <input type="text" class="form-input" id="kpi-unit-val" placeholder="e.g. SIM, Card, Package" />
           </div>
 
-          <!-- Currency Field -->
           <div class="form-group" id="kpi-currency-field" style="display:none;">
-            <label class="form-label">Currency & Amount</label>
+            <label class="form-label">Currency</label>
             <div class="form-row">
               <div class="form-col">
                 <select class="form-select" id="kpi-currency-sel">
@@ -1084,13 +1063,9 @@
                   <option value="KHR">KHR (៛)</option>
                 </select>
               </div>
-              <div class="form-col">
-                <input type="number" class="form-input" id="kpi-currency-amount" placeholder="0.00" min="0" step="0.01" />
-              </div>
             </div>
           </div>
 
-          <!-- Period -->
           <div class="form-group">
             <label class="form-label" for="kpi-period">Period <span class="required">*</span></label>
             <select class="form-select" id="kpi-period" required>
@@ -1104,14 +1079,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-kpi')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="kpi-submit-btn">Add KPI</button>
+          <button type="submit" class="btn btn-primary" id="modal-kpi-submit">Add KPI</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ---- modal-addUser (Add/Edit User) ---- -->
-  <div class="modal-overlay" id="modal-addUser" style="display:none;">
+  <div class="modal-overlay" id="modal-addUser">
     <div class="modal modal-md">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-addUser-title">Add User</h3>
@@ -1133,7 +1108,6 @@
             </div>
           </div>
 
-          <!-- Password with eye toggle -->
           <div class="form-group">
             <label class="form-label" for="user-password">Password <span class="required">*</span></label>
             <div class="input-with-icon">
@@ -1158,6 +1132,9 @@
               <label class="form-label" for="user-branch">Branch <span class="required">*</span></label>
               <select class="form-select" id="user-branch" required>
                 <option value="">Select branch</option>
+                <option value="Phnom Penh">Phnom Penh</option>
+                <option value="Siem Reap">Siem Reap</option>
+                <option value="Battambang">Battambang</option>
               </select>
             </div>
           </div>
@@ -1165,8 +1142,8 @@
           <div class="form-group">
             <label class="form-label" for="user-status">Status</label>
             <select class="form-select" id="user-status">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
 
@@ -1174,14 +1151,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-addUser')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="user-submit-btn">Add User</button>
+          <button type="submit" class="btn btn-primary" id="modal-addUser-submit">Add User</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ===================== ROLE SELECTOR WIDGET ===================== -->
-  <div class="role-widget" id="role-widget">
+  <div id="role-widget">
     <button class="role-widget-btn" id="role-widget-btn" onclick="toggleRoleWidget()">
       <i class="fas fa-user-shield"></i>
       <span id="role-widget-label">Admin</span>
