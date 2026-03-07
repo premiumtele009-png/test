@@ -28,16 +28,15 @@
     .nav-section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.45); padding:14px 20px 5px; pointer-events:none; list-style:none; user-select:none; }
 
     /* Nav items */
-    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 16px; margin:2px 8px; border-radius:8px; cursor:pointer; color:rgba(255,255,255,.85); font-size:.875rem; font-weight:500; transition:background .15s,color .15s; position:relative; user-select:none; }
+    .nav-item { display:flex; flex-direction:row; align-items:center; gap:10px; padding:9px 14px; margin:1px 8px; border-radius:8px; cursor:pointer; color:rgba(255,255,255,.85); font-size:.875rem; font-weight:500; transition:background .15s,color .15s; position:relative; user-select:none; list-style:none; }
     .nav-item:hover { background:rgba(255,255,255,.12); color:#fff; }
-    .nav-item.active { background:rgba(255,255,255,.18); color:#fff; font-weight:700; }
-    .nav-active-bar { display:none; }
+    .nav-item.active { background:rgba(255,255,255,.18); color:#fff; font-weight:600; }
     .nav-item.active::before { content:''; position:absolute; left:0; top:4px; bottom:4px; width:3px; background:#fff; border-radius:0 3px 3px 0; }
-    .nav-icon { font-size:1.05rem; min-width:22px; text-align:center; }
+    .nav-icon { font-size:1rem; min-width:20px; text-align:center; flex-shrink:0; }
     .nav-item.active .nav-icon { color:#fff; }
-    .nav-label { flex:1; }
-    .nav-chevron { font-size:.7rem; opacity:.6; transition:transform .2s; margin-left:auto; flex-shrink:0; }
-    .nav-item:hover .nav-chevron, .nav-item.submenu-open .nav-chevron { opacity:1; }
+    .nav-label { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nav-chevron { font-size:.65rem; opacity:.6; transition:transform .2s; flex-shrink:0; }
+    .nav-item:hover .nav-chevron { opacity:1; }
     .nav-item.submenu-open .nav-chevron { transform:rotate(180deg); opacity:1; }
 
     /* Submenu */
@@ -307,21 +306,18 @@
 
       <!-- Dashboard -->
       <li class="nav-item active" id="nav-dashboard" onclick="navigateTo('dashboard', this)">
-        <span class="nav-active-bar"></span>
         <i class="fas fa-gauge-high nav-icon"></i>
         <span class="nav-label">Dashboard</span>
       </li>
 
       <!-- Promotion -->
       <li class="nav-item" id="nav-promotion" onclick="navigateTo('promotionPage', this)">
-        <span class="nav-active-bar"></span>
         <i class="fas fa-tags nav-icon"></i>
         <span class="nav-label">Promotion</span>
       </li>
 
       <!-- Sale (with submenu) -->
       <li class="nav-item has-submenu" id="nav-sale" onclick="toggleSubmenu('submenu-sale', this)">
-        <span class="nav-active-bar"></span>
         <i class="fas fa-receipt nav-icon"></i>
         <span class="nav-label">Sale</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
@@ -335,14 +331,12 @@
 
       <!-- Deposit -->
       <li class="nav-item" id="nav-deposit" onclick="navigateTo('deposit', this)">
-        <span class="nav-active-bar"></span>
         <i class="fas fa-vault nav-icon"></i>
         <span class="nav-label">Deposit</span>
       </li>
 
       <!-- Customer (with submenu) -->
       <li class="nav-item has-submenu" id="nav-customer" onclick="toggleSubmenu('submenu-customer', this)">
-        <span class="nav-active-bar"></span>
         <i class="fas fa-users nav-icon"></i>
         <span class="nav-label">Customer</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
@@ -366,7 +360,6 @@
 
       <!-- Settings (with submenu) -->
       <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', this)">
-        <span class="nav-active-bar"></span>
         <i class="fas fa-sliders nav-icon"></i>
         <span class="nav-label">Settings</span>
         <i class="fas fa-chevron-down nav-chevron"></i>
