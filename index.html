@@ -399,15 +399,15 @@
         <i class="fas fa-chevron-down nav-chevron"></i>
       </li>
       <ul class="submenu" id="submenu-settings">
-        <li class="submenu-item" id="nav-permission" onclick="navigateTo('settings', null); switchSettingsTab('permission')">
+        <li class="submenu-item" id="nav-permission" onclick="navigateTo('permission', this)">
           <i class="fas fa-shield-halved submenu-icon"></i>
           <span>Permission</span>
         </li>
-        <li class="submenu-item" id="nav-kpi" onclick="navigateTo('settings', null); switchSettingsTab('kpi')">
+        <li class="submenu-item" id="nav-kpiSetting" onclick="navigateTo('kpiSetting', this)">
           <i class="fas fa-crosshairs submenu-icon"></i>
           <span>KPI Setting</span>
         </li>
-        <li class="submenu-item" id="nav-promo-setting" onclick="navigateTo('settings', null); switchSettingsTab('promo')">
+        <li class="submenu-item" id="nav-promoSetting" onclick="navigateTo('promoSetting', this)">
           <i class="fas fa-percent submenu-icon"></i>
           <span>Promotion</span>
         </li>
@@ -795,9 +795,8 @@
 
       </section>
 
-      <!-- ========== SETTINGS PAGE ========== -->
-      <section class="page" id="page-settings">
-
+      <!-- ========== PERMISSION PAGE ========== -->
+      <section class="page" id="page-permission">
         <div id="settings-contact-banner" class="settings-contact-banner" style="display:none;">
           <i class="fas fa-headset"></i>
           <div>
@@ -806,70 +805,62 @@
           </div>
           <button class="btn btn-outline" onclick="openContactSupportModal()"><i class="fas fa-paper-plane"></i> Contact Support</button>
         </div>
-
-        <div class="tab-header">
-          <button class="tab-btn active" id="stab-permission" onclick="openSettingsTab('permission', this)">
-            <i class="fas fa-shield-halved"></i> Permission
-          </button>
-          <button class="tab-btn" id="stab-kpi" onclick="openSettingsTab('kpi', this)">
-            <i class="fas fa-crosshairs"></i> KPI Setting
-          </button>
-          <button class="tab-btn" id="stab-promo" onclick="openSettingsTab('promo', this)">
-            <i class="fas fa-percent"></i> Promotion
+        <div class="page-header">
+          <h2 class="page-header-title"><i class="fas fa-shield-halved" style="color:#1B7D3D;margin-right:8px;"></i>Permission</h2>
+          <button class="btn btn-primary" id="perm-add-user-btn" onclick="openAddModal('user')">
+            <i class="fas fa-circle-plus"></i> Add User
           </button>
         </div>
-
-        <div class="tab-content active" id="stab-content-permission">
-          <div class="page-header">
-            <h2 class="page-header-title">User Permissions</h2>
-            <button class="btn btn-primary" onclick="openAddModal('user')">
-              <i class="fas fa-circle-plus"></i> Add User
-            </button>
-          </div>
-          <div class="table-card">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead>
-                <tbody id="staff-table"></tbody>
-              </table>
-            </div>
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="staff-table">
+              <thead>
+                <tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Branch</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
+      </section>
 
-        <div class="tab-content" id="stab-content-kpi">
-          <div class="page-header">
-            <h2 class="page-header-title">KPI Settings</h2>
-            <button class="btn btn-primary" onclick="openAddModal('kpi')">
-              <i class="fas fa-circle-plus"></i> Add KPI
-            </button>
-          </div>
-          <div class="table-card">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead><tr><th>#</th><th>KPI Name</th><th>Type</th><th>For</th><th>Target</th><th>Period</th><th>Actions</th></tr></thead>
-                <tbody id="kpi-table"></tbody>
-              </table>
-            </div>
+      <!-- ========== KPI SETTING PAGE ========== -->
+      <section class="page" id="page-kpiSetting">
+        <div class="page-header">
+          <h2 class="page-header-title"><i class="fas fa-crosshairs" style="color:#1B7D3D;margin-right:8px;"></i>KPI Setting</h2>
+          <button class="btn btn-primary" onclick="openAddModal('kpi')">
+            <i class="fas fa-circle-plus"></i> Add KPI
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>KPI Name</th><th>Type</th><th>For</th><th>Target</th><th>Period</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="kpi-table"></tbody>
+            </table>
           </div>
         </div>
+      </section>
 
-        <div class="tab-content" id="stab-content-promo">
-          <div class="page-header">
-            <h2 class="page-header-title">Promotion Settings</h2>
-            <button class="btn btn-primary" onclick="openNewPromotionModal()">
-              <i class="fas fa-circle-plus"></i> New Promotion
-            </button>
-          </div>
-          <div class="table-card">
-            <div class="table-responsive">
-              <table class="data-table" id="promo-setting-table">
-                <thead><tr><th>#</th><th>Campaign</th><th>Channel</th><th>Period</th><th>Status</th><th>Actions</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
+      <!-- ========== PROMOTION SETTING PAGE ========== -->
+      <section class="page" id="page-promoSetting">
+        <div class="page-header">
+          <h2 class="page-header-title"><i class="fas fa-percent" style="color:#1B7D3D;margin-right:8px;"></i>Promotion Setting</h2>
+          <button class="btn btn-primary" onclick="openNewPromotionModal()">
+            <i class="fas fa-circle-plus"></i> New Promotion
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="promo-setting-table">
+              <thead>
+                <tr><th>#</th><th>Campaign</th><th>Channel</th><th>Period</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
-
       </section>
 
     </main>
