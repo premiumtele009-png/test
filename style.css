@@ -104,29 +104,30 @@ input, select, textarea, button {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #1B7D3D;
+  background: linear-gradient(180deg, #1a5c34 0%, #133d24 100%);
   overflow: hidden;
   transition: width 0.25s ease, min-width 0.25s ease;
   position: relative;
   z-index: 100;
   flex-shrink: 0;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.18);
 }
 
 .sidebar-logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 18px 16px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
   color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .sidebar-logo-icon {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   display: flex;
@@ -135,6 +136,7 @@ input, select, textarea, button {
   font-size: 1.2rem;
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
 }
 
 .sidebar-logo-text {
@@ -152,12 +154,24 @@ input, select, textarea, button {
   overflow-x: hidden;
   padding: 8px 0;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .sidebar-nav::-webkit-scrollbar { width: 4px; }
 .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* Nav section label */
+.nav-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 16px 20px 6px;
+  pointer-events: none;
+  list-style: none;
+}
 
 /* Nav items */
 .nav-item {
@@ -174,37 +188,53 @@ input, select, textarea, button {
 .nav-item > div {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 11px 14px;
   color: rgba(255, 255, 255, 0.88);
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .nav-item:hover > span,
 .nav-item:hover > div {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
 }
 
 .nav-item.active > span,
 .nav-item.active > div {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
   font-weight: 600;
-  border-left: 4px solid #ffffff;
-  padding-left: 8px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.nav-item.active > span::before,
+.nav-item.active > div::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: #ffffff;
+  border-radius: 0 3px 3px 0;
 }
 
 .nav-icon {
-  font-size: 1.1rem;
-  min-width: 24px;
+  font-size: 1.05rem;
+  min-width: 22px;
   text-align: center;
   flex-shrink: 0;
+}
+
+.nav-item.active .nav-icon {
+  color: #ffffff;
 }
 
 .nav-label {
@@ -216,10 +246,15 @@ input, select, textarea, button {
 
 .nav-chevron {
   font-size: 0.7rem;
-  opacity: 0.7;
+  opacity: 0.5;
   transition: transform 0.2s;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+.nav-item:hover .nav-chevron,
+.nav-item.submenu-open .nav-chevron {
+  opacity: 1;
 }
 
 .nav-item.submenu-open .nav-chevron {
@@ -230,10 +265,10 @@ input, select, textarea, button {
 .submenu {
   display: none;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.15);
-  padding: 4px 0;
-  border-radius: 0 0 8px 8px;
-  margin: 0 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 0 6px;
+  border-radius: 0 0 10px 10px;
+  margin: 0 8px;
 }
 
 .submenu.open {
@@ -244,9 +279,9 @@ input, select, textarea, button {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px 8px 40px;
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.75);
+  padding: 8px 14px 8px 42px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   user-select: none;
@@ -255,6 +290,11 @@ input, select, textarea, button {
 .submenu-item:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
+}
+
+.submenu-item.active {
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .submenu-icon {
@@ -271,7 +311,8 @@ input, select, textarea, button {
 
 #sidebar.sidebar-collapsed .sidebar-logo-text,
 #sidebar.sidebar-collapsed .nav-label,
-#sidebar.sidebar-collapsed .nav-chevron {
+#sidebar.sidebar-collapsed .nav-chevron,
+#sidebar.sidebar-collapsed .nav-section-label {
   opacity: 0;
   pointer-events: none;
   width: 0;
@@ -283,14 +324,11 @@ input, select, textarea, button {
   padding: 10px;
   justify-content: center;
   gap: 0;
-  border-left: none !important;
-  padding-left: 10px !important;
 }
 
-#sidebar.sidebar-collapsed .nav-item.active > span,
-#sidebar.sidebar-collapsed .nav-item.active > div {
-  border-left: 3px solid #ffffff !important;
-  padding-left: 7px !important;
+#sidebar.sidebar-collapsed .nav-item.active > span::before,
+#sidebar.sidebar-collapsed .nav-item.active > div::before {
+  display: none;
 }
 
 #sidebar.sidebar-collapsed .submenu {
