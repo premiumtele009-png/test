@@ -41,46 +41,23 @@ let itemCatalogue = [
   { id: 'i3', name: 'Top Up USD', shortcut: 'TU', group: 'dollar', currency: 'USD', price: 10, category: 'Prepaid', status: 'active', desc: 'Top up USD' },
 ];
 
-let saleRecords = [
-  { id: 's1', agent: 'Alice', branch: 'Phnom Penh', date: '2025-01-15', note: '', items: { i1: 5, i2: 3 }, dollarItems: { i3: 20 } },
-  { id: 's2', agent: 'Bob', branch: 'Siem Reap', date: '2025-01-20', note: '', items: { i1: 2, i2: 1 }, dollarItems: { i3: 10 } },
-  { id: 's3', agent: 'Alice', branch: 'Phnom Penh', date: '2025-02-05', note: '', items: { i1: 8, i2: 5 }, dollarItems: { i3: 40 } },
-  { id: 's4', agent: 'Charlie', branch: 'Battambang', date: '2025-02-10', note: '', items: { i1: 3 }, dollarItems: { i3: 15 } },
-  { id: 's5', agent: 'Bob', branch: 'Siem Reap', date: '2025-02-18', note: '', items: { i2: 4 }, dollarItems: { i3: 25 } },
-];
+let saleRecords = [];
 
-let newCustomers = [
-  { id: 'nc1', name: 'Dara Sok', phone: '012345678', idNum: 'ID001', pkg: 'Prepaid Basic', agent: 'Alice', branch: 'Phnom Penh', date: '2025-02-01' },
-];
+let newCustomers = [];
 
-let topUpList = [
-  { id: 'tu1', name: 'Meas Vireak', phone: '098765432', amount: 5, agent: 'Bob', branch: 'Siem Reap', date: '2025-02-10' },
-];
+let topUpList = [];
 
-let terminationList = [
-  { id: 'tr1', name: 'Nget Chenda', phone: '077654321', reason: 'Changed provider', agent: 'Charlie', branch: 'Battambang', date: '2025-02-15' },
-];
+let terminationList = [];
 
 let staffList = [
   { id: 'u1', name: 'Admin', username: 'admin', password: 'admin@2026', role: 'Admin', branch: 'Phnom Penh', status: 'active' },
-  { id: 'u2', name: 'Bob Smith', username: 'bob', password: 'Pass@123', role: 'Supervisor', branch: 'Siem Reap', status: 'active' },
-  { id: 'u3', name: 'Charlie Brown', username: 'charlie', password: 'Pass@123', role: 'Agent', branch: 'Battambang', status: 'active' },
 ];
 
-let kpiList = [
-  { id: 'k1', name: 'Monthly Sales Target', type: 'Sales', target: 50, valueMode: 'unit', unit: 'Sales', period: 'Monthly' },
-  { id: 'k2', name: 'Revenue Goal', type: 'Revenue', target: 5000, valueMode: 'currency', currency: 'USD', period: 'Monthly' },
-];
+let kpiList = [];
 
-let promotionList = [
-  { id: 'p1', campaign: 'New Year Promo', channel: 'SMS', startDate: '2025-01-01', endDate: '2025-01-31', terms: 'Applicable to all prepaid customers. One time use only.' },
-  { id: 'p2', campaign: 'Data Boost February', channel: 'Social Media', startDate: '2025-02-01', endDate: '2025-02-28', terms: 'Valid for new activations only.' },
-];
+let promotionList = [];
 
-let depositList = [
-  { id: 'd1', agent: 'Alice', branch: 'Phnom Penh', amount: 500, currency: 'USD', date: '2025-02-01', note: 'February deposit' },
-  { id: 'd2', agent: 'Bob', branch: 'Siem Reap', amount: 300, currency: 'USD', date: '2025-02-05', note: '' },
-];
+let depositList = [];
 
 let notifications = [];
 
@@ -196,7 +173,10 @@ function navigateTo(page, btn) {
     deposit: 'Deposit',
     sale: 'Sale',
     customer: 'Customer',
-    settings: 'Settings'
+    settings: 'Settings',
+    permission: 'Permission',
+    kpiSetting: 'KPI Setting',
+    promoSetting: 'Promotion Setting'
   };
   const titleEl = g('page-title');
   if (titleEl) titleEl.textContent = titles[page] || page;
@@ -217,6 +197,15 @@ function navigateTo(page, btn) {
     renderKpiTable();
     renderAccessContent(currentSettingsTab);
   }
+  if (page === 'permission') {
+    renderStaffTable();
+    var banner = g('settings-contact-banner');
+    if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
+    var addBtn = g('perm-add-user-btn');
+    if (addBtn) addBtn.style.display = currentRole === 'admin' ? '' : 'none';
+  }
+  if (page === 'kpiSetting') renderKpiTable();
+  if (page === 'promoSetting') renderPromoSettingTable();
 }
 
 function toggleSubmenu(id, elOrId) {
@@ -266,37 +255,18 @@ function switchCustomerTab(tab) {
 
 function openSettingsTab(tab, btn) {
   switchSettingsTab(tab);
-  $$('.settings-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (btn) btn.classList.add('active');
-  renderAccessContent(tab);
 }
 
 function switchSettingsTab(tab) {
-  currentSettingsTab = tab;
-  $$('.settings-tab-content').forEach(function(c) { c.classList.remove('active'); });
-  // Update tab button states
-  $$('.tab-btn').forEach(function(b) {
-    if (b.getAttribute('data-tab') === tab) b.classList.add('active');
-    else if (['permission','kpi','promo'].includes(b.getAttribute('data-tab'))) b.classList.remove('active');
-  });
-  const tc = g('stab-content-' + tab);
-  if (tc) tc.classList.add('active');
+  // Settings tabs are now separate pages; use navigateTo instead
+  const pageMap = { permission: 'permission', kpi: 'kpiSetting', promo: 'promoSetting' };
+  if (pageMap[tab]) navigateTo(pageMap[tab], null);
 }
 
 function renderAccessContent(tab) {
-  const allowed = TAB_PERM[currentRole] || [];
+  // No longer needed for tab display; kept for compatibility
   var banner = g('settings-contact-banner');
   if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
-  if (!allowed.includes(tab)) {
-    const tc = g('stab-content-' + tab);
-    if (tc) {
-      tc.innerHTML = '<div class="access-denied"><i class="fas fa-lock fa-3x" style="color:#BDBDBD;margin-bottom:12px;"></i><h3 style="color:#555;">Access Denied</h3><p style="color:#999;">You do not have permission to access this section.</p></div>';
-    }
-  } else {
-    if (tab === 'permission') renderStaffTable();
-    if (tab === 'kpi') renderKpiTable();
-    if (tab === 'promo') renderPromoSettingTable();
-  }
 }
 
 // ------------------------------------------------------------
@@ -323,7 +293,10 @@ function switchRole(role) {
   if (wd) wd.style.display = 'none';
 
   var banner = g('settings-contact-banner');
-  if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
+  if (banner) banner.style.display = (role !== 'admin') ? '' : 'none';
+
+  var addBtn = g('perm-add-user-btn');
+  if (addBtn) addBtn.style.display = role === 'admin' ? '' : 'none';
 
   if (currentPage === 'settings') renderAccessContent(currentSettingsTab);
 }
