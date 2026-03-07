@@ -196,7 +196,10 @@ function navigateTo(page, btn) {
     deposit: 'Deposit',
     sale: 'Sale',
     customer: 'Customer',
-    settings: 'Settings'
+    settings: 'Settings',
+    permission: 'Permission',
+    kpiSetting: 'KPI Setting',
+    promoSetting: 'Promotion Setting'
   };
   const titleEl = g('page-title');
   if (titleEl) titleEl.textContent = titles[page] || page;
@@ -212,11 +215,16 @@ function navigateTo(page, btn) {
     renderTopUpTable();
     renderTerminationTable();
   }
-  if (page === 'settings') {
+  if (page === 'settings') { navigateTo('permission', null); return; }
+  if (page === 'permission') {
     renderStaffTable();
-    renderKpiTable();
-    renderAccessContent(currentSettingsTab);
+    var banner = g('settings-contact-banner');
+    if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
+    var addBtn = g('perm-add-user-btn');
+    if (addBtn) addBtn.style.display = (currentRole === 'admin') ? '' : 'none';
   }
+  if (page === 'kpiSetting') renderKpiTable();
+  if (page === 'promoSetting') renderPromoSettingTable();
 }
 
 function toggleSubmenu(id, elOrId) {
@@ -266,37 +274,18 @@ function switchCustomerTab(tab) {
 
 function openSettingsTab(tab, btn) {
   switchSettingsTab(tab);
-  $$('.settings-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (btn) btn.classList.add('active');
-  renderAccessContent(tab);
 }
 
 function switchSettingsTab(tab) {
-  currentSettingsTab = tab;
-  $$('.settings-tab-content').forEach(function(c) { c.classList.remove('active'); });
-  // Update tab button states
-  $$('.tab-btn').forEach(function(b) {
-    if (b.getAttribute('data-tab') === tab) b.classList.add('active');
-    else if (['permission','kpi','promo'].includes(b.getAttribute('data-tab'))) b.classList.remove('active');
-  });
-  const tc = g('stab-content-' + tab);
-  if (tc) tc.classList.add('active');
+  var pageMap = { permission: 'permission', kpi: 'kpiSetting', promo: 'promoSetting' };
+  if (pageMap[tab]) navigateTo(pageMap[tab], null);
 }
 
 function renderAccessContent(tab) {
-  const allowed = TAB_PERM[currentRole] || [];
   var banner = g('settings-contact-banner');
   if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
-  if (!allowed.includes(tab)) {
-    const tc = g('stab-content-' + tab);
-    if (tc) {
-      tc.innerHTML = '<div class="access-denied"><i class="fas fa-lock fa-3x" style="color:#BDBDBD;margin-bottom:12px;"></i><h3 style="color:#555;">Access Denied</h3><p style="color:#999;">You do not have permission to access this section.</p></div>';
-    }
-  } else {
-    if (tab === 'permission') renderStaffTable();
-    if (tab === 'kpi') renderKpiTable();
-    if (tab === 'promo') renderPromoSettingTable();
-  }
+  var addBtn = g('perm-add-user-btn');
+  if (addBtn) addBtn.style.display = (currentRole === 'admin') ? '' : 'none';
 }
 
 // ------------------------------------------------------------
@@ -325,7 +314,10 @@ function switchRole(role) {
   var banner = g('settings-contact-banner');
   if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
 
-  if (currentPage === 'settings') renderAccessContent(currentSettingsTab);
+  var addBtn = g('perm-add-user-btn');
+  if (addBtn) addBtn.style.display = (role === 'admin') ? '' : 'none';
+
+  if (currentPage === 'permission') renderStaffTable();
 }
 
 function toggleRoleWidget() {
