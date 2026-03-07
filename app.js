@@ -1352,7 +1352,8 @@ function renderTerminationTable() {
 // ------------------------------------------------------------
 function isPromoExpired(p) {
   if (!p.endDate) return false;
-  return new Date(p.endDate) < new Date(new Date().toISOString().split('T')[0]);
+  const today = new Date(new Date().toISOString().split('T')[0]);
+  return new Date(p.endDate) < today;
 }
 
 function openNewPromotionModal(item) {
