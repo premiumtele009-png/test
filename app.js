@@ -62,7 +62,7 @@ let terminationList = [
 ];
 
 let staffList = [
-  { id: 'u1', name: 'Alice Johnson', username: 'alice', password: 'Pass@123', role: 'Admin', branch: 'Phnom Penh', status: 'active' },
+  { id: 'u1', name: 'Admin', username: 'admin', password: 'admin@2026', role: 'Admin', branch: 'Phnom Penh', status: 'active' },
   { id: 'u2', name: 'Bob Smith', username: 'bob', password: 'Pass@123', role: 'Supervisor', branch: 'Siem Reap', status: 'active' },
   { id: 'u3', name: 'Charlie Brown', username: 'charlie', password: 'Pass@123', role: 'Agent', branch: 'Battambang', status: 'active' },
 ];
@@ -81,6 +81,8 @@ let depositList = [
   { id: 'd1', agent: 'Alice', branch: 'Phnom Penh', amount: 500, currency: 'USD', date: '2025-02-01', note: 'February deposit' },
   { id: 'd2', agent: 'Bob', branch: 'Siem Reap', amount: 300, currency: 'USD', date: '2025-02-05', note: '' },
 ];
+
+let notifications = [];
 
 // ------------------------------------------------------------
 // Helper Functions
@@ -657,8 +659,10 @@ function submitSale(e) {
   if (editId) {
     const idx = saleRecords.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) saleRecords[idx] = obj;
+    addNotification((currentUser ? currentUser.name : 'User') + ' updated a sale record.');
   } else {
     saleRecords.push(obj);
+    addNotification((currentUser ? currentUser.name : 'User') + ' added a new sale record.');
   }
 
   closeModal('modal-newSale');
@@ -1209,8 +1213,10 @@ function submitNewCustomer(e) {
   if (editId) {
     const idx = newCustomers.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) newCustomers[idx] = obj;
+    addNotification((currentUser ? currentUser.name : 'User') + ' updated a customer record.');
   } else {
     newCustomers.push(obj);
+    addNotification((currentUser ? currentUser.name : 'User') + ' added a new customer.');
   }
   closeModal('modal-newCustomer');
   renderNewCustomerTable();
@@ -1265,8 +1271,10 @@ function submitTopUp(e) {
   if (editId) {
     const idx = topUpList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) topUpList[idx] = obj;
+    addNotification((currentUser ? currentUser.name : 'User') + ' updated a top-up record.');
   } else {
     topUpList.push(obj);
+    addNotification((currentUser ? currentUser.name : 'User') + ' submitted a top-up.');
   }
   closeModal('modal-topUp');
   renderTopUpTable();
@@ -1320,8 +1328,10 @@ function submitTermination(e) {
   if (editId) {
     const idx = terminationList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) terminationList[idx] = obj;
+    addNotification((currentUser ? currentUser.name : 'User') + ' updated a termination record.');
   } else {
     terminationList.push(obj);
+    addNotification((currentUser ? currentUser.name : 'User') + ' submitted a termination.');
   }
   closeModal('modal-termination');
   renderTerminationTable();
@@ -1602,8 +1612,10 @@ function submitDeposit(e) {
   if (editId) {
     const idx = depositList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) depositList[idx] = obj;
+    addNotification((currentUser ? currentUser.name : 'User') + ' updated a deposit record.');
   } else {
     depositList.push(obj);
+    addNotification((currentUser ? currentUser.name : 'User') + ' added a deposit.');
   }
   closeModal('modal-addDeposit');
   renderDepositTable();
@@ -2000,8 +2012,49 @@ function handleLogout() {
   var btn = g('login-submit-btn'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Sign In'; }
 }
 
+function addNotification(msg) {
+  notifications.push({ id: uid(), msg: msg, time: new Date().toLocaleString(), read: false });
+  updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+  var unread = notifications.filter(function(n) { return !n.read; }).length;
+  var badge = g('notif-badge');
+  if (badge) {
+    badge.textContent = unread > 9 ? '9+' : (unread || '');
+    badge.style.display = unread > 0 ? 'flex' : 'none';
+  }
+}
+
+function toggleNotifications() {
+  var panel = g('notif-panel');
+  if (!panel) return;
+  var isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    notifications.forEach(function(n) { n.read = true; });
+    updateNotificationBadge();
+    renderNotificationPanel();
+  }
+}
+
+function renderNotificationPanel() {
+  var list = g('notif-list');
+  if (!list) return;
+  if (!notifications.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:#999;font-size:.85rem;"><i class="fas fa-bell-slash" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.3;"></i>No notifications yet</div>';
+    return;
+  }
+  list.innerHTML = notifications.slice().reverse().map(function(n) {
+    return '<div style="padding:10px 16px;border-bottom:1px solid #F5F5F5;font-size:.82rem;">' +
+      '<div style="color:#1A1A2E;font-weight:500;">' + esc(n.msg) + '</div>' +
+      '<div style="color:#999;font-size:.72rem;margin-top:2px;">' + esc(n.time) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
 function loginContactSupport() {
-  alert('Please contact your administrator:\nEmail: admin@smart5g.com\nPhone: +855 12 345 678');
+  alert('Please contact admin via Telegram: @saray2026123');
 }
 
 // ------------------------------------------------------------
@@ -2022,7 +2075,8 @@ function submitSupportRequest(e) {
   var details = rv('support-req-details');
   if (!details) { alert('Please describe your request'); return; }
   closeModal('modal-contactSupport');
-  showToast('Your request has been sent to Admin. They will contact you shortly.', 'success');
+  showToast('Request sent! Admin will contact you via Telegram @saray2026123.', 'success');
+  addNotification((currentUser ? currentUser.name : 'User') + ' sent a contact support request.');
 }
 
 // ------------------------------------------------------------
@@ -2057,4 +2111,14 @@ document.addEventListener('DOMContentLoaded', function() {
   updateDepositKpis();
   renderSaleTable();
   updateSaleKpis();
+});
+
+document.addEventListener('click', function(e) {
+  var panel = g('notif-panel');
+  var btn = g('notif-btn');
+  if (panel && panel.style.display === 'block') {
+    if (!panel.contains(e.target) && (!btn || !btn.contains(e.target))) {
+      panel.style.display = 'none';
+    }
+  }
 });
