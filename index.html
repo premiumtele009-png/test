@@ -286,7 +286,44 @@
 </head>
 <body>
 
-  <!-- ===================== SIDEBAR ===================== -->
+  <!-- ===================== LOGIN SCREEN ===================== -->
+  <div id="login-screen" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f4c2a 0%,#1B7D3D 50%,#27ae60 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;">
+    <div class="login-card">
+      <div class="login-logo">
+        <i class="fas fa-tower-broadcast"></i>
+        <span>Smart 5G</span>
+      </div>
+      <h2 class="login-title">Welcome Back</h2>
+      <p class="login-subtitle">Sign in to your dashboard</p>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Username <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <i class="fas fa-user input-prefix-icon"></i>
+            <input type="text" id="login-username" class="form-input login-input" placeholder="Enter username" autocomplete="username" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock input-prefix-icon"></i>
+            <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" />
+            <button type="button" class="input-icon-btn" onclick="toggleLoginPwd()"><i class="fas fa-eye" id="login-pwd-eye"></i></button>
+          </div>
+        </div>
+        <div id="login-error" class="login-error" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary login-submit-btn" id="login-submit-btn">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+      </form>
+      <div class="login-support-hint">
+        Need access? <a href="#" onclick="loginContactSupport(); return false;">Contact Support</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <div id="app-shell" style="display:none;flex:1;height:100vh;overflow:hidden;">
   <nav id="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon"><i class="fas fa-tower-broadcast"></i></div>
@@ -397,6 +434,9 @@
           <span class="topbar-name" id="topbar-name">Admin User</span>
         </div>
         <span class="topbar-role-badge" id="topbar-role">Admin</span>
+        <button class="topbar-icon-btn" onclick="handleLogout()" title="Logout">
+          <i class="fas fa-right-from-bracket"></i>
+        </button>
       </div>
     </header>
     <!-- END TOPBAR -->
@@ -524,38 +564,40 @@
       <section class="page" id="page-promotionPage">
         <div class="page-header">
           <h2 class="page-header-title"><i class="fas fa-tags" style="color:#1B7D3D;margin-right:8px"></i>Promotion</h2>
-          <button class="btn btn-primary" onclick="openNewPromotionModal()">
+          <button class="btn btn-primary" id="promo-new-btn" onclick="openNewPromotionModal()">
             <i class="fas fa-circle-plus"></i> New Promotion
           </button>
         </div>
 
         <!-- Available Promotions -->
         <div style="margin-bottom:24px;">
-          <h3 style="font-size:.9375rem;font-weight:700;color:#1A1A2E;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-            <span style="width:10px;height:10px;border-radius:50%;background:#1B7D3D;display:inline-block;"></span>
-            Available Promotions
-            <span id="promo-available-count" style="background:#E8F5E9;color:#1B7D3D;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:4px;">0</span>
-          </h3>
+          <div class="promo-section-header promo-section-header--active">
+            <span class="promo-section-title">🎯 Available Promotions</span>
+            <span class="promo-section-sub">Currently active campaigns</span>
+            <span class="promo-section-badge" id="promo-available-count">0</span>
+          </div>
           <div class="promo-card-grid" id="promo-available-grid">
             <!-- populated by JS -->
           </div>
-          <div id="promo-available-empty" class="empty-state" style="display:none;">
-            <i class="fas fa-tags fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No available promotions
+          <div id="promo-available-empty" class="promo-empty-state" style="display:none;">
+            <i class="fas fa-tags" style="font-size:2.5rem;color:#A5D6A7;margin-bottom:12px;display:block;"></i>
+            <div style="font-weight:600;color:#555;margin-bottom:4px;">No active promotions yet</div>
+            <div style="font-size:.8125rem;color:#999;">Create your first promotion</div>
           </div>
         </div>
 
         <!-- Expired Promotions -->
         <div>
-          <h3 style="font-size:.9375rem;font-weight:700;color:#1A1A2E;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-            <span style="width:10px;height:10px;border-radius:50%;background:#9E9E9E;display:inline-block;"></span>
-            Expired Promotions
-            <span id="promo-expired-count" style="background:#F5F5F5;color:#757575;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:4px;">0</span>
-          </h3>
+          <div class="promo-section-header promo-section-header--expired">
+            <span class="promo-section-title">⏰ Expired Promotions</span>
+            <span class="promo-section-badge promo-section-badge--expired" id="promo-expired-count">0</span>
+          </div>
           <div class="promo-card-grid promo-card-grid--expired" id="promo-expired-grid">
             <!-- populated by JS -->
           </div>
-          <div id="promo-expired-empty" class="empty-state" style="display:none;">
-            <i class="fas fa-clock fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No expired promotions
+          <div id="promo-expired-empty" class="promo-empty-state" style="display:none;">
+            <i class="fas fa-clock" style="font-size:2.5rem;color:#BDBDBD;margin-bottom:12px;display:block;"></i>
+            <div style="font-weight:600;color:#777;">No expired promotions</div>
           </div>
         </div>
       </section>
@@ -739,6 +781,18 @@
 
       <!-- ========== SETTINGS PAGE ========== -->
       <section class="page" id="page-settings">
+
+        <!-- Contact Support Banner (for non-admin) -->
+        <div id="settings-contact-banner" class="settings-contact-banner" style="display:none;">
+          <i class="fas fa-headset"></i>
+          <div>
+            <div style="font-weight:600;">Need to add, edit or remove a user?</div>
+            <div style="font-size:.8125rem;opacity:.85;">Contact the admin team for account management assistance.</div>
+          </div>
+          <button class="btn btn-outline" onclick="openContactSupportModal()">
+            <i class="fas fa-paper-plane"></i> Contact Support
+          </button>
+        </div>
 
         <div class="tab-header">
           <button class="tab-btn active" id="stab-permission" onclick="openSettingsTab('permission', this)">
@@ -1324,6 +1378,74 @@
     </div>
   </div>
 
+  <!-- Contact Support Modal -->
+  <div class="modal-overlay" id="modal-contactSupport" onclick="handleOverlay(event,'modal-contactSupport')">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title">Contact Support</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-contactSupport')"><i class="fas fa-xmark"></i></button>
+      </div>
+      <form id="form-contactSupport" onsubmit="submitSupportRequest(event)">
+        <div class="modal-body">
+          <p style="font-size:.8125rem;color:#888;margin-bottom:16px;">Request a new account or changes to existing accounts</p>
+          <div class="form-group">
+            <label class="form-label">Request Type <span class="required">*</span></label>
+            <select class="form-select" id="support-req-type" required>
+              <option value="">Select request type</option>
+              <option value="New User Account">New User Account</option>
+              <option value="Edit My Account">Edit My Account</option>
+              <option value="Reset Password">Reset Password</option>
+              <option value="Remove Account">Remove Account</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label">Your Name</label>
+              <input type="text" class="form-input" id="support-req-name" placeholder="Your full name" readonly />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-input" id="support-req-username" placeholder="Your username" readonly />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Branch</label>
+            <input type="text" class="form-input" id="support-req-branch" placeholder="Your branch" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Details / Message <span class="required">*</span></label>
+            <textarea class="form-textarea" id="support-req-details" placeholder="Describe your request..." rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone (optional)</label>
+            <input type="tel" class="form-input" id="support-req-phone" placeholder="Your phone number" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-contactSupport')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Promo Modal (read-only) -->
+  <div class="modal-overlay" id="modal-viewPromo" onclick="handleOverlay(event,'modal-viewPromo')">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-viewPromo-title">Promotion Details</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-viewPromo')"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modal-viewPromo-body">
+        <!-- populated by JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-viewPromo')">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===================== ROLE WIDGET ===================== -->
   <div id="role-widget">
     <div id="role-widget-dropdown">
@@ -1338,5 +1460,6 @@
   </div>
 
   <script src="app.js"></script>
+</div><!-- end app-shell -->
 </body>
 </html>

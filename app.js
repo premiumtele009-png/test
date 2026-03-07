@@ -6,6 +6,7 @@
 // State & Constants
 // ------------------------------------------------------------
 let currentRole = 'admin'; // 'admin', 'supervisor', 'user'
+let currentUser = null;
 let currentPage = 'dashboard';
 let currentSaleTab = 'report';
 let currentCustomerTab = 'new-customer';
@@ -98,6 +99,18 @@ function esc(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function showToast(msg, type) {
+  var existing = document.getElementById('_toast_el');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.id = '_toast_el';
+  t.className = 'toast toast-' + (type || 'info');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.classList.add('toast-show'); }, 10);
+  setTimeout(function() { t.classList.remove('toast-show'); setTimeout(function() { t.remove(); }, 300); }, 3200);
 }
 
 // Populate branch dropdowns
@@ -271,6 +284,9 @@ function switchSettingsTab(tab) {
 }
 
 function renderAccessContent(tab) {
+  const banner = g('settings-contact-banner');
+  if (banner) banner.style.display = currentRole !== 'admin' ? '' : 'none';
+
   const allowed = TAB_PERM[currentRole] || [];
   if (!allowed.includes(tab)) {
     const tc = g('stab-content-' + tab);
@@ -307,7 +323,16 @@ function switchRole(role) {
   const wd = g('role-widget-dropdown');
   if (wd) wd.style.display = 'none';
 
+  // Update settings banner visibility
+  const banner = g('settings-contact-banner');
+  if (banner) banner.style.display = currentRole !== 'admin' ? '' : 'none';
+
+  // Update promo new button visibility
+  const promoNewBtn = g('promo-new-btn');
+  if (promoNewBtn) promoNewBtn.style.display = currentRole === 'admin' ? '' : 'none';
+
   if (currentPage === 'settings') renderAccessContent(currentSettingsTab);
+  if (currentPage === 'promotionPage') renderPromotionCards();
 }
 
 function toggleRoleWidget() {
@@ -357,6 +382,67 @@ function togglePwd(inputId, eyeId) {
     inp.type = 'password';
     if (eye) eye.className = 'fas fa-eye';
   }
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  var username = rv('login-username');
+  var password = rv('login-password');
+  var errEl = g('login-error');
+  var btn = g('login-submit-btn');
+
+  if (!username || !password) {
+    if (errEl) { errEl.textContent = 'Please enter username and password.'; errEl.style.display = ''; }
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in\u2026'; }
+
+  setTimeout(function() {
+    var user = staffList.find(function(u) {
+      return u.username.toLowerCase() === username.toLowerCase() && u.password === password && u.status === 'active';
+    });
+
+    if (user) {
+      var roleMap = { 'Admin': 'admin', 'Supervisor': 'supervisor', 'Agent': 'user' };
+      var role = roleMap[user.role] || 'user';
+      currentUser = user;
+      if (errEl) errEl.style.display = 'none';
+      var ls = g('login-screen'); if (ls) ls.style.display = 'none';
+      var as = g('app-shell'); if (as) as.style.display = 'flex';
+      switchRole(role);
+      var nameEl = g('topbar-name'); if (nameEl) nameEl.textContent = user.name;
+      var avEl = g('topbar-avatar'); if (avEl) { avEl.textContent = ini(user.name); }
+      navigateTo('dashboard', null);
+    } else {
+      if (errEl) { errEl.textContent = 'Invalid username or password, or account is inactive.'; errEl.style.display = ''; }
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; }
+    }
+  }, 600);
+}
+
+function toggleLoginPwd() {
+  var inp = g('login-password');
+  var eye = g('login-pwd-eye');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (eye) eye.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    if (eye) eye.className = 'fas fa-eye';
+  }
+}
+
+function handleLogout() {
+  if (!confirm('Sign out of Smart 5G Dashboard?')) return;
+  currentUser = null;
+  var as = g('app-shell'); if (as) as.style.display = 'none';
+  var ls = g('login-screen'); if (ls) ls.style.display = 'flex';
+  var lf = g('login-form'); if (lf) lf.reset();
+  var errEl = g('login-error'); if (errEl) errEl.style.display = 'none';
+  var btn = g('login-submit-btn');
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; }
 }
 
 // ------------------------------------------------------------
@@ -1416,7 +1502,63 @@ function deleteNewPromotion(id) {
   renderPromoSettingTable();
 }
 
+function restorePromotion(id) {
+  if (!confirm('Restore this promotion for 30 more days?')) return;
+  var idx = promotionList.findIndex(function(x) { return x.id === id; });
+  if (idx < 0) return;
+  var today = new Date();
+  var newEnd = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+  promotionList[idx].endDate = newEnd.toISOString().split('T')[0];
+  if (new Date(promotionList[idx].startDate) > new Date()) {
+    promotionList[idx].startDate = today.toISOString().split('T')[0];
+  }
+  renderPromotionCards();
+  renderPromoSettingTable();
+  showToast('Promotion restored for 30 days.', 'success');
+}
+
+function openPromoViewModal(id) {
+  var p = promotionList.find(function(x) { return x.id === id; });
+  if (!p) return;
+  var body = g('modal-viewPromo-body');
+  if (body) {
+    body.innerHTML =
+      '<div class="form-group"><label class="form-label">Campaign Name</label><div style="padding:8px 0;font-weight:600;color:#1A1A2E;">' + esc(p.campaign || '—') + '</div></div>' +
+      '<div class="form-group"><label class="form-label">Channel</label><div style="padding:8px 0;">' + esc(p.channel || '—') + '</div></div>' +
+      '<div class="form-group"><label class="form-label">Period</label><div style="padding:8px 0;">' + esc(p.startDate || '') + ' → ' + esc(p.endDate || '') + '</div></div>' +
+      (p.terms ? '<div class="form-group"><label class="form-label">Terms &amp; Conditions</label><div style="padding:8px 0;font-size:.875rem;color:#555;white-space:pre-wrap;">' + esc(p.terms) + '</div></div>' : '');
+  }
+  var title = g('modal-viewPromo-title');
+  if (title) title.textContent = p.campaign || 'Promotion Details';
+  openModal('modal-viewPromo');
+}
+
+function openContactSupportModal() {
+  if (currentUser) {
+    var nm = g('support-req-name'); if (nm) nm.value = currentUser.name || '';
+    var un = g('support-req-username'); if (un) un.value = currentUser.username || '';
+    var br = g('support-req-branch'); if (br) br.value = currentUser.branch || '';
+  }
+  openModal('modal-contactSupport');
+}
+
+function submitSupportRequest(e) {
+  e.preventDefault();
+  var details = rv('support-req-details');
+  if (!details) return alert('Please describe your request');
+  closeModal('modal-contactSupport');
+  showToast('Your request has been sent to Admin. They will contact you shortly.', 'success');
+}
+
+function loginContactSupport() {
+  alert('Please contact your administrator:\nadmin@smart5g.com\nPhone: +855 12 345 678');
+}
+
 function renderPromotionCards() {
+  // Control "New Promotion" button visibility
+  const promoNewBtn = g('promo-new-btn');
+  if (promoNewBtn) promoNewBtn.style.display = currentRole === 'admin' ? '' : 'none';
+
   const available = promotionList.filter(function(p) { return !isPromoExpired(p); });
   const expired = promotionList.filter(function(p) { return isPromoExpired(p); });
 
@@ -1451,23 +1593,52 @@ function renderPromotionCards() {
 }
 
 function buildPromoCard(p, isExpired) {
-  const actions = isExpired ? '' :
-    '<div class="promo-card-actions">' +
-      '<button class="btn-edit" onclick="editNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-edit"></i> Edit</button>' +
-      '<button class="btn-delete" onclick="deleteNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
-    '</div>';
-  const expiredBadge = isExpired ? '<span class="pill pill-gray" style="font-size:.65rem;">Expired</span>' : '<span class="pill pill-green" style="font-size:.65rem;">Active</span>';
-  return '<div class="promo-card">' +
-    '<div class="promo-card-header">' +
+  var headerGradient = isExpired
+    ? 'linear-gradient(135deg, #9E9E9E, #BDBDBD)'
+    : 'linear-gradient(135deg, #1B7D3D, #27ae60)';
+  var borderLeft = isExpired ? '4px solid #BDBDBD' : '4px solid #1B7D3D';
+  var badgeHtml = isExpired
+    ? '<span style="background:#FFEBEE;color:#C62828;border-radius:20px;padding:2px 10px;font-size:.65rem;font-weight:700;text-transform:uppercase;">Expired</span>'
+    : '<span style="background:#fff;color:#1B7D3D;border-radius:20px;padding:2px 10px;font-size:.65rem;font-weight:700;text-transform:uppercase;">ACTIVE</span>';
+
+  var actionsHtml = '';
+  if (isExpired) {
+    if (currentRole === 'admin') {
+      actionsHtml = '<div class="promo-card-actions">' +
+        '<button class="btn-edit" onclick="restorePromotion(\'' + esc(p.id) + '\')"><i class="fas fa-rotate-left"></i> Restore</button>' +
+        '<button class="btn-delete" onclick="deleteNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div>';
+    } else {
+      actionsHtml = '<div class="promo-card-actions">' +
+        '<button class="btn-outline" onclick="openPromoViewModal(\'' + esc(p.id) + '\')"><i class="fas fa-eye"></i> View</button>' +
+        '</div>';
+    }
+  } else {
+    if (currentRole === 'admin') {
+      actionsHtml = '<div class="promo-card-actions">' +
+        '<button class="btn-edit" onclick="editNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-edit"></i> Edit</button>' +
+        '<button class="btn-delete" onclick="deleteNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div>';
+    } else {
+      actionsHtml = '<div class="promo-card-actions">' +
+        '<button class="btn-outline" onclick="openPromoViewModal(\'' + esc(p.id) + '\')"><i class="fas fa-eye"></i> View</button>' +
+        '</div>';
+    }
+  }
+
+  var bodyOpacity = isExpired ? 'opacity:.8;' : '';
+
+  return '<div class="promo-card" style="border-left:' + borderLeft + ';">' +
+    '<div class="promo-card-header" style="background:' + headerGradient + ';">' +
       '<span class="promo-card-title">' + esc(p.campaign) + '</span>' +
-      expiredBadge +
+      badgeHtml +
     '</div>' +
-    '<div class="promo-card-body">' +
-      '<div class="promo-card-row"><i class="fas fa-broadcast-tower"></i> <strong>Channel:</strong>&nbsp;' + esc(p.channel || '—') + '</div>' +
+    '<div class="promo-card-body" style="' + bodyOpacity + '">' +
+      '<div class="promo-card-row"><i class="fas fa-satellite-dish"></i> <strong>Channel:</strong>&nbsp;' + esc(p.channel || '—') + '</div>' +
       '<div class="promo-card-row"><i class="fas fa-calendar-days"></i> <strong>Period:</strong>&nbsp;' + esc(p.startDate || '') + ' → ' + esc(p.endDate || '') + '</div>' +
-      (p.terms ? '<div class="promo-card-terms">' + esc(p.terms) + '</div>' : '') +
+      (p.terms ? '<div class="promo-card-terms" style="font-style:italic;color:#777;-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">' + esc(p.terms) + '</div>' : '') +
     '</div>' +
-    actions +
+    actionsHtml +
   '</div>';
 }
 
@@ -1915,7 +2086,6 @@ function toggleSidebar() {
 document.addEventListener('DOMContentLoaded', function() {
   filteredSales = saleRecords.slice();
   populateBranchSelects();
-  navigateTo('dashboard', null);
   renderItemChips();
   renderNewCustomerTable();
   renderTopUpTable();
@@ -1927,5 +2097,6 @@ document.addEventListener('DOMContentLoaded', function() {
   updateDepositKpis();
   renderSaleTable();
   updateSaleKpis();
-  switchRole('admin');
+  // Login screen is shown by default; app-shell is hidden.
+  // Do not navigate or call switchRole until after login.
 });
