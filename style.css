@@ -2208,3 +2208,10 @@ input, select, textarea, button {
 @media (max-width: 600px) {
   .promo-card-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Google Sheets Sync Indicator ───────────────────────── */
+#gs-sync-indicator { transition: opacity .3s; }
+#gs-sync-indicator.syncing #gs-sync-status::before { content: '⟳ '; }
+#gs-sync-indicator.syncing { opacity: .7; }
+#gs-sync-indicator.error { color: #e53935 !important; }
+#gs-sync-indicator.error i { color: #e53935 !important; }

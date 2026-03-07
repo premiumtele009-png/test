@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Smart 5G Dashboard</title>
+  <!-- Google Sheets Sync
+       Web App : https://script.google.com/macros/s/AKfycbzg57wCoKKUgeoZKXCftikpJPVusz4U-1mIymDSUa1q_Op-RNzO7ZJnlB9SDfz7J6XL/exec
+       Sheet   : https://docs.google.com/spreadsheets/d/1olDtHW2temS2qee-OfCRYsJs4Ub_OJBADncCsibILHc/edit
+       Sync is performed automatically from app.js whenever data is saved or deleted.
+  -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -451,6 +456,10 @@
           <span class="topbar-name" id="topbar-name">Admin User</span>
         </div>
         <span class="topbar-role-badge" id="topbar-role">Admin</span>
+        <span id="gs-sync-indicator" title="Google Sheets Sync" style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:#888;padding:0 6px;">
+          <i class="fas fa-table-cells-large" style="color:#0f9d58;font-size:.85rem;"></i>
+          <span id="gs-sync-status">Synced</span>
+        </span>
       </div>
     </header>
     <!-- END TOPBAR -->
