@@ -15,6 +15,7 @@ let filteredSales = [];
 let itemGroupSelected = 'unit'; // 'unit' or 'dollar'
 let kpiValueMode = 'unit'; // 'unit' or 'currency'
 let kpiTypeSelected = 'Sales';
+let kpiForSelected = 'shop'; // 'shop' or 'agent'
 
 // Chart instances
 let _cTrend = null, _cMix = null, _cAgent = null, _cGrowth = null;
@@ -62,7 +63,7 @@ let terminationList = [
 let staffList = [
   { id: 'u1', name: 'Alice Johnson', username: 'alice', password: 'Pass@123', role: 'Admin', branch: 'Phnom Penh', status: 'active' },
   { id: 'u2', name: 'Bob Smith', username: 'bob', password: 'Pass@123', role: 'Supervisor', branch: 'Siem Reap', status: 'active' },
-  { id: 'u3', name: 'Charlie Brown', username: 'charlie', password: 'Pass@123', role: 'User', branch: 'Battambang', status: 'active' },
+  { id: 'u3', name: 'Charlie Brown', username: 'charlie', password: 'Pass@123', role: 'Agent', branch: 'Battambang', status: 'active' },
 ];
 
 let kpiList = [
@@ -71,8 +72,8 @@ let kpiList = [
 ];
 
 let promotionList = [
-  { id: 'p1', name: 'New Year Promo', discount: '20%', startDate: '2025-01-01', endDate: '2025-01-31', status: 'inactive', desc: 'New Year special discount' },
-  { id: 'p2', name: 'Data Boost', discount: '10%', startDate: '2025-02-01', endDate: '2025-02-28', status: 'active', desc: 'Extra data bonus' },
+  { id: 'p1', campaign: 'New Year Promo', channel: 'SMS', startDate: '2025-01-01', endDate: '2025-01-31', terms: 'Applicable to all prepaid customers. One time use only.' },
+  { id: 'p2', campaign: 'Data Boost February', channel: 'Social Media', startDate: '2025-02-01', endDate: '2025-02-28', terms: 'Valid for new activations only.' },
 ];
 
 let depositList = [
@@ -101,7 +102,7 @@ function esc(s) {
 
 // Populate branch dropdowns
 function populateBranchSelects() {
-  const branchSelectIds = ['sale-branch', 'nc-branch', 'tu-branch', 'term-branch', 'user-branch', 'dep-branch'];
+  const branchSelectIds = ['sale-branch', 'nc-branch', 'tu-branch', 'term-branch', 'dep-branch'];
   branchSelectIds.forEach(function(id) {
     const sel = g(id);
     if (!sel) return;
@@ -190,7 +191,7 @@ function navigateTo(page, btn) {
   populateBranchSelects();
 
   if (page === 'dashboard') renderDashboard();
-  if (page === 'promotionPage') renderPromotionTable();
+  if (page === 'promotionPage') renderPromotionCards();
   if (page === 'deposit') { renderDepositTable(); updateDepositKpis(); }
   if (page === 'sale') { renderItemChips(); renderSaleTable(); updateSaleKpis(); }
   if (page === 'customer') {
@@ -1349,110 +1350,150 @@ function renderTerminationTable() {
 // ------------------------------------------------------------
 // Promotion Functions
 // ------------------------------------------------------------
-function openPromotionModal(item) {
-  const form = g('form-addPromotion');
+function isPromoExpired(p) {
+  if (!p.endDate) return false;
+  return new Date(p.endDate) < new Date(new Date().toISOString().split('T')[0]);
+}
+
+function openNewPromotionModal(item) {
+  const form = g('form-newPromotion');
   if (form) form.reset();
-  const editEl = g('promo-edit-id');
+  const editEl = g('np-edit-id');
   if (editEl) editEl.value = '';
-
-  const title = g('modal-addPromotion-title');
-  const btn = g('promo-submit-btn');
-
+  const title = g('modal-newPromotion-title');
+  const btn = g('np-submit-btn');
   if (item) {
     if (title) title.textContent = 'Edit Promotion';
     if (btn) btn.textContent = 'Update Promotion';
     if (editEl) editEl.value = item.id;
-    const nameEl = g('promo-name'); if (nameEl) nameEl.value = item.name || '';
-    const discEl = g('promo-discount'); if (discEl) discEl.value = item.discount || '';
-    const startEl = g('promo-start'); if (startEl) startEl.value = item.startDate || '';
-    const endEl = g('promo-end'); if (endEl) endEl.value = item.endDate || '';
-    const statEl = g('promo-status'); if (statEl) statEl.value = item.status || 'active';
-    const descEl = g('promo-desc'); if (descEl) descEl.value = item.desc || '';
+    const c = g('np-campaign'); if (c) c.value = item.campaign || '';
+    const ch = g('np-channel'); if (ch) ch.value = item.channel || '';
+    const s = g('np-start'); if (s) s.value = item.startDate || '';
+    const e = g('np-end'); if (e) e.value = item.endDate || '';
+    const t = g('np-terms'); if (t) t.value = item.terms || '';
   } else {
-    if (title) title.textContent = 'Add Promotion';
+    if (title) title.textContent = 'New Promotion';
     if (btn) btn.textContent = 'Add Promotion';
-    const startEl = g('promo-start'); if (startEl) startEl.value = new Date().toISOString().split('T')[0];
+    const s = g('np-start'); if (s) s.value = new Date().toISOString().split('T')[0];
   }
-  openModal('modal-addPromotion');
+  openModal('modal-newPromotion');
 }
 
-function submitPromotion(e) {
+function submitNewPromotion(e) {
   e.preventDefault();
-  const editId = rv('promo-edit-id');
+  const editId = rv('np-edit-id');
   const obj = {
     id: editId || uid(),
-    name: rv('promo-name'),
-    discount: rv('promo-discount'),
-    startDate: rv('promo-start'),
-    endDate: rv('promo-end'),
-    status: rv('promo-status'),
-    desc: rv('promo-desc')
+    campaign: rv('np-campaign'),
+    channel: rv('np-channel'),
+    startDate: rv('np-start'),
+    endDate: rv('np-end'),
+    terms: g('np-terms') ? g('np-terms').value : ''
   };
-  if (!obj.name) return alert('Please enter promotion name');
+  if (!obj.campaign) return alert('Please enter campaign name');
+  if (!obj.startDate || !obj.endDate) return alert('Please enter the promotion period');
   if (editId) {
     const idx = promotionList.findIndex(function(x) { return x.id === editId; });
     if (idx >= 0) promotionList[idx] = obj;
   } else {
     promotionList.push(obj);
   }
-  closeModal('modal-addPromotion');
-  renderPromotionTable();
+  closeModal('modal-newPromotion');
+  renderPromotionCards();
   renderPromoSettingTable();
 }
 
-function editPromotion(id) {
+function editNewPromotion(id) {
   const item = promotionList.find(function(x) { return x.id === id; });
-  if (item) openPromotionModal(item);
+  if (item) openNewPromotionModal(item);
 }
 
-function deletePromotion(id) {
+function deleteNewPromotion(id) {
   if (!confirm('Delete this promotion?')) return;
   promotionList = promotionList.filter(function(x) { return x.id !== id; });
-  renderPromotionTable();
+  renderPromotionCards();
   renderPromoSettingTable();
+}
+
+function renderPromotionCards() {
+  const available = promotionList.filter(function(p) { return !isPromoExpired(p); });
+  const expired = promotionList.filter(function(p) { return isPromoExpired(p); });
+
+  const avCount = g('promo-available-count');
+  const exCount = g('promo-expired-count');
+  if (avCount) avCount.textContent = available.length;
+  if (exCount) exCount.textContent = expired.length;
+
+  const avGrid = g('promo-available-grid');
+  const avEmpty = g('promo-available-empty');
+  if (avGrid) {
+    if (!available.length) {
+      avGrid.innerHTML = '';
+      if (avEmpty) avEmpty.style.display = '';
+    } else {
+      if (avEmpty) avEmpty.style.display = 'none';
+      avGrid.innerHTML = available.map(function(p) { return buildPromoCard(p, false); }).join('');
+    }
+  }
+
+  const exGrid = g('promo-expired-grid');
+  const exEmpty = g('promo-expired-empty');
+  if (exGrid) {
+    if (!expired.length) {
+      exGrid.innerHTML = '';
+      if (exEmpty) exEmpty.style.display = '';
+    } else {
+      if (exEmpty) exEmpty.style.display = 'none';
+      exGrid.innerHTML = expired.map(function(p) { return buildPromoCard(p, true); }).join('');
+    }
+  }
+}
+
+function buildPromoCard(p, isExpired) {
+  const actions = isExpired ? '' :
+    '<div class="promo-card-actions">' +
+      '<button class="btn-edit" onclick="editNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-edit"></i> Edit</button>' +
+      '<button class="btn-delete" onclick="deleteNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
+    '</div>';
+  const expiredBadge = isExpired ? '<span class="pill pill-gray" style="font-size:.65rem;">Expired</span>' : '<span class="pill pill-green" style="font-size:.65rem;">Active</span>';
+  return '<div class="promo-card">' +
+    '<div class="promo-card-header">' +
+      '<span class="promo-card-title">' + esc(p.campaign) + '</span>' +
+      expiredBadge +
+    '</div>' +
+    '<div class="promo-card-body">' +
+      '<div class="promo-card-row"><i class="fas fa-broadcast-tower"></i> <strong>Channel:</strong>&nbsp;' + esc(p.channel || '—') + '</div>' +
+      '<div class="promo-card-row"><i class="fas fa-calendar-days"></i> <strong>Period:</strong>&nbsp;' + esc(p.startDate || '') + ' → ' + esc(p.endDate || '') + '</div>' +
+      (p.terms ? '<div class="promo-card-terms">' + esc(p.terms) + '</div>' : '') +
+    '</div>' +
+    actions +
+  '</div>';
 }
 
 function renderPromotionTable() {
-  const tbody = g('promotion-table') ? g('promotion-table').querySelector('tbody') : null;
-  if (!tbody) return;
-  if (!promotionList.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#999;"><i class="fas fa-tag" style="font-size:2rem;display:block;margin-bottom:8px;"></i>No promotions yet</td></tr>';
-    return;
-  }
-  tbody.innerHTML = promotionList.map(function(p, i) {
-    const statusPill = p.status === 'active' ? 'pill-green' : 'pill-gray';
-    return '<tr>' +
-      '<td>' + (i + 1) + '</td>' +
-      '<td><strong>' + esc(p.name) + '</strong></td>' +
-      '<td>' + esc(p.discount || '') + '</td>' +
-      '<td>' + esc(p.startDate || '') + '</td>' +
-      '<td>' + esc(p.endDate || '') + '</td>' +
-      '<td><span class="pill ' + statusPill + '">' + esc(p.status) + '</span></td>' +
-      '<td style="white-space:nowrap;">' +
-        '<button class="btn-edit" onclick="editPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-edit"></i></button> ' +
-        '<button class="btn-delete" onclick="deletePromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
-      '</td>' +
-      '</tr>';
-  }).join('');
+  renderPromotionCards();
 }
 
 function renderPromoSettingTable() {
   const tbody = g('promo-setting-table') ? g('promo-setting-table').querySelector('tbody') : null;
   if (!tbody) return;
   if (!promotionList.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#999;">No promotions defined</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">No promotions defined</td></tr>';
     return;
   }
   tbody.innerHTML = promotionList.map(function(p, i) {
-    const statusPill = p.status === 'active' ? 'pill-green' : 'pill-gray';
+    const expired = isPromoExpired(p);
+    const statusPill = expired ? 'pill-gray' : 'pill-green';
+    const statusLabel = expired ? 'Expired' : 'Active';
     return '<tr>' +
       '<td>' + (i + 1) + '</td>' +
-      '<td>' + esc(p.name) + '</td>' +
-      '<td>' + esc(p.discount || '') + '</td>' +
-      '<td><span class="pill ' + statusPill + '">' + esc(p.status) + '</span></td>' +
+      '<td><strong>' + esc(p.campaign || p.name || '') + '</strong></td>' +
+      '<td>' + esc(p.channel || '') + '</td>' +
+      '<td>' + esc(p.startDate || '') + ' – ' + esc(p.endDate || '') + '</td>' +
+      '<td><span class="pill ' + statusPill + '">' + statusLabel + '</span></td>' +
       '<td style="white-space:nowrap;">' +
-        '<button class="btn-edit" onclick="editPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-edit"></i></button> ' +
-        '<button class="btn-delete" onclick="deletePromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
+        (expired ? '' : '<button class="btn-edit" onclick="editNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-edit"></i></button> ') +
+        '<button class="btn-delete" onclick="deleteNewPromotion(\'' + esc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
       '</td>' +
       '</tr>';
   }).join('');
@@ -1577,8 +1618,8 @@ function openUserModal(user) {
     g('user-name').value = user.name || '';
     g('user-username').value = user.username || '';
     g('user-password').value = user.password || '';
-    g('user-role').value = user.role || 'User';
-    const bSel = g('user-branch'); if (bSel) bSel.value = user.branch || '';
+    g('user-role').value = user.role || 'Agent';
+    const bInput = g('user-branch'); if (bInput) bInput.value = user.branch || '';
     g('user-status').value = user.status || 'active';
   } else {
     if (title) title.textContent = 'Add User';
@@ -1626,7 +1667,7 @@ function renderStaffTable() {
     return;
   }
   tbody.innerHTML = staffList.map(function(u, i) {
-    const rolePill = u.role === 'Admin' ? 'pill-green' : u.role === 'Supervisor' ? 'pill-blue' : 'pill-gray';
+    const rolePill = u.role === 'Admin' ? 'pill-green' : u.role === 'Supervisor' ? 'pill-blue' : u.role === 'Agent' ? 'pill-orange' : 'pill-gray';
     const statusPill = u.status === 'active' ? 'pill-green' : 'pill-red';
     const avIdx = i % 8;
     return '<tr>' +
@@ -1647,12 +1688,68 @@ function renderStaffTable() {
 // ------------------------------------------------------------
 // KPI Functions
 // ------------------------------------------------------------
+function onUserRoleChange() {
+  // reserved for role-specific UI changes
+}
+
+function selectKpiFor(type) {
+  kpiForSelected = type;
+  const shopBtn = g('kpi-for-shop');
+  const agentBtn = g('kpi-for-agent');
+  if (shopBtn) { shopBtn.classList.toggle('active', type === 'shop'); }
+  if (agentBtn) { agentBtn.classList.toggle('active', type === 'agent'); }
+
+  const shopGroup = g('kpi-shop-assignee-group');
+  const agentBranchGroup = g('kpi-agent-branch-group');
+  const agentAssigneeGroup = g('kpi-agent-assignee-group');
+
+  if (type === 'shop') {
+    if (shopGroup) shopGroup.style.display = '';
+    if (agentBranchGroup) agentBranchGroup.style.display = 'none';
+    if (agentAssigneeGroup) agentAssigneeGroup.style.display = 'none';
+    populateKpiShopAssignee();
+  } else {
+    if (shopGroup) shopGroup.style.display = 'none';
+    if (agentBranchGroup) agentBranchGroup.style.display = '';
+    if (agentAssigneeGroup) agentAssigneeGroup.style.display = '';
+    populateKpiAgentBranch();
+  }
+}
+
+function populateKpiShopAssignee() {
+  const sel = g('kpi-shop-assignee');
+  if (!sel) return;
+  const sups = staffList.filter(function(u) { return u.role === 'Supervisor'; });
+  sel.innerHTML = '<option value="">Select Supervisor</option>' +
+    sups.map(function(u) { return '<option value="' + esc(u.id) + '">' + esc(u.name) + '</option>'; }).join('');
+}
+
+function populateKpiAgentBranch() {
+  const branchSel = g('kpi-agent-branch');
+  if (!branchSel) return;
+  branchSel.innerHTML = '<option value="">Select branch</option>' +
+    BRANCHES.map(function(b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+  const agentSel = g('kpi-agent-assignee');
+  if (agentSel) agentSel.innerHTML = '<option value="">Select Agent</option>';
+}
+
+function onKpiBranchChange() {
+  const branch = rv('kpi-agent-branch');
+  const agentSel = g('kpi-agent-assignee');
+  if (!agentSel) return;
+  const agents = staffList.filter(function(u) { return u.role === 'Agent' && u.branch === branch; });
+  agentSel.innerHTML = '<option value="">Select Agent</option>' +
+    agents.map(function(u) { return '<option value="' + esc(u.id) + '">' + esc(u.name) + '</option>'; }).join('');
+}
+
 function openKpiModal(item) {
   const form = g('form-kpi');
   if (form) form.reset();
   g('kpi-edit-id').value = '';
   kpiTypeSelected = 'Sales';
   setValueMode('unit');
+  kpiForSelected = (item && item.kpiFor) ? item.kpiFor : 'shop';
+  selectKpiFor(kpiForSelected);
 
   const title = g('modal-kpi-title');
   const btn = g('kpi-submit-btn');
@@ -1679,6 +1776,20 @@ function openKpiModal(item) {
       const uvEl = g('kpi-unit-val'); if (uvEl) uvEl.value = item.unit || '';
     } else {
       const csEl = g('kpi-currency-sel'); if (csEl) csEl.value = item.currency || 'USD';
+    }
+    if (item.kpiFor === 'shop') {
+      populateKpiShopAssignee();
+      const shopSel = g('kpi-shop-assignee');
+      if (shopSel && item.assigneeId) shopSel.value = item.assigneeId;
+    } else if (item.kpiFor === 'agent') {
+      populateKpiAgentBranch();
+      const branchSel = g('kpi-agent-branch');
+      if (branchSel && item.assigneeBranch) {
+        branchSel.value = item.assigneeBranch;
+        onKpiBranchChange();
+        const agentSel = g('kpi-agent-assignee');
+        if (agentSel && item.assigneeId) agentSel.value = item.assigneeId;
+      }
     }
   } else {
     if (title) title.textContent = 'Add KPI';
@@ -1721,6 +1832,9 @@ function submitKpi(e) {
     id: editId || uid(),
     name: rv('kpi-name'),
     type: kpiTypeSelected,
+    kpiFor: kpiForSelected,
+    assigneeId: kpiForSelected === 'shop' ? rv('kpi-shop-assignee') : rv('kpi-agent-assignee'),
+    assigneeBranch: kpiForSelected === 'agent' ? rv('kpi-agent-branch') : '',
     target: parseFloat(rv('kpi-target')) || 0,
     valueMode: kpiValueMode,
     unit: kpiValueMode === 'unit' ? rv('kpi-unit-val') : '',
@@ -1761,10 +1875,14 @@ function renderKpiTable() {
     const valueDisplay = k.valueMode === 'currency'
       ? fmtMoney(k.target, esc(k.currency) + ' ')
       : k.target + ' ' + esc(k.unit || '');
+    const assignee = staffList.find(function(u) { return u.id === k.assigneeId; });
+    const forLabel = k.kpiFor === 'shop' ? '<span class="pill pill-blue"><i class="fas fa-store"></i> Shop</span>' : '<span class="pill pill-orange"><i class="fas fa-user"></i> Agent</span>';
+    const assigneeName = assignee ? esc(assignee.name) : (k.assigneeBranch ? esc(k.assigneeBranch) : '—');
     return '<tr>' +
       '<td>' + (i + 1) + '</td>' +
       '<td>' + esc(k.name) + '</td>' +
       '<td><span class="pill ' + typePill + '">' + esc(k.type) + '</span></td>' +
+      '<td>' + forLabel + '<br><small style="color:#888;">' + assigneeName + '</small></td>' +
       '<td>' + valueDisplay + '</td>' +
       '<td>' + esc(k.period || '') + '</td>' +
       '<td style="white-space:nowrap;">' +
@@ -1803,7 +1921,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderTerminationTable();
   renderStaffTable();
   renderKpiTable();
-  renderPromotionTable();
+  renderPromotionCards();
   renderDepositTable();
   updateDepositKpis();
   renderSaleTable();
