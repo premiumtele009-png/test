@@ -32,6 +32,8 @@ const KNOWN_UNITS = ['Unit','SIM','GB','MB','Minutes','SMS','Voucher'];
 
 const BRANCHES = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville', 'Kampong Cham'];
 
+const SUPPORT_CONTACT = { email: 'support@smart5g.com', phone: '+855 23 123 456' };
+
 // ── Google Sheets Sync ──────────────────────────────────────
 const GS_URL = 'https://script.google.com/macros/s/AKfycbzg57wCoKKUgeoZKXCftikpJPVusz4U-1mIymDSUa1q_Op-RNzO7ZJnlB9SDfz7J6XL/exec';
 
@@ -358,6 +360,9 @@ function switchRole(role) {
 
   var banner = g('settings-contact-banner');
   if (banner) banner.style.display = (currentRole !== 'admin') ? '' : 'none';
+
+  var newBtn = g('promo-new-btn');
+  if (newBtn) newBtn.style.display = (currentRole === 'admin') ? '' : 'none';
 
   if (currentPage === 'settings') renderAccessContent(currentSettingsTab);
 }
@@ -2105,29 +2110,31 @@ function renderNotificationPanel() {
 }
 
 function loginContactSupport() {
-  alert('Please contact admin via Telegram: @saray2026123');
+  alert('Contact Support\nEmail: ' + SUPPORT_CONTACT.email + '\nPhone: ' + SUPPORT_CONTACT.phone);
 }
 
 // ------------------------------------------------------------
 // Contact Support Modal
 // ------------------------------------------------------------
 function openContactSupportModal() {
-  var form = g('form-contactSupport'); if (form) form.reset();
   if (currentUser) {
-    var nm = g('support-req-name'); if (nm) nm.value = currentUser.name || '';
-    var un = g('support-req-username'); if (un) un.value = currentUser.username || '';
-    var br = g('support-req-branch'); if (br) br.value = currentUser.branch || '';
+    var nameEl = g('cs-name');
+    var usernameEl = g('cs-username');
+    var branchEl = g('cs-branch');
+    if (nameEl) nameEl.value = currentUser.name || '';
+    if (usernameEl) usernameEl.value = currentUser.username || '';
+    if (branchEl) branchEl.value = currentUser.branch || '';
   }
+  var msgEl = g('cs-message');
+  if (msgEl) msgEl.value = '';
   openModal('modal-contactSupport');
 }
 
-function submitSupportRequest(e) {
-  e.preventDefault();
-  var details = rv('support-req-details');
-  if (!details) { alert('Please describe your request'); return; }
+function submitContactSupport() {
+  var msg = g('cs-message') ? g('cs-message').value.trim() : '';
+  if (!msg) { showToast('Please enter a message.', 'error'); return; }
   closeModal('modal-contactSupport');
-  showToast('Request sent! Admin will contact you via Telegram @saray2026123.', 'success');
-  addNotification((currentUser ? currentUser.name : 'User') + ' sent a contact support request.');
+  showToast('Support request sent successfully!', 'success');
 }
 
 // ------------------------------------------------------------

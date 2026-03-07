@@ -2047,6 +2047,51 @@ input, select, textarea, button {
   gap: 10px;
   margin-bottom: 24px;
 }
+.login-logo i { font-size: 2rem; color: #1B7D3D; }
+.login-logo span { font-size: 1.5rem; font-weight: 800; color: #1A1A2E; }
+#login-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #1B7D3D 0%, #155f2e 50%, #0d3d1e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+.login-input {
+  width: 100%;
+  padding-left: 40px !important;
+}
+.input-prefix-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: .875rem;
+  pointer-events: none;
+}
+.login-submit-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  justify-content: center;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.login-support-hint {
+  text-align: center;
+  margin-top: 20px;
+  font-size: .8125rem;
+  color: #888;
+}
+.login-support-hint a {
+  color: #1B7D3D;
+  text-decoration: none;
+  font-weight: 600;
+}
+.login-support-hint a:hover { text-decoration: underline; }
 
 /* ── Promo Section Header ── */
 .promo-section-header {
