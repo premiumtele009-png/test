@@ -501,12 +501,15 @@ input, select, textarea, button {
    4. PAGES
    ============================================================ */
 .page {
-  display: none;
-  animation: fadeIn 0.2s ease;
+  display: none !important;
 }
 
 .page.active {
-  display: block;
+  display: block !important;
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
@@ -1920,4 +1923,86 @@ input, select, textarea, button {
   #role-widget { bottom: 12px; right: 12px; }
 
   .toast { bottom: 70px; right: 12px; left: 12px; max-width: 100%; }
+}
+
+/* ── Promotion Cards ── */
+.promo-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.promo-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  overflow: hidden;
+  border: 1.5px solid #E8F5E9;
+  transition: box-shadow .2s, transform .2s;
+  display: flex;
+  flex-direction: column;
+}
+.promo-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.11);
+  transform: translateY(-2px);
+}
+.promo-card-header {
+  background: #1B7D3D;
+  color: #fff;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.promo-card-title {
+  font-size: .9375rem;
+  font-weight: 700;
+  flex: 1;
+}
+.promo-card-body {
+  padding: 14px 18px;
+  flex: 1;
+}
+.promo-card-row {
+  font-size: .8125rem;
+  color: #555;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.promo-card-row i {
+  color: #1B7D3D;
+  min-width: 14px;
+}
+.promo-card-terms {
+  font-size: .78rem;
+  color: #777;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #F0F0F0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 60px;
+  overflow: hidden;
+}
+.promo-card-actions {
+  padding: 10px 18px;
+  border-top: 1px solid #F0F0F0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.promo-card-grid--expired .promo-card {
+  border-color: #E0E0E0;
+  opacity: .85;
+}
+.promo-card-grid--expired .promo-card-header {
+  background: #9E9E9E;
+}
+@media (max-width: 520px) {
+  .promo-card-grid {
+    grid-template-columns: 1fr;
+  }
 }
