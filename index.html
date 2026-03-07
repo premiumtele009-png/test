@@ -25,25 +25,25 @@
     .sidebar-logo-text { font-size:1rem; font-weight:700; color:#fff; letter-spacing:.02em; }
 
     /* Nav section label */
-    .nav-section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.4); padding:16px 20px 6px; pointer-events:none; list-style:none; }
+    .nav-section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.45); padding:14px 20px 5px; pointer-events:none; list-style:none; user-select:none; }
 
     /* Nav items */
-    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 14px; margin:2px 8px; border-radius:8px; cursor:pointer; color:rgba(255,255,255,.85); font-size:.875rem; font-weight:500; transition:background .15s,color .15s,box-shadow .15s; position:relative; user-select:none; }
-    .nav-item:hover { background:rgba(255,255,255,.14); color:#fff; }
-    .nav-item.active { background:rgba(255,255,255,.18); color:#fff; font-weight:600; border-radius:8px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 16px; margin:2px 8px; border-radius:8px; cursor:pointer; color:rgba(255,255,255,.85); font-size:.875rem; font-weight:500; transition:background .15s,color .15s; position:relative; user-select:none; }
+    .nav-item:hover { background:rgba(255,255,255,.12); color:#fff; }
+    .nav-item.active { background:rgba(255,255,255,.18); color:#fff; font-weight:700; }
     .nav-active-bar { display:none; }
-    .nav-item.active::before { content:''; position:absolute; left:0; top:6px; bottom:6px; width:3px; background:#fff; border-radius:0 3px 3px 0; }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:4px; bottom:4px; width:3px; background:#fff; border-radius:0 3px 3px 0; }
     .nav-icon { font-size:1.05rem; min-width:22px; text-align:center; }
     .nav-item.active .nav-icon { color:#fff; }
     .nav-label { flex:1; }
-    .nav-chevron { font-size:.7rem; opacity:.5; transition:transform .2s; margin-left:auto; }
+    .nav-chevron { font-size:.7rem; opacity:.6; transition:transform .2s; margin-left:auto; flex-shrink:0; }
     .nav-item:hover .nav-chevron, .nav-item.submenu-open .nav-chevron { opacity:1; }
-    .nav-item.submenu-open .nav-chevron { transform:rotate(180deg); }
+    .nav-item.submenu-open .nav-chevron { transform:rotate(180deg); opacity:1; }
 
     /* Submenu */
-    .submenu { display:none; flex-direction:column; list-style:none; padding:4px 0 6px; margin:0 8px; background:rgba(0,0,0,.2); border-radius:0 0 10px 10px; }
+    .submenu { display:none; flex-direction:column; list-style:none; padding:3px 0 5px; margin:0 8px; background:rgba(0,0,0,.15); border-radius:0 0 8px 8px; }
     .submenu.open { display:flex; }
-    .submenu-item { display:flex; align-items:center; gap:8px; padding:8px 14px 8px 42px; cursor:pointer; color:rgba(255,255,255,.7); font-size:.8rem; font-weight:500; transition:background .12s,color .12s; }
+    .submenu-item { display:flex; align-items:center; gap:8px; padding:8px 14px 8px 40px; cursor:pointer; color:rgba(255,255,255,.7); font-size:.8rem; font-weight:500; transition:background .12s,color .12s; }
     .submenu-item:hover { background:rgba(255,255,255,.1); color:#fff; }
     .submenu-item.active { color:#fff; font-weight:600; }
     .submenu-icon { font-size:.875rem; min-width:16px; }
@@ -303,7 +303,7 @@
 
     <ul class="sidebar-nav">
 
-      <li class="nav-section-label">MENU</li>
+      <li class="nav-section-label">MAIN MENU</li>
 
       <!-- Dashboard -->
       <li class="nav-item active" id="nav-dashboard" onclick="navigateTo('dashboard', this)">
@@ -361,6 +361,8 @@
           <span>Termination</span>
         </li>
       </ul>
+
+      <li class="nav-section-label">CONFIGURATION</li>
 
       <!-- Settings (with submenu) -->
       <li class="nav-item has-submenu" id="nav-settings" onclick="toggleSubmenu('submenu-settings', this)">
