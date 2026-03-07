@@ -32,6 +32,40 @@ const KNOWN_UNITS = ['Unit','SIM','GB','MB','Minutes','SMS','Voucher'];
 
 const BRANCHES = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville', 'Kampong Cham'];
 
+// ── Google Sheets Sync ──────────────────────────────────────
+const GS_URL = 'https://script.google.com/macros/s/AKfycbzg57wCoKKUgeoZKXCftikpJPVusz4U-1mIymDSUa1q_Op-RNzO7ZJnlB9SDfz7J6XL/exec';
+
+function syncSheet(sheetName, dataArray) {
+  if (!GS_URL) return;
+  const ind = document.getElementById('gs-sync-indicator');
+  const lbl = document.getElementById('gs-sync-status');
+  if (ind) ind.className = 'syncing';
+  if (lbl) lbl.textContent = 'Syncing\u2026';
+  fetch(GS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sheet: sheetName, action: 'sync', data: dataArray })
+  }).then(function() {
+    if (ind) ind.className = '';
+    if (lbl) lbl.textContent = 'Synced';
+  }).catch(function(err) {
+    console.warn('GS sync error:', err);
+    if (ind) ind.className = 'error';
+    if (lbl) lbl.textContent = 'Sync failed';
+  });
+}
+
+function deleteFromSheet(sheetName, id) {
+  if (!GS_URL) return;
+  fetch(GS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sheet: sheetName, action: 'delete', data: { id: id } })
+  }).catch(function(err) { console.warn('GS delete error:', err); });
+}
+
 // ------------------------------------------------------------
 // Sample Data
 // ------------------------------------------------------------
@@ -668,6 +702,7 @@ function submitSale(e) {
   closeModal('modal-newSale');
   applyReportFilters();
   if (currentPage === 'dashboard') renderDashboard();
+  syncSheet('Sales', saleRecords);
 }
 
 function editSale(id) {
@@ -680,6 +715,7 @@ function deleteSale(id) {
   saleRecords = saleRecords.filter(function(x) { return x.id !== id; });
   applyReportFilters();
   if (currentPage === 'dashboard') renderDashboard();
+  syncSheet('Sales', saleRecords);
 }
 
 // ------------------------------------------------------------
@@ -1220,6 +1256,7 @@ function submitNewCustomer(e) {
   }
   closeModal('modal-newCustomer');
   renderNewCustomerTable();
+  syncSheet('Customers', newCustomers);
 }
 
 function editNewCustomer(id) {
@@ -1231,6 +1268,7 @@ function deleteNewCustomer(id) {
   if (!confirm('Delete this customer?')) return;
   newCustomers = newCustomers.filter(function(x) { return x.id !== id; });
   renderNewCustomerTable();
+  syncSheet('Customers', newCustomers);
 }
 
 function renderNewCustomerTable() {
@@ -1278,6 +1316,7 @@ function submitTopUp(e) {
   }
   closeModal('modal-topUp');
   renderTopUpTable();
+  syncSheet('TopUp', topUpList);
 }
 
 function editTopUp(id) {
@@ -1289,6 +1328,7 @@ function deleteTopUp(id) {
   if (!confirm('Delete this top up record?')) return;
   topUpList = topUpList.filter(function(x) { return x.id !== id; });
   renderTopUpTable();
+  syncSheet('TopUp', topUpList);
 }
 
 function renderTopUpTable() {
@@ -1335,6 +1375,7 @@ function submitTermination(e) {
   }
   closeModal('modal-termination');
   renderTerminationTable();
+  syncSheet('Terminations', terminationList);
 }
 
 function editTermination(id) {
@@ -1346,6 +1387,7 @@ function deleteTermination(id) {
   if (!confirm('Delete this termination record?')) return;
   terminationList = terminationList.filter(function(x) { return x.id !== id; });
   renderTerminationTable();
+  syncSheet('Terminations', terminationList);
 }
 
 function renderTerminationTable() {
@@ -1428,6 +1470,7 @@ function submitNewPromotion(e) {
   closeModal('modal-newPromotion');
   renderPromotionCards();
   renderPromoSettingTable();
+  syncSheet('Promotions', promotionList);
 }
 
 function editNewPromotion(id) {
@@ -1440,6 +1483,7 @@ function deleteNewPromotion(id) {
   promotionList = promotionList.filter(function(x) { return x.id !== id; });
   renderPromotionCards();
   renderPromoSettingTable();
+  syncSheet('Promotions', promotionList);
 }
 
 function renderPromotionCards() {
@@ -1518,6 +1562,7 @@ function restorePromotion(id) {
   promotionList[idx].endDate = future.toISOString().split('T')[0];
   renderPromotionCards();
   showToast('Promotion restored for 30 days.', 'success');
+  syncSheet('Promotions', promotionList);
 }
 
 function openPromoViewModal(id) {
@@ -1620,6 +1665,7 @@ function submitDeposit(e) {
   closeModal('modal-addDeposit');
   renderDepositTable();
   updateDepositKpis();
+  syncSheet('Deposits', depositList);
 }
 
 function editDeposit(id) {
@@ -1632,6 +1678,7 @@ function deleteDeposit(id) {
   depositList = depositList.filter(function(x) { return x.id !== id; });
   renderDepositTable();
   updateDepositKpis();
+  syncSheet('Deposits', depositList);
 }
 
 function updateDepositKpis() {
@@ -1713,6 +1760,7 @@ function submitUser(e) {
   }
   closeModal('modal-addUser');
   renderStaffTable();
+  syncSheet('Staff', staffList);
 }
 
 function editUser(id) {
@@ -1724,6 +1772,7 @@ function deleteUser(id) {
   if (!confirm('Delete this user?')) return;
   staffList = staffList.filter(function(x) { return x.id !== id; });
   renderStaffTable();
+  syncSheet('Staff', staffList);
 }
 
 function renderStaffTable() {
@@ -1917,6 +1966,7 @@ function submitKpi(e) {
   }
   closeModal('modal-kpi');
   renderKpiTable();
+  syncSheet('KPI', kpiList);
 }
 
 function editKpi(id) {
@@ -1928,6 +1978,7 @@ function deleteKpi(id) {
   if (!confirm('Delete this KPI?')) return;
   kpiList = kpiList.filter(function(x) { return x.id !== id; });
   renderKpiTable();
+  syncSheet('KPI', kpiList);
 }
 
 function renderKpiTable() {
