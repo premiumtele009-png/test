@@ -32,6 +32,8 @@ const KNOWN_UNITS = ['Unit','SIM','GB','MB','Minutes','SMS','Voucher'];
 
 const BRANCHES = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville', 'Kampong Cham'];
 
+const SUPPORT_CONTACT = { email: 'admin@smart5g.com', phone: '+855 12 345 678' };
+
 // ------------------------------------------------------------
 // Sample Data
 // ------------------------------------------------------------
@@ -1551,7 +1553,7 @@ function submitSupportRequest(e) {
 }
 
 function loginContactSupport() {
-  alert('Please contact your administrator:\nadmin@smart5g.com\nPhone: +855 12 345 678');
+  alert('Please contact your administrator:\n' + SUPPORT_CONTACT.email + '\nPhone: ' + SUPPORT_CONTACT.phone);
 }
 
 function renderPromotionCards() {
@@ -1593,13 +1595,11 @@ function renderPromotionCards() {
 }
 
 function buildPromoCard(p, isExpired) {
-  var headerGradient = isExpired
-    ? 'linear-gradient(135deg, #9E9E9E, #BDBDBD)'
-    : 'linear-gradient(135deg, #1B7D3D, #27ae60)';
-  var borderLeft = isExpired ? '4px solid #BDBDBD' : '4px solid #1B7D3D';
+  var headerClass = isExpired ? 'promo-card-header--expired' : 'promo-card-header--active';
+  var cardClass = isExpired ? 'promo-card--expired' : 'promo-card--active';
   var badgeHtml = isExpired
-    ? '<span style="background:#FFEBEE;color:#C62828;border-radius:20px;padding:2px 10px;font-size:.65rem;font-weight:700;text-transform:uppercase;">Expired</span>'
-    : '<span style="background:#fff;color:#1B7D3D;border-radius:20px;padding:2px 10px;font-size:.65rem;font-weight:700;text-transform:uppercase;">ACTIVE</span>';
+    ? '<span class="promo-badge-expired">Expired</span>'
+    : '<span class="promo-badge-active">ACTIVE</span>';
 
   var actionsHtml = '';
   if (isExpired) {
@@ -1626,17 +1626,17 @@ function buildPromoCard(p, isExpired) {
     }
   }
 
-  var bodyOpacity = isExpired ? 'opacity:.8;' : '';
+  var bodyClass = isExpired ? 'promo-card-body promo-card-body--expired' : 'promo-card-body';
 
-  return '<div class="promo-card" style="border-left:' + borderLeft + ';">' +
-    '<div class="promo-card-header" style="background:' + headerGradient + ';">' +
+  return '<div class="promo-card ' + cardClass + '">' +
+    '<div class="promo-card-header ' + headerClass + '">' +
       '<span class="promo-card-title">' + esc(p.campaign) + '</span>' +
       badgeHtml +
     '</div>' +
-    '<div class="promo-card-body" style="' + bodyOpacity + '">' +
+    '<div class="' + bodyClass + '">' +
       '<div class="promo-card-row"><i class="fas fa-satellite-dish"></i> <strong>Channel:</strong>&nbsp;' + esc(p.channel || '—') + '</div>' +
       '<div class="promo-card-row"><i class="fas fa-calendar-days"></i> <strong>Period:</strong>&nbsp;' + esc(p.startDate || '') + ' → ' + esc(p.endDate || '') + '</div>' +
-      (p.terms ? '<div class="promo-card-terms" style="font-style:italic;color:#777;-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">' + esc(p.terms) + '</div>' : '') +
+      (p.terms ? '<div class="promo-card-terms promo-card-terms-truncated">' + esc(p.terms) + '</div>' : '') +
     '</div>' +
     actionsHtml +
   '</div>';
