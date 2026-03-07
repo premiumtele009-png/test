@@ -289,6 +289,21 @@
     @media(max-width:1100px) { .kpi-grid{grid-template-columns:repeat(2,1fr)} .chart-row{grid-template-columns:1fr} }
     @media(max-width:768px) { .kpi-grid{grid-template-columns:repeat(2,1fr)} .sale-items-grid{grid-template-columns:repeat(2,1fr)} }
     @media(max-width:520px) { .kpi-grid{grid-template-columns:1fr 1fr} .form-row{flex-direction:column;gap:0} .modal-overlay{padding:0;align-items:flex-end} .modal{border-radius:18px 18px 0 0;max-height:92vh} }
+
+    /* Promotion card grid */
+    .promo-card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .promo-card { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.07); overflow:hidden; border:1.5px solid #E8F5E9; transition:box-shadow .2s,transform .2s; }
+    .promo-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.11); transform:translateY(-2px); }
+    .promo-card-header { background:#1B7D3D; color:#fff; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; }
+    .promo-card-title { font-size:.9375rem; font-weight:700; }
+    .promo-card-body { padding:14px 18px; }
+    .promo-card-row { font-size:.8125rem; color:#555; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .promo-card-row i { color:#1B7D3D; min-width:14px; }
+    .promo-card-terms { font-size:.78rem; color:#777; margin-top:8px; padding-top:8px; border-top:1px solid #F0F0F0; white-space:pre-wrap; word-break:break-word; max-height:60px; overflow:hidden; }
+    .promo-card-actions { padding:10px 18px; border-top:1px solid #F0F0F0; display:flex; justify-content:flex-end; gap:8px; }
+    .promo-card-grid--expired .promo-card { border-color:#E0E0E0; opacity:.85; }
+    .promo-card-grid--expired .promo-card-header { background:#9E9E9E; }
+    @media(max-width:520px) { .promo-card-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -531,20 +546,38 @@
       <section class="page" id="page-promotionPage">
         <div class="page-header">
           <h2 class="page-header-title"><i class="fas fa-tags" style="color:#1B7D3D;margin-right:8px"></i>Promotion</h2>
-          <button class="btn btn-primary" onclick="openModal('modal-addPromotion')">
-            <i class="fas fa-circle-plus"></i> Add Promotion
+          <button class="btn btn-primary" onclick="openNewPromotionModal()">
+            <i class="fas fa-circle-plus"></i> New Promotion
           </button>
         </div>
-        <div class="table-card">
-          <div class="table-responsive">
-            <table class="data-table" id="promotion-table">
-              <thead>
-                <tr>
-                  <th>#</th><th>Name</th><th>Discount</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody><tr><td colspan="7" class="empty-state"><i class="fas fa-tags fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No promotions yet</td></tr></tbody>
-            </table>
+
+        <!-- Available Promotions -->
+        <div style="margin-bottom:24px;">
+          <h3 style="font-size:.9375rem;font-weight:700;color:#1A1A2E;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:#1B7D3D;display:inline-block;"></span>
+            Available Promotions
+            <span id="promo-available-count" style="background:#E8F5E9;color:#1B7D3D;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:4px;">0</span>
+          </h3>
+          <div class="promo-card-grid" id="promo-available-grid">
+            <!-- populated by JS -->
+          </div>
+          <div id="promo-available-empty" class="empty-state" style="display:none;">
+            <i class="fas fa-tags fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No available promotions
+          </div>
+        </div>
+
+        <!-- Expired Promotions -->
+        <div>
+          <h3 style="font-size:.9375rem;font-weight:700;color:#1A1A2E;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:#9E9E9E;display:inline-block;"></span>
+            Expired Promotions
+            <span id="promo-expired-count" style="background:#F5F5F5;color:#757575;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:4px;">0</span>
+          </h3>
+          <div class="promo-card-grid promo-card-grid--expired" id="promo-expired-grid">
+            <!-- populated by JS -->
+          </div>
+          <div id="promo-expired-empty" class="empty-state" style="display:none;">
+            <i class="fas fa-clock fa-2x" style="opacity:.2;display:block;margin:0 auto 8px"></i>No expired promotions
           </div>
         </div>
       </section>
@@ -768,7 +801,7 @@
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead><tr><th>#</th><th>KPI Name</th><th>Type</th><th>Target</th><th>Period</th><th>Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>KPI Name</th><th>Type</th><th>For</th><th>Target</th><th>Period</th><th>Actions</th></tr></thead>
                 <tbody id="kpi-table"></tbody>
               </table>
             </div>
@@ -778,14 +811,14 @@
         <div class="tab-content" id="stab-content-promo">
           <div class="page-header">
             <h2 class="page-header-title">Promotion Settings</h2>
-            <button class="btn btn-primary" onclick="openAddModal('item')">
-              <i class="fas fa-circle-plus"></i> Add Item
+            <button class="btn btn-primary" onclick="openNewPromotionModal()">
+              <i class="fas fa-circle-plus"></i> New Promotion
             </button>
           </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="data-table" id="promo-setting-table">
-                <thead><tr><th>#</th><th>Name</th><th>Category</th><th>Group</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>Campaign</th><th>Channel</th><th>Period</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1124,6 +1157,41 @@
       </div>
       <form id="form-kpi" onsubmit="submitKPI(event)">
         <div class="modal-body">
+          <!-- KPI For: Shop or Agent -->
+          <div class="form-group">
+            <label class="form-label">KPI For <span class="required">*</span></label>
+            <div class="toggle-btn-group" style="width:100%;">
+              <button type="button" class="toggle-btn active" id="kpi-for-shop" onclick="selectKpiFor('shop')" style="flex:1;">
+                <i class="fas fa-store"></i> Shop
+              </button>
+              <button type="button" class="toggle-btn" id="kpi-for-agent" onclick="selectKpiFor('agent')" style="flex:1;">
+                <i class="fas fa-user"></i> Agent
+              </button>
+            </div>
+          </div>
+
+          <!-- Assignee section: shown when KPI For = Shop -->
+          <div class="form-group" id="kpi-shop-assignee-group">
+            <label class="form-label">Supervisor (Shop) <span class="required">*</span></label>
+            <select class="form-select" id="kpi-shop-assignee">
+              <option value="">Select Supervisor</option>
+            </select>
+          </div>
+
+          <!-- Assignee section: shown when KPI For = Agent -->
+          <div class="form-group" id="kpi-agent-branch-group" style="display:none;">
+            <label class="form-label">Branch <span class="required">*</span></label>
+            <select class="form-select" id="kpi-agent-branch" onchange="onKpiBranchChange()">
+              <option value="">Select branch</option>
+            </select>
+          </div>
+          <div class="form-group" id="kpi-agent-assignee-group" style="display:none;">
+            <label class="form-label">Agent <span class="required">*</span></label>
+            <select class="form-select" id="kpi-agent-assignee">
+              <option value="">Select Agent</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="kpi-name">KPI Name <span class="required">*</span></label>
             <input type="text" class="form-input" id="kpi-name" placeholder="Enter KPI name" required />
@@ -1208,21 +1276,16 @@
           <div class="form-row">
             <div class="form-group form-col">
               <label class="form-label" for="user-role">Role <span class="required">*</span></label>
-              <select class="form-select" id="user-role" required>
+              <select class="form-select" id="user-role" required onchange="onUserRoleChange()">
                 <option value="">Select role</option>
                 <option value="Admin">Admin</option>
                 <option value="Supervisor">Supervisor</option>
-                <option value="User">User</option>
+                <option value="Agent">Agent</option>
               </select>
             </div>
             <div class="form-group form-col">
               <label class="form-label" for="user-branch">Branch <span class="required">*</span></label>
-              <select class="form-select" id="user-branch" required>
-                <option value="">Select branch</option>
-                <option value="Phnom Penh">Phnom Penh</option>
-                <option value="Siem Reap">Siem Reap</option>
-                <option value="Battambang">Battambang</option>
-              </select>
+              <input type="text" class="form-input" id="user-branch" placeholder="Enter branch name" />
             </div>
           </div>
           <div class="form-group">
@@ -1237,6 +1300,47 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-addUser')">Cancel</button>
           <button type="submit" class="btn btn-primary" id="modal-addUser-submit">Add User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Promotion Modal -->
+  <div class="modal-overlay" id="modal-newPromotion">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-newPromotion-title">New Promotion</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-newPromotion')"><i class="fas fa-xmark"></i></button>
+      </div>
+      <form id="form-newPromotion" onsubmit="submitNewPromotion(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="np-campaign">Campaign Promotion <span class="required">*</span></label>
+            <input type="text" class="form-input" id="np-campaign" placeholder="Enter campaign name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="np-channel">Channel <span class="required">*</span></label>
+            <input type="text" class="form-input" id="np-channel" placeholder="e.g. SMS, Social Media, In-Store" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group form-col">
+              <label class="form-label" for="np-start">Start Date <span class="required">*</span></label>
+              <input type="date" class="form-input" id="np-start" required />
+            </div>
+            <div class="form-group form-col">
+              <label class="form-label" for="np-end">End Date <span class="required">*</span></label>
+              <input type="date" class="form-input" id="np-end" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="np-terms">Terms &amp; Conditions</label>
+            <textarea class="form-textarea" id="np-terms" placeholder="Enter terms and conditions..." style="min-height:120px;"></textarea>
+          </div>
+          <input type="hidden" id="np-edit-id" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-newPromotion')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="np-submit-btn">Add Promotion</button>
         </div>
       </form>
     </div>
