@@ -292,37 +292,37 @@
 <body>
 
   <!-- ===================== LOGIN SCREEN ===================== -->
-  <div id="login-screen" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f4c2a,#1B7D3D 50%,#27ae60);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;">
+  <div id="login-screen">
     <div class="login-card">
       <div class="login-logo">
-        <i class="fas fa-tower-broadcast" style="font-size:2rem;color:#1B7D3D;"></i>
-        <span style="font-size:1.5rem;font-weight:800;color:#1A1A2E;">Smart 5G</span>
+        <i class="fas fa-tower-broadcast"></i>
+        <span>Smart 5G</span>
       </div>
       <h2 class="login-title">Welcome Back</h2>
       <p class="login-subtitle">Sign in to your dashboard</p>
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label class="form-label">Username <span class="required">*</span></label>
-          <div class="input-with-icon" style="position:relative;">
-            <i class="fas fa-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#999;font-size:.9rem;pointer-events:none;"></i>
-            <input type="text" id="login-username" class="form-input" style="padding-left:42px;width:100%;height:46px;" placeholder="Enter username" autocomplete="username" />
+          <div class="input-with-icon">
+            <i class="fas fa-user input-prefix-icon"></i>
+            <input type="text" id="login-username" class="form-input login-input" placeholder="Enter username" autocomplete="username" />
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Password <span class="required">*</span></label>
-          <div class="input-with-icon" style="position:relative;">
-            <i class="fas fa-lock" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#999;font-size:.9rem;pointer-events:none;"></i>
-            <input type="password" id="login-password" class="form-input" style="padding-left:42px;padding-right:42px;width:100%;height:46px;" placeholder="Enter password" autocomplete="current-password" />
-            <button type="button" onclick="toggleLoginPwd()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999;font-size:.9rem;padding:4px;"><i class="fas fa-eye" id="login-pwd-eye"></i></button>
+          <div class="input-with-icon">
+            <i class="fas fa-lock input-prefix-icon"></i>
+            <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" />
+            <button type="button" class="input-icon-btn" onclick="toggleLoginPwd()"><i class="fas fa-eye" id="login-pwd-eye"></i></button>
           </div>
         </div>
         <div id="login-error" class="login-error" style="display:none;"></div>
-        <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width:100%;height:48px;font-size:1rem;justify-content:center;border-radius:10px;margin-top:4px;margin-bottom:16px;">
+        <button type="submit" id="login-submit-btn" class="btn btn-primary login-submit-btn">
           <i class="fas fa-right-to-bracket"></i> Sign In
         </button>
       </form>
-      <div style="text-align:center;font-size:.8125rem;color:#888;">
-        Need access? <a href="#" onclick="loginContactSupport();return false;" style="color:#1B7D3D;font-weight:600;text-decoration:none;">Contact Support</a>
+      <div class="login-support-hint">
+        Need access? <a href="#" onclick="loginContactSupport();return false;">Contact Support</a>
       </div>
 
     </div>
@@ -1422,51 +1422,26 @@
         <button class="modal-close-btn" onclick="closeModal('modal-contactSupport')"><i class="fas fa-xmark"></i></button>
       </div>
       <div class="modal-body">
-        <p style="font-size:.8rem;color:#666;margin-bottom:16px;">
-          <i class="fab fa-telegram" style="color:#229ED9;margin-right:4px;"></i>
-          Contact admin directly via Telegram: <strong>@saray2026123</strong>
-        </p>
-        <form id="form-contactSupport" onsubmit="submitSupportRequest(event)">
-          <input type="hidden" id="support-req-id" value="" />
-          <div class="form-group">
-            <label class="form-label">Request Type <span class="required">*</span></label>
-            <select id="support-req-type" class="form-select" style="width:100%;">
-              <option value="new-account">New User Account</option>
-              <option value="edit-account">Edit My Account</option>
-              <option value="reset-password">Reset Password</option>
-              <option value="remove-account">Remove Account</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Your Name</label>
-              <input type="text" id="support-req-name" class="form-input" style="width:100%;" placeholder="Full name" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Your Username</label>
-              <input type="text" id="support-req-username" class="form-input" style="width:100%;" placeholder="Username" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Branch</label>
-              <input type="text" id="support-req-branch" class="form-input" style="width:100%;" placeholder="Your branch" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Contact Phone</label>
-              <input type="text" id="support-req-phone" class="form-input" style="width:100%;" placeholder="Optional" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Details / Message <span class="required">*</span></label>
-            <textarea id="support-req-details" class="form-textarea" placeholder="Describe your request in detail..."></textarea>
-          </div>
-        </form>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="cs-name" class="form-input" style="width:100%;" readonly />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="cs-username" class="form-input" style="width:100%;" readonly />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Branch</label>
+          <input type="text" id="cs-branch" class="form-input" style="width:100%;" readonly />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message <span class="required">*</span></label>
+          <textarea id="cs-message" class="form-textarea" placeholder="Describe your request..."></textarea>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('modal-contactSupport')">Cancel</button>
-        <button class="btn btn-primary" onclick="submitSupportRequest(event)"><i class="fas fa-paper-plane"></i> Send Request</button>
+        <button class="btn btn-primary" onclick="submitContactSupport()"><i class="fas fa-paper-plane"></i> Send</button>
       </div>
     </div>
   </div>
